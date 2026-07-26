@@ -3,27 +3,35 @@
 import { useEffect, useState } from "react";
 
 const steps = [
-  "Reading your chapter",
-  "Designing the learning objectives",
-  "Reviewing spoken and visual evidence",
-  "Writing the educational video script",
-  "Building the nine-scene storyboard",
-  "Planning diagrams, motion and captions",
-  "Composing your lesson studio",
+  { at: 0, label: "Reading and safety-checking your chapter" },
+  { at: 8, label: "Designing three learning objectives" },
+  { at: 24, label: "Reviewing spoken and visual VideoDB evidence" },
+  { at: 50, label: "Writing the educational video script" },
+  { at: 72, label: "Building the nine-scene storyboard" },
+  { at: 92, label: "Planning diagrams, motion and captions" },
+  { at: 108, label: "Composing and checking your lesson studio" },
 ];
 
 export function GenerationProgress() {
-  const [active, setActive] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActive((current) => Math.min(current + 1, steps.length - 1));
-    }, 4_000);
+      setElapsedSeconds((current) => current + 1);
+    }, 1_000);
     return () => window.clearInterval(timer);
   }, []);
 
+  const active = steps.reduce(
+    (current, step, index) =>
+      elapsedSeconds >= step.at ? index : current,
+    0,
+  );
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = String(elapsedSeconds % 60).padStart(2, "0");
+
   return (
-    <section className="section" aria-live="polite">
+    <section className="section">
       <div className="container">
         <div className="progress-card">
           <div className="volcano-loader" aria-hidden="true">
@@ -36,14 +44,28 @@ export function GenerationProgress() {
               KathaQuest is planning the pedagogy, reviewing VideoDB evidence,
               and turning the script into a programmable visual story.
             </p>
+            <div className="progress-expectation">
+              <strong aria-hidden="true">
+                {minutes}:{seconds}
+              </strong>
+              <span>
+                A new lesson usually takes about two minutes. Keep this tab
+                open while the evidence is reviewed.
+              </span>
+            </div>
           </div>
-          <div className="progress-list">
+          <div
+            aria-label={`Current step: ${steps[active].label}`}
+            aria-live="polite"
+            className="progress-list"
+            role="status"
+          >
             {steps.map((step, index) => (
               <div
                 className={`progress-step ${
                   index < active ? "done" : index === active ? "active" : ""
                 }`}
-                key={step}
+                key={step.label}
               >
                 <span className="step-icon">
                   {index < active ? (
@@ -52,7 +74,7 @@ export function GenerationProgress() {
                     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /></svg>
                   ) : index + 1}
                 </span>
-                {step}
+                {step.label}
               </div>
             ))}
           </div>

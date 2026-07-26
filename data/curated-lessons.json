@@ -1,0 +1,1186 @@
+[
+  {
+    "chapterId": "volcanoes",
+    "ageGroup": "8-10",
+    "language": "en-IN",
+    "lesson": {
+      "id": "f0279f8b-3c35-4af5-a58f-2bfd7c9b2030",
+      "title": "Volcanoes: Fire from Inside the Earth",
+      "ageGroup": "8-10",
+      "language": "en-IN",
+      "status": "ready",
+      "concepts": [
+        {
+          "id": "concept-1",
+          "title": "Magma and Lava",
+          "learningObjective": "Distinguish magma below Earth’s surface from lava that has reached the surface.",
+          "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface.",
+          "sourcePage": 4,
+          "videoSearchQueries": [
+            "USGS explanation showing magma rising underground and becoming lava at Earth’s surface",
+            "Real volcano footage showing lava emerging from a volcanic vent"
+          ],
+          "explanation": "Have you ever wondered when melted rock changes its name? Below Earth’s surface, melted rock is called magma. It may be stored underground at different depths and can move through cracks and pathways towards a shallow conduit. Think of it like a child waiting behind a doorway: while the child is still behind the doorway, they are inside; once they cross it, they are outside. In the same way, magma keeps its name while it remains below Earth’s surface. When it reaches the surface through a volcanic vent, it is called lava. The glowing red-orange material bursting and splashing out of an opening is therefore lava. It can land and spread near the vent, and the nearby surface looks dark and solid where lava has cooled. So remember: magma is melted rock below Earth’s surface, while lava is magma that has reached the surface.",
+          "quiz": {
+            "question": "What is melted rock called after it reaches Earth’s surface?",
+            "options": [
+              "Magma",
+              "Lava",
+              "Tephra",
+              "Steam"
+            ],
+            "correctAnswer": "Lava"
+          }
+        },
+        {
+          "id": "concept-2",
+          "title": "Gentle Lava Flows and Explosive Eruptions",
+          "learningObjective": "Compare how runny magma often forms lava flows while thick, sticky magma can produce explosive eruptions.",
+          "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows. Thick, sticky magma can produce sudden explosions, fast clouds of hot ash and pieces of rock.",
+          "sourcePage": 3,
+          "videoSearchQueries": [
+            "USGS narrated comparison of flowing lava and explosive volcanic eruptions",
+            "Kīlauea footage showing glowing lava fountains and lava flows from a vent"
+          ],
+          "explanation": "Have you ever wondered why one volcano pours glowing lava while another suddenly blasts ash and rocks into the air? The answer is linked to how easily the magma moves. Runny magma allows gas to escape more easily. Because the gas can get out, this magma often produces glowing lava flows that spread across the ground. Think of it like air escaping easily from a loose bag. Thick, sticky magma behaves differently. Gas cannot escape as easily, so a sudden explosion can happen. The volcano may then send out fast clouds of hot ash and pieces of rock. In the eruption scene, a red jet rises while a grey-brown cloud and dark particles spread through the air. Volcanic gas and rock material can also be carried downwind. So, runny magma often forms lava flows, while thick, sticky magma can cause explosive eruptions.",
+          "quiz": {
+            "question": "Which statement correctly compares runny magma with thick, sticky magma?",
+            "options": [
+              "Runny magma often forms lava flows, while thick, sticky magma can cause explosions.",
+              "Runny magma always produces ash, while thick magma only flows quietly.",
+              "Both kinds of magma always produce the same eruption.",
+              "Thick, sticky magma lets gas escape more easily than runny magma."
+            ],
+            "correctAnswer": "Runny magma often forms lava flows, while thick, sticky magma can cause explosions."
+          }
+        },
+        {
+          "id": "concept-3",
+          "title": "Volcanoes Create New Land",
+          "learningObjective": "Explain how erupted lava can cool and build new land.",
+          "sourceQuote": "Volcanoes also create new land.",
+          "sourcePage": 3,
+          "videoSearchQueries": [
+            "USGS explanation of volcanic eruptions building new land over time",
+            "Real footage of hot lava reaching the sea and changing the coastline"
+          ],
+          "explanation": "Have you ever wondered how a volcano can make more land? First, hot, glowing red-orange lava comes through a crack or opening in the rocky surface. It looks different from the dark, solid rock around it because the lava is still molten. The lava can then flow across the ground or move down a rocky edge towards water. As erupted lava cools, it becomes dark, solid new rock. When more lava arrives and cools, the new rock builds up, rather like adding one layer of clay over another. Evidence from one eruption showed that volcanic material filled a crater with about 240 feet of new rock. This shows the cause and effect clearly: lava erupts and spreads, then cooling makes solid rock, and the rock adds to the land. In short, volcanoes create new land when erupted lava cools into solid rock and builds up.",
+          "quiz": {
+            "question": "How can erupted lava help build new land?",
+            "options": [
+              "It cools into solid rock that builds up.",
+              "It turns dark rock back into molten lava.",
+              "It makes water flow upwards.",
+              "It carries all the rock downwind."
+            ],
+            "correctAnswer": "It cools into solid rock that builds up."
+          }
+        }
+      ],
+      "episodes": [
+        {
+          "id": "73c19372-4324-4a85-a77e-b830dfc982c6",
+          "conceptId": "concept-1",
+          "title": "Magma and Lava",
+          "explanation": "Have you ever wondered when melted rock changes its name? Below Earth’s surface, melted rock is called magma. It may be stored underground at different depths and can move through cracks and pathways towards a shallow conduit. Think of it like a child waiting behind a doorway: while the child is still behind the doorway, they are inside; once they cross it, they are outside. In the same way, magma keeps its name while it remains below Earth’s surface. When it reaches the surface through a volcanic vent, it is called lava. The glowing red-orange material bursting and splashing out of an opening is therefore lava. It can land and spread near the vent, and the nearby surface looks dark and solid where lava has cooled. So remember: magma is melted rock below Earth’s surface, while lava is magma that has reached the surface.",
+          "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface.",
+          "sourcePage": 4,
+          "whyThisClip": "Together, the clips form a clear two-step comparison: magma stored and moving underground, followed by lava emerging at Earth’s surface.",
+          "streamUrl": "https://stream.videodb.io/v3/published/manifests/6f036730-7114-46d1-9dde-588f5a79513b.m3u8",
+          "durationSeconds": 60,
+          "evidence": [
+            {
+              "videoId": "m-z-019f9ea5-a590-7302-bb47-2623dd207881",
+              "videoTitle": "From Millennia to Minutes: Life Cycles of Volcanoes and Eruptions",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
+              "startSeconds": 606.002,
+              "endSeconds": 636.002,
+              "relevanceScore": 0.696433127,
+              "sourceUrl": "https://www.usgs.gov/media/videos/millennia-minutes-life-cycles-volcanoes-and-eruptions",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: Volcanoes, magma, eruptions, Earth science\n\n#### 1) Exactly what is visible across the frames\n- **Frame 1:** A scientific slide titled **“Tapping of different bodies within the spatially complex Augustine system affects eruptive style.”**\n  - Left side: a **cross-section diagram** with a **depth scale in km below sea level** from about **0 to 8 km**.\n  - Labels visible in the diagram include:\n    - **“Magma staging”**\n    - **“shallow system of cracks”**\n    - **“explosive events 3 to early 10 sourced by magma staged in upper 2 km”**\n    - **“multiple pathways to shallow conduit”**\n    - **“magma mixing”**\n    - **“magma origin by event”**\n    - **“mafic recharge”**\n    - **“shallow magma storage zone”**\n    - **“dikes linking magma storage”**\n    - **“HSA”**, **“LSA”**, **“old”**, **“young”**\n    - numbered circles **1, 2, 3** and a legend:\n      - **1 event 9**\n      - **2 early event 10**\n      - **3 late event 10**\n  - Right side: three stacked eruption timelines labeled **2006**, **1986**, and **1976** with colored eruption shapes and labels such as:\n    - **“seismic unrest & inflation”**\n    - **“phreatic explosions”**\n    - **“magmatic explosions”**\n    - **“dome & PFs”**\n    - **“lava flow & block-and-ash flows”**\n    - **“>100 magmatic explosions”**\n    - **“dome I”**\n    - **“dome II”**\n    - **“35 magmatic explosions”**\n    - **“dome I (explosive onset)”**\n  - Logos/text visible: **USGS**, **Benage et al., accepted; BV**, **Chris Nye, unpublished**.\n\n- **Frame 2:** A slide titled **“A geologic time-series reveals that the Augustine system has changed gradually during the Holocene.”**\n  - Left: a **vertical stratigraphic column** with labels including:\n    - **Tephra I**\n    - **Tephra G**\n    - **S4**\n    - **S3**\n    - **S2**\n    - **S1**\n    - **Younger low-K**\n    - **Older low-K ~7.8 ka**\n    - **High-P**\n    - **Rhyolite**\n    - a **5 m** scale marker\n  - Center: a **photo of layered volcanic deposits** with labels:\n    - **Katmai 1912**\n    - **Tephra B**\n    - **Tephra M**\n    - **Tephra C**\n    - **Tephra H**\n    - **Tephra I ~1.7 ka**\n    - **Post-1912 eruptions**\n  - Right: a **scatter plot** with axes **K2O** and **SiO2**, plus a color bar labeled **age (ka)** from **0 to 7**.\n  - Bottom text includes **“Tephras I through B from [Waitt and Beget, 2009; USGS PP 1762]”** and **“Coombs, Wallace et al., unpublished”**.\n\n#### 2) The process or change being demonstrated\n- **Frame 1 shows** that different kinds of magma movement and storage are linked to different eruption styles at Augustine.\n- The diagram shows magma in a **shallow storage zone** and **magma staging** at different depths.\n- The eruption timelines show different sequences in **1976, 1986, and 2006**, including:\n  - seismic unrest,\n  - phreatic explosions,\n  - magmatic explosions,\n  - dome growth,\n  - lava flow and block-and-ash flows.\n- **Frame 2 shows** a long-term change through the Holocene:\n  - volcanic deposits are stacked in layers,\n  - older and younger tephra layers are labeled,\n  - the composition plot shows points spread across **SiO2** and **K2O** values, with color indicating age.\n- The slide title says the system **changed gradually during the Holocene**.\n\n#### 3) Cause-and-effect evidence visible on the slide\n- In **Frame 1**, arrows and labels connect:\n  - **mafic recharge** and **magma staging** to\n  - **multiple pathways to shallow conduit**, **magma mixing**, and then to\n  - **explosive events** and other eruption products.\n- The right-hand timelines show that different years have different visible eruption patterns:\n  - **2006** includes **phreatic explosions**, **magmatic explosions**, **dome & PFs**, and **lava flow & block-and-ash flows**.\n  - **1986** shows **>100 magmatic explosions** and later **dome I** and **dome II**.\n  - **1976** shows **35 magmatic explosions** and **dome I (explosive onset)** plus **dome II**.\n- In **Frame 2**, the layered photo and labeled tephra units show that deposits are arranged in a sequence from deeper/older to upper/younger layers.\n- The scatter plot shows sample points of different ages colored from **0 to 7 ka**, visually supporting that compositions vary with age.\n\n#### 4) Any labels or on-screen facts\n- **Title 1:** “Tapping of different bodies within the spatially complex Augustine system affects eruptive style”\n- **Title 2:** “A geologic time-series reveals that the Augustine system has changed gradually during the Holocene”\n- Visible factual labels include:\n  - **Depth (km) bsl**\n  - **magma staging**\n  - **shallow magma storage zone**\n  - **mafic recharge**\n  - **seismic unrest**\n  - **phreatic explosions**\n  - **magmatic explosions**\n  - **dome & PFs**\n  - **lava flow & block-and-ash flows**\n  - **age (ka)**\n  - **SiO2**\n  - **K2O**\n  - **5 m**\n  - **Katmai 1912**\n  - **Tephra I, G, B, M, C, H**\n  - **~1.7 ka**\n  - **~7.8 ka**\n- Named sources/logos:\n  - **USGS**\n  - **Benage et al., accepted; BV**\n  - **Chris Nye, unpublished**\n  - **Coombs, Wallace et al., unpublished**\n\n#### 5) Which learning question this moment can answer\nThis scene can answer:\n- **How can magma storage and movement affect the kind of volcanic eruption that happens?**\n- **How do scientists use layers of volcanic ash and chemical plots to study changes in a volcano over time?**\n- **What visible evidence shows that eruption style and volcanic deposits can differ from one eruption or time period to another?**\n\nIf you want, I can also convert this into a **kid-friendly caption**, a **teacher answer key**, or a **frame-by-frame worksheet**.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "magma",
+                "eruptions",
+                "Earth science"
+              ],
+              "reviewConfidence": 0.78,
+              "selectionReason": "The labeled cross-section and depth scale clearly place magma in a system of cracks and staging areas below Earth’s surface, providing direct visual evidence for the underground-m조"
+            },
+            {
+              "videoId": "m-z-019f9eab-1c40-74b1-847f-dec1f7bef079",
+              "videoTitle": "Kīlauea Summit Lava Fountaining — February 2025",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/multimediaFile-4266.mp4",
+              "startSeconds": 1,
+              "endSeconds": 31,
+              "relevanceScore": 0.733627379,
+              "sourceUrl": "https://www.usgs.gov/media/videos/february-4-2025-video-fountaining-kilauea-summit",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: volcanoes, lava, vents\n\n**1) What is visible across the frames**\n- A dark, rocky volcanic surface fills the scene.\n- A glowing red-orange opening is visible near the lower right/center area in the first two frames.\n- Bright red lava is seen bursting upward from that opening.\n- Gray-white smoke or steam rises above the opening.\n- In the surrounding area, there are darker solid rock surfaces and lighter, smooth-looking lava crust patterns.\n- In the last frame, the camera is closer to the opening, showing the glowing lava and dark rock edges in more detail.\n- No people, animals, signs, or text labels are visible.\n\n**2) Process or change being demonstrated**\n- Lava is being pushed out through a vent in the volcanic rock.\n- The lava is moving upward and splashing outward.\n- The scene changes from a wider view of the vent and lava fountain to a closer view of the same erupting area.\n\n**3) Cause-and-effect evidence**\n- **Cause visible:** an opening in the rock acts as the vent.\n- **Effect visible:** bright molten lava comes out of that opening.\n- **Cause visible:** hot material escapes from the vent.\n- **Effect visible:** smoke/steam rises above the opening.\n- **Cause visible:** lava lands and spreads near the opening.\n- **Effect visible:** the nearby surface looks dark and solid where lava has cooled.\n\n**4) Labels or on-screen facts**\n- There are no on-screen labels, captions, diagrams, or written facts visible in these frames.\n\n**5) Learning question this moment can answer**\n- **Where does lava come out of a volcano?**\n- It can also help answer: **What does a volcanic vent look like during an eruption?**",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "vents"
+              ],
+              "reviewConfidence": 0.91,
+              "selectionReason": "Real footage clearly shows glowing molten rock bursting from a surface vent. This directly demonstrates that once molten rock reaches the surface, it is called lava."
+            }
+          ],
+          "coverageScore": 0.7800151264999999,
+          "kidSafe": true,
+          "selectionSummary": "Together, the clips form a clear two-step comparison: magma stored and moving underground, followed by lava emerging at Earth’s surface."
+        },
+        {
+          "id": "8d618f44-8d9a-4731-90eb-9e4a6e6ddd83",
+          "conceptId": "concept-2",
+          "title": "Gentle Lava Flows and Explosive Eruptions",
+          "explanation": "Have you ever wondered why one volcano pours glowing lava while another suddenly blasts ash and rocks into the air? The answer is linked to how easily the magma moves. Runny magma allows gas to escape more easily. Because the gas can get out, this magma often produces glowing lava flows that spread across the ground. Think of it like air escaping easily from a loose bag. Thick, sticky magma behaves differently. Gas cannot escape as easily, so a sudden explosion can happen. The volcano may then send out fast clouds of hot ash and pieces of rock. In the eruption scene, a red jet rises while a grey-brown cloud and dark particles spread through the air. Volcanic gas and rock material can also be carried downwind. So, runny magma often forms lava flows, while thick, sticky magma can cause explosive eruptions.",
+          "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows. Thick, sticky magma can produce sudden explosions, fast clouds of hot ash and pieces of rock.",
+          "sourcePage": 3,
+          "whyThisClip": "Together, the clips provide a usable contrast between spreading lava and an explosive, dome-forming eruption. The evidence does not explicitly explain that viscosity causes the difference, so narration should supply the accurate link: runny The search was automatically clarified once to improve coverage.",
+          "streamUrl": "https://stream.videodb.io/v3/published/manifests/937e4e4c-0cb8-44ee-b1e1-5b00c831c7ed.m3u8",
+          "durationSeconds": 68,
+          "evidence": [
+            {
+              "videoId": "m-z-019f9ea9-2467-71d2-a921-4b7716601d13",
+              "videoTitle": "30 Episodes of Lava Fountaining at Kīlauea",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+              "startSeconds": 21.03,
+              "endSeconds": 51.03,
+              "relevanceScore": 0.744463921,
+              "sourceUrl": "https://www.usgs.gov/media/videos/30-episodes-lava-fountaining-kilauea",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: volcanoes, lava, eruptions\n\n#### Frame 1\n1. **What is visible**\n   - A dark nighttime scene.\n   - Bright orange-yellow glowing lava spreads across the ground.\n   - A tall bright yellow-orange vertical plume rises on the right side.\n   - The top text says: **“and filled the crater with about 240 feet of new rock.”**\n   - A **USGS** logo appears at the lower left.\n   - A timestamp appears at the top left: **2025-01-28 05:24:05**.\n\n2. **Process or change shown**\n   - Molten material is visible on the ground and near a crater-like opening.\n   - The on-screen text states that the crater was filled with **about 240 feet of new rock**.\n\n3. **Cause-and-effect evidence**\n   - The visible glowing material is associated with the crater area.\n   - The text directly links the event to the crater being filled with new rock.\n\n4. **Labels or on-screen facts**\n   - “and filled the crater with about **240 feet** of new rock.”\n   - USGS logo.\n   - Timestamp: 2025-01-28 05:24:05.\n\n5. **Learning question this can answer**\n   - **What can an eruption leave behind in a crater?**\n\n---\n\n#### Frame 2\n1. **What is visible**\n   - Daylight scene of a volcanic eruption.\n   - A dark, flat ground surface in the foreground.\n   - A red, vertical jet of material rising near the left-center.\n   - A large gray-brown cloud of ash or dust filling the center and right side of the frame.\n   - Small dark particles are scattered through the air.\n\n2. **Process or change shown**\n   - Material is being thrown upward from the volcanic opening.\n   - A cloud of ash and particles is expanding above the ground.\n\n3. **Cause-and-effect evidence**\n   - The red jet and the gray-brown cloud appear at the same eruption site.\n   - The airborne particles show material being pushed into the air.\n\n4. **Labels or on-screen facts**\n   - No text labels are visible in this frame.\n\n5. **Learning question this can answer**\n   - **What does a volcanic eruption look like while it is happening?**\n\n---\n\n#### Frame 3\n1. **What is visible**\n   - The same eruption scene continues.\n   - The red vertical jet remains visible on the left side.\n   - The gray-brown cloud is larger and more spread out across the center and right.\n   - Dark particles are still visible in the air.\n   - The dark ground remains in the foreground.\n\n2. **Process or change shown**\n   - The eruption continues.\n   - The cloud of volcanic gas and ash appears to spread outward more across the frame.\n\n3. **Cause-and-effect evidence**\n   - The continued upward red jet is followed by a wider cloud of material in the air.\n   - More airborne particles are visible around the cloud.\n\n4. **Labels or on-screen facts**\n   - Text on screen says: **“Volcanic gas emissions and tephra can be carried downwind”**\n   - The words appear across the lower half of the image.\n\n5. **Learning question this can answer**\n   - **What can move away from a volcano during an eruption?**\n\n---\n\n#### Simple child-friendly takeaway\n- Volcanoes can send out **glowing lava**, **ash**, **gas**, and **rock pieces**.\n- Eruptions can **fill a crater** and **throw material into the air**.\n- The on-screen text shows that volcanic material can be **carried downwind**.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "eruptions"
+              ],
+              "reviewConfidence": 0.72,
+              "selectionReason": "Clearly shows glowing lava spreading across the ground, providing direct visual evidence of the lava-flow side of the comparison."
+            },
+            {
+              "videoId": "m-z-019f9ea5-a590-7302-bb47-2623dd207881",
+              "videoTitle": "From Millennia to Minutes: Life Cycles of Volcanoes and Eruptions",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
+              "startSeconds": 226.72000000000003,
+              "endSeconds": 264.72,
+              "relevanceScore": 0.589484215,
+              "sourceUrl": "https://www.usgs.gov/media/videos/millennia-minutes-life-cycles-volcanoes-and-eruptions",
+              "licence": "Public Domain",
+              "matchType": "spoken_word",
+              "text": " These are the high silica and intermediate silica andesites that fed the subsequently erupted lava domes. For the rest of the talk, I'd like to focus on Augustine volcano, a frequently active volcano in Alaska's Cook Inlet that has erupted numerous times historically. Last in 2006. The 2006 eruption started with a series of 13 explosive events that produced fall pyroclastic flows and lahars as seen in blue and green on this map. This period was followed by four days of continuous block and ash flow production known as the continuous phase, the deposits shown in pink on the map, and finally an effusive phase that produced two lava flows down the north side of the edifice as seen in Brown. Like Redoubt in 2009, the eruption yielded mostly low through high silica andesites.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "magma",
+                "eruptions",
+                "Earth science"
+              ],
+              "reviewConfidence": 0.6,
+              "selectionReason": "Connects high-silica andesite and lava-dome formation with a documented sequence of explosive events, pyroclastic flows, and ash activity. It supports the sticky-magma/explosive-er"
+            }
+          ],
+          "coverageScore": 0.6634870340000001,
+          "kidSafe": true,
+          "selectionSummary": "Together, the clips provide a usable contrast between spreading lava and an explosive, dome-forming eruption. The evidence does not explicitly explain that viscosity causes the difference, so narration should supply the accurate link: runny"
+        },
+        {
+          "id": "fe0ed957-a05f-4383-9b55-f27ff88ded33",
+          "conceptId": "concept-3",
+          "title": "Volcanoes Create New Land",
+          "explanation": "Have you ever wondered how a volcano can make more land? First, hot, glowing red-orange lava comes through a crack or opening in the rocky surface. It looks different from the dark, solid rock around it because the lava is still molten. The lava can then flow across the ground or move down a rocky edge towards water. As erupted lava cools, it becomes dark, solid new rock. When more lava arrives and cools, the new rock builds up, rather like adding one layer of clay over another. Evidence from one eruption showed that volcanic material filled a crater with about 240 feet of new rock. This shows the cause and effect clearly: lava erupts and spreads, then cooling makes solid rock, and the rock adds to the land. In short, volcanoes create new land when erupted lava cools into solid rock and builds up.",
+          "sourceQuote": "Volcanoes also create new land.",
+          "sourcePage": 3,
+          "whyThisClip": "Together, the clips form a mini-lesson: lava erupts from an opening, reaches and alters a shoreline, and accumulates as substantial new rock. Cooling is suggested by molten lava next to solid rock, though none of the clips explicitly narr65",
+          "streamUrl": "https://stream.videodb.io/v3/published/manifests/a2cd713b-71eb-45ee-9db0-cd30728a1604.m3u8",
+          "durationSeconds": 69,
+          "evidence": [
+            {
+              "videoId": "m-z-019f9eaa-a6b4-7910-834d-f4addced211e",
+              "videoTitle": "Lava Fountains at Kīlauea’s Western Fissure",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/multimediaFile-3342.mp4",
+              "startSeconds": 11,
+              "endSeconds": 41,
+              "relevanceScore": 0.607313156,
+              "sourceUrl": "https://www.usgs.gov/media/videos/lava-fountains-western-fissure-halemaumau-kilauea-oct-5-2021",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "**Educational scene record: volcanoes, fissures, and lava**\n\n1. **What is visible across the frames**\n   - The first two frames show a close-up view of a rocky volcanic surface.\n   - A bright red-orange molten area is visible in the center-left of the scene.\n   - Dark, solid-looking rock surrounds the glowing area.\n   - A narrow opening or crack is visible where the red-orange material is coming out.\n   - Pale gray-white steam or gas is rising from parts of the rocky surface.\n   - On the right side, there is a smoother, darker, shiny-looking flow path beside the glowing area.\n   - The third frame is a black screen with a green **USGS** logo and the text **“science for a changing world.”**\n\n2. **Process or change being demonstrated**\n   - The frames show molten rock visible at the surface through a crack or opening in volcanic rock.\n   - The glowing red-orange material appears in the opening, and in the next frame it is still visible but the shape at the opening looks slightly different.\n   - The scene demonstrates lava at the surface and gas/steam rising from hot volcanic material.\n\n3. **Cause-and-effect evidence**\n   - A visible crack/opening in the rock is the place where the bright molten material appears.\n   - The red-orange color shows the material is much hotter than the surrounding dark rock.\n   - Steam or gas is visible above the hot area, showing heat affecting nearby material.\n   - The surrounding rock is dark and solid, while the center is glowing and moving-looking, showing a difference between cooled rock and molten lava.\n\n4. **Labels or on-screen facts**\n   - The only visible text is the **USGS** logo.\n   - The text reads: **“science for a changing world.”**\n   - No other labels, arrows, or captions are shown.\n\n5. **Learning question this moment can answer**\n   - **Where can lava be seen at a volcano?**\n   - It can also help answer: **What does hot molten rock look like when it reaches a crack or opening at the surface?**",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "fissures",
+                "lava"
+              ],
+              "reviewConfidence": 0.68,
+              "selectionReason": "Shows glowing molten lava emerging from a fissure beside dark, solid-looking rock, visually supporting the transition from erupted lava to solid volcanic material."
+            },
+            {
+              "videoId": "m-z-019f9eac-347f-7613-a186-b8028a0159b9",
+              "videoTitle": "Lava Dropping into the Sea",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/20020809-Highcastledetail_DAS.mp4",
+              "startSeconds": 0,
+              "endSeconds": 9,
+              "relevanceScore": 0.653419554,
+              "sourceUrl": "https://www.usgs.gov/media/videos/lava-dropping-sea",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "**Educational scene record: volcanoes, lava, landforms**\n\n1. **Exactly what is visible across the frames**\n   - All three frames show a **dark rocky surface** on the right side and **moving water** on the left and lower parts of the image.\n   - In the upper-right area, there are **bright orange-red glowing streaks and drops** running downward.\n   - The glowing material appears in several narrow lines, with small bright points near the bottom of the streaks.\n   - The water below looks **gray-blue and foamy**, with visible motion from frame to frame.\n\n2. **Process or change being demonstrated**\n   - The scene shows **glowing molten material moving downward from a rocky area and reaching the water below**.\n   - Across the frames, the bright streaks remain in roughly the same place while the water continues to move underneath them.\n   - The visible change is the **ongoing flow or drip of hot liquid rock-like material into the water**.\n\n3. **Cause-and-effect evidence**\n   - **Cause visible:** bright orange-red material is descending from the dark rock edge.\n   - **Effect visible:** the material is seen above the moving water, with bright spots appearing lower in the frame as it falls.\n   - The frames show the **same glowing material continuing downward** while the water below remains active and foamy.\n\n4. **Labels or on-screen facts**\n   - **No labels, captions, or printed facts are visible** in these frames.\n\n5. **Learning question this moment can answer**\n   - **“What does lava look like when it flows near or into water?”**\n   - It can also help answer: **“What can be seen at the edge of a volcanic landform when molten material moves downward?”**\n\n",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "landforms"
+              ],
+              "reviewConfidence": 0.73,
+              "selectionReason": "Clearly shows hot lava reaching the sea at a rocky shoreline, a key setting where cooled lava can extend and reshape land."
+            },
+            {
+              "videoId": "m-z-019f9ea9-2467-71d2-a921-4b7716601d13",
+              "videoTitle": "30 Episodes of Lava Fountaining at Kīlauea",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+              "startSeconds": 21.03,
+              "endSeconds": 51.03,
+              "relevanceScore": 0.618711472,
+              "sourceUrl": "https://www.usgs.gov/media/videos/30-episodes-lava-fountaining-kilauea",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: volcanoes, lava, eruptions\n\n#### Frame 1\n1. **What is visible**\n   - A dark nighttime scene.\n   - Bright orange-yellow glowing lava spreads across the ground.\n   - A tall bright yellow-orange vertical plume rises on the right side.\n   - The top text says: **“and filled the crater with about 240 feet of new rock.”**\n   - A **USGS** logo appears at the lower left.\n   - A timestamp appears at the top left: **2025-01-28 05:24:05**.\n\n2. **Process or change shown**\n   - Molten material is visible on the ground and near a crater-like opening.\n   - The on-screen text states that the crater was filled with **about 240 feet of new rock**.\n\n3. **Cause-and-effect evidence**\n   - The visible glowing material is associated with the crater area.\n   - The text directly links the event to the crater being filled with new rock.\n\n4. **Labels or on-screen facts**\n   - “and filled the crater with about **240 feet** of new rock.”\n   - USGS logo.\n   - Timestamp: 2025-01-28 05:24:05.\n\n5. **Learning question this can answer**\n   - **What can an eruption leave behind in a crater?**\n\n---\n\n#### Frame 2\n1. **What is visible**\n   - Daylight scene of a volcanic eruption.\n   - A dark, flat ground surface in the foreground.\n   - A red, vertical jet of material rising near the left-center.\n   - A large gray-brown cloud of ash or dust filling the center and right side of the frame.\n   - Small dark particles are scattered through the air.\n\n2. **Process or change shown**\n   - Material is being thrown upward from the volcanic opening.\n   - A cloud of ash and particles is expanding above the ground.\n\n3. **Cause-and-effect evidence**\n   - The red jet and the gray-brown cloud appear at the same eruption site.\n   - The airborne particles show material being pushed into the air.\n\n4. **Labels or on-screen facts**\n   - No text labels are visible in this frame.\n\n5. **Learning question this can answer**\n   - **What does a volcanic eruption look like while it is happening?**\n\n---\n\n#### Frame 3\n1. **What is visible**\n   - The same eruption scene continues.\n   - The red vertical jet remains visible on the left side.\n   - The gray-brown cloud is larger and more spread out across the center and right.\n   - Dark particles are still visible in the air.\n   - The dark ground remains in the foreground.\n\n2. **Process or change shown**\n   - The eruption continues.\n   - The cloud of volcanic gas and ash appears to spread outward more across the frame.\n\n3. **Cause-and-effect evidence**\n   - The continued upward red jet is followed by a wider cloud of material in the air.\n   - More airborne particles are visible around the cloud.\n\n4. **Labels or on-screen facts**\n   - Text on screen says: **“Volcanic gas emissions and tephra can be carried downwind”**\n   - The words appear across the lower half of the image.\n\n5. **Learning question this can answer**\n   - **What can move away from a volcano during an eruption?**\n\n---\n\n#### Simple child-friendly takeaway\n- Volcanoes can send out **glowing lava**, **ash**, **gas**, and **rock pieces**.\n- Eruptions can **fill a crater** and **throw material into the air**.\n- The on-screen text shows that volcanic material can be **carried downwind**.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "eruptions"
+              ],
+              "reviewConfidence": 0.9,
+              "selectionReason": "Shows lava spreading across the ground and explicitly states that the eruption filled the crater with about 240 feet of new rock, directly demonstrating how repeated lava deposits⁣"
+            }
+          ],
+          "coverageScore": 0.6982406970000001,
+          "kidSafe": true,
+          "selectionSummary": "Together, the clips form a mini-lesson: lava erupts from an opening, reaches and alters a shoreline, and accumulates as substantial new rock. Cooling is suggested by molten lava next to solid rock, though none of the clips explicitly narr65"
+        }
+      ],
+      "presentation": {
+        "schemaVersion": "presentation-v1",
+        "promptVersion": "lesson-presentation-v1.0.0",
+        "guide": {
+          "name": "Maya",
+          "role": "curious explorer"
+        },
+        "plan": {
+          "version": "lesson-plan-v1",
+          "title": "Volcanoes: Fire from Inside the Earth",
+          "bigQuestion": "How can melted rock erupt in different ways and even create new land?",
+          "audience": "8-10",
+          "targetDurationSeconds": 218,
+          "learningObjectives": [
+            {
+              "conceptId": "concept-1",
+              "objective": "Distinguish magma below Earth’s surface from lava that has reached the surface.",
+              "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface."
+            },
+            {
+              "conceptId": "concept-2",
+              "objective": "Compare how runny magma often forms lava flows while thick, sticky magma can produce explosive eruptions.",
+              "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows. Thick, sticky magma can produce sudden explosions, fast clouds of hot ash and pieces of rock."
+            },
+            {
+              "conceptId": "concept-3",
+              "objective": "Explain how erupted lava can cool and build new land.",
+              "sourceQuote": "Volcanoes also create new land."
+            }
+          ],
+          "teachingArc": [
+            "Meet magma below the surface and lava above it.",
+            "Compare runny magma with thick, sticky magma.",
+            "See how cooled lava builds new land.",
+            "Pause, predict, and recap the three ideas."
+          ]
+        },
+        "script": {
+          "version": "video-script-v1",
+          "hook": "What changes when melted rock crosses Earth’s surface—and what can happen next?",
+          "fullNarration": "Hello, explorers! I’m Maya. Deep below Earth’s surface, melted rock can move towards an opening. But what happens when it reaches the surface? Why do some volcanoes pour lava while others explode—and how can they create land? Below Earth’s surface, melted rock is called magma. It can move through cracks and pathways towards a volcanic vent. Magma keeps its name underground. The moment it reaches the surface, it is called lava. Now look at real volcanic footage. A glowing red-orange opening appears among dark rock, and bright material bursts and splashes out. Because this melted rock has reached the surface, we call it lava. Runny magma lets gas escape more easily, so it often produces glowing lava flows. Thick, sticky magma traps gas more easily. Then a sudden explosion can send out fast clouds of hot ash and pieces of rock. In this nighttime footage from Kīlauea, bright orange-yellow lava spreads across the ground while a tall glowing plume rises. These visible lava flows help us recognise one way erupted material can move over the surface. Volcanoes can also create new land. Lava erupts and spreads across the ground or moves towards water. As it cools, it becomes dark, solid new rock. More cooled lava adds further rock, building up the land in layers. Here, moving water lies beside a dark rocky surface. Lava moving down a rocky edge towards water can cool into solid rock. When more erupted lava cools and builds up, volcanoes create new land. Imagine magma that is thick and sticky, with gas unable to escape easily. What kind of eruption do you predict? Pause and explain your idea using the words gas, magma, and eruption. Brilliant exploring! Remember three ideas: melted rock below the surface is magma; at the surface, it is lava. Runny magma often forms lava flows, while thick, sticky magma can produce explosions. Finally, erupted lava can cool into solid rock and build new land. Keep asking bold questions!",
+          "narrationWordCount": 327,
+          "closingLine": "Keep exploring, because even fiery volcanoes can help us understand our changing Earth!"
+        },
+        "storyboard": {
+          "version": "storyboard-v1",
+          "fps": 30,
+          "width": 1280,
+          "height": 720,
+          "totalDurationSeconds": 218,
+          "scenes": [
+            {
+              "id": "scene-1",
+              "type": "guide",
+              "title": "Maya’s Fiery Question",
+              "narration": "Hello, explorers! I’m Maya. Deep below Earth’s surface, melted rock can move towards an opening. But what happens when it reaches the surface? Why do some volcanoes pour lava while others explode—and how can they create land?",
+              "subtitle": "What happens when melted rock erupts?",
+              "durationSeconds": 22,
+              "keywords": [
+                "volcanoes",
+                "melted rock",
+                "Earth"
+              ],
+              "transition": "zoom",
+              "visual": {
+                "diagramTemplate": "concept_map",
+                "labels": [
+                  "Maya the Explorer",
+                  "Earth’s surface",
+                  "Volcanic opening"
+                ],
+                "motion": "pan_zoom"
+              },
+              "evidenceRefs": []
+            },
+            {
+              "id": "scene-2",
+              "type": "diagram",
+              "conceptId": "concept-1",
+              "title": "Magma Becomes Lava",
+              "narration": "Below Earth’s surface, melted rock is called magma. It can move through cracks and pathways towards a volcanic vent. Magma keeps its name underground. The moment it reaches the surface, it is called lava.",
+              "subtitle": "Below: magma. At the surface: lava.",
+              "durationSeconds": 24,
+              "keywords": [
+                "magma",
+                "lava",
+                "vent",
+                "surface"
+              ],
+              "transition": "slide",
+              "visual": {
+                "diagramTemplate": "layers",
+                "labels": [
+                  "Earth’s surface",
+                  "Magma below",
+                  "Volcanic vent",
+                  "Lava above"
+                ],
+                "motion": "flow"
+              },
+              "evidenceRefs": [
+                "chapter:concept-1"
+              ]
+            },
+            {
+              "id": "scene-3",
+              "type": "real_video",
+              "conceptId": "concept-1",
+              "title": "Lava at the Surface",
+              "narration": "Now look at real volcanic footage. A glowing red-orange opening appears among dark rock, and bright material bursts and splashes out. Because this melted rock has reached the surface, we call it lava.",
+              "subtitle": "Glowing lava has reached the surface.",
+              "durationSeconds": 23,
+              "keywords": [
+                "lava",
+                "surface",
+                "vent"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "comparison",
+                "labels": [
+                  "Glowing lava",
+                  "Dark rock",
+                  "Surface opening"
+                ],
+                "motion": "pan_zoom",
+                "footageEpisodeId": "73c19372-4324-4a85-a77e-b830dfc982c6",
+                "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
+                "footageStartSeconds": 606.002,
+                "footageEndSeconds": 629.002
+              },
+              "evidenceRefs": [
+                "m-z-019f9ea5-a590-7302-bb47-2623dd207881:606.0-636.0",
+                "m-z-019f9eab-1c40-74b1-847f-dec1f7bef079:1.0-31.0"
+              ]
+            },
+            {
+              "id": "scene-4",
+              "type": "animation",
+              "conceptId": "concept-2",
+              "title": "Why Eruptions Differ",
+              "narration": "Runny magma lets gas escape more easily, so it often produces glowing lava flows. Thick, sticky magma traps gas more easily. Then a sudden explosion can send out fast clouds of hot ash and pieces of rock.",
+              "subtitle": "Magma thickness affects the eruption.",
+              "durationSeconds": 27,
+              "keywords": [
+                "runny magma",
+                "sticky magma",
+                "gas",
+                "eruption"
+              ],
+              "transition": "wipe",
+              "visual": {
+                "diagramTemplate": "comparison",
+                "labels": [
+                  "Runny magma",
+                  "Escaping gas",
+                  "Thick, sticky magma",
+                  "Trapped gas"
+                ],
+                "motion": "flow"
+              },
+              "evidenceRefs": [
+                "chapter:concept-2"
+              ]
+            },
+            {
+              "id": "scene-5",
+              "type": "real_video",
+              "conceptId": "concept-2",
+              "title": "A Glowing Eruption",
+              "narration": "In this nighttime footage from Kīlauea, bright orange-yellow lava spreads across the ground while a tall glowing plume rises. These visible lava flows help us recognise one way erupted material can move over the surface.",
+              "subtitle": "Lava glows and spreads across the ground.",
+              "durationSeconds": 23,
+              "keywords": [
+                "Kīlauea",
+                "lava flow",
+                "plume"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "Glowing plume",
+                  "Spreading lava",
+                  "Dark ground"
+                ],
+                "motion": "pan_zoom",
+                "footageEpisodeId": "8d618f44-8d9a-4731-90eb-9e4a6e6ddd83",
+                "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+                "footageStartSeconds": 21.03,
+                "footageEndSeconds": 44.03
+              },
+              "evidenceRefs": [
+                "m-z-019f9ea9-2467-71d2-a921-4b7716601d13:21.0-51.0",
+                "m-z-019f9ea5-a590-7302-bb47-2623dd207881:226.7-264.7"
+              ]
+            },
+            {
+              "id": "scene-6",
+              "type": "diagram",
+              "conceptId": "concept-3",
+              "title": "From Lava to New Land",
+              "narration": "Volcanoes can also create new land. Lava erupts and spreads across the ground or moves towards water. As it cools, it becomes dark, solid new rock. More cooled lava adds further rock, building up the land in layers.",
+              "subtitle": "Cooled lava becomes solid new rock.",
+              "durationSeconds": 27,
+              "keywords": [
+                "cooling",
+                "new rock",
+                "new land",
+                "layers"
+              ],
+              "transition": "slide",
+              "visual": {
+                "diagramTemplate": "cause_effect",
+                "labels": [
+                  "Erupted lava",
+                  "Cooling",
+                  "Solid new rock",
+                  "Built-up land"
+                ],
+                "motion": "reveal"
+              },
+              "evidenceRefs": [
+                "chapter:concept-3"
+              ]
+            },
+            {
+              "id": "scene-7",
+              "type": "real_video",
+              "conceptId": "concept-3",
+              "title": "Lava Meets the Coast",
+              "narration": "Here, moving water lies beside a dark rocky surface. Lava moving down a rocky edge towards water can cool into solid rock. When more erupted lava cools and builds up, volcanoes create new land.",
+              "subtitle": "Cooling lava can add solid rock.",
+              "durationSeconds": 22,
+              "keywords": [
+                "lava",
+                "water",
+                "solid rock",
+                "land"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "layers",
+                "labels": [
+                  "Moving water",
+                  "Dark rocky surface",
+                  "Lava pathway",
+                  "New rock"
+                ],
+                "motion": "pan_zoom",
+                "footageEpisodeId": "fe0ed957-a05f-4383-9b55-f27ff88ded33",
+                "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/multimediaFile-3342.mp4",
+                "footageStartSeconds": 11,
+                "footageEndSeconds": 33
+              },
+              "evidenceRefs": [
+                "m-z-019f9eaa-a6b4-7910-834d-f4addced211e:11.0-41.0",
+                "m-z-019f9eac-347f-7613-a186-b8028a0159b9:0.0-9.0",
+                "m-z-019f9ea9-2467-71d2-a921-4b7716601d13:21.0-51.0"
+              ]
+            },
+            {
+              "id": "scene-8",
+              "type": "checkpoint",
+              "conceptId": "concept-2",
+              "title": "Pause and Predict",
+              "narration": "Imagine magma that is thick and sticky, with gas unable to escape easily. What kind of eruption do you predict? Pause and explain your idea using the words gas, magma, and eruption.",
+              "subtitle": "What eruption do you predict?",
+              "durationSeconds": 20,
+              "keywords": [
+                "predict",
+                "gas",
+                "magma",
+                "eruption"
+              ],
+              "transition": "zoom",
+              "visual": {
+                "diagramTemplate": "cause_effect",
+                "labels": [
+                  "Thick magma",
+                  "Gas",
+                  "Volcanic vent"
+                ],
+                "motion": "pulse"
+              },
+              "evidenceRefs": [
+                "chapter:concept-2"
+              ],
+              "interactionPrompt": "Pause and predict what may happen when gas cannot escape easily from thick, sticky magma."
+            },
+            {
+              "id": "scene-9",
+              "type": "recap",
+              "title": "Maya’s Volcano Recap",
+              "narration": "Brilliant exploring! Remember three ideas: melted rock below the surface is magma; at the surface, it is lava. Runny magma often forms lava flows, while thick, sticky magma can produce explosions. Finally, erupted lava can cool into solid rock and build new land. Keep asking bold questions!",
+              "subtitle": "Magma, eruptions, and new land.",
+              "durationSeconds": 30,
+              "keywords": [
+                "magma",
+                "lava",
+                "eruptions",
+                "new land"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "concept_map",
+                "labels": [
+                  "Magma below",
+                  "Lava at the surface",
+                  "Different eruptions",
+                  "New land"
+                ],
+                "motion": "reveal"
+              },
+              "evidenceRefs": []
+            }
+          ]
+        }
+      },
+      "traceId": "b97258c669b90459c75bf42ff801d6ad",
+      "generationTimeMs": 81004,
+      "overallCoverage": 0.7139142858333334,
+      "sourceKind": "chapter-pack",
+      "createdAt": "2026-07-26T17:21:04.186Z"
+    }
+  },
+  {
+    "chapterId": "volcanoes",
+    "ageGroup": "8-10",
+    "language": "hi-IN",
+    "lesson": {
+      "id": "81125808-314b-4db9-8e99-a3238c4e784b",
+      "title": "ज्वालामुखी: पृथ्वी के भीतर की आग",
+      "ageGroup": "8-10",
+      "language": "hi-IN",
+      "status": "ready",
+      "concepts": [
+        {
+          "id": "concept-1",
+          "title": "मैग्मा और लावा में अंतर",
+          "learningObjective": "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।",
+          "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface.",
+          "sourcePage": 4,
+          "videoSearchQueries": [
+            "USGS explanation of magma becoming lava at Earth's surface",
+            "volcanic magma rising and erupting as lava explanation"
+          ],
+          "explanation": "क्या एक ही पिघली चट्टान के दो नाम हो सकते हैं? हाँ—उसका नाम इस बात पर बदलता है कि वह कहाँ है। पृथ्वी की सतह के नीचे मौजूद पिघली चट्टान को मैग्मा कहते हैं। चित्रों में मैग्मा अलग-अलग गहराइयों पर जमा और आगे बढ़ता दिखाया गया है। जब यही मैग्मा किसी दरार या रास्ते से पृथ्वी की सतह तक पहुँच जाता है, तब उसे लावा कहा जाता है। इसे ऐसे याद करो: जैसे घर के अंदर तुम्हारा नाम वही रहता है, पर मैदान में पहुँचते ही तुम्हें “खिलाड़ी” कहा जा सकता है—चीज वही है, जगह बदलने पर नाम बदल गया। सतह पर लावा चमकीला लाल-नारंगी दिखाई दे सकता है, जबकि उसके आसपास की ठोस चट्टान गहरी होती है। इसलिए कारण है स्थान बदलना, और प्रभाव है नाम बदलना। संक्षेप में: सतह के नीचे मैग्मा और सतह पर पहुँचा वही पिघला पत्थर लावा कहलाता है।",
+          "quiz": {
+            "question": "पृथ्वी की सतह के नीचे का मैग्मा सतह पर पहुँचने पर क्या कहलाता है?",
+            "options": [
+              "लावा",
+              "मैग्मा",
+              "ठोस चट्टान",
+              "भाप"
+            ],
+            "correctAnswer": "लावा"
+          }
+        },
+        {
+          "id": "concept-2",
+          "title": "बहता हुआ लावा",
+          "learningObjective": "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।",
+          "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows.",
+          "sourcePage": 3,
+          "videoSearchQueries": [
+            "Kilauea runny lava releasing gas and forming lava flows",
+            "real footage of glowing lava flowing from a volcanic vent"
+          ],
+          "explanation": "क्या ज्वालामुखी के भीतर गैस भी बाहर निकलने का रास्ता खोजती है? जब मैग्मा पतला और आसानी से बहने वाला होता है, तो गैस उसमें से अधिक आसानी से निकल जाती है। इसे ऐसे सोचो जैसे पतले शरबत में बुलबुले जल्दी ऊपर आ जाते हैं। गैस के निकलने से पतला मैग्मा बहकर अक्सर चमकते लावा-प्रवाह बनाता है। ज्वालामुखी के पत्थरों में बने छिद्र को वेंट कहते हैं। इसी वेंट से चमकीला लाल-नारंगी लावा ऊपर उछल सकता है, बाहर आ सकता है और पास की जमीन पर फैल सकता है। हवाई के किलाउएआ ज्वालामुखी में दो वेंटों से लावा के फव्वारे निकले और उनसे लावा-प्रवाह बने। फैलने के बाद लावा ठंडा होकर गहरी, ठोस चट्टान जैसा दिखाई देता है। याद रखो: पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।",
+          "quiz": {
+            "question": "पतला मैग्मा होने पर अक्सर क्या होता है?",
+            "options": [
+              "गैस आसानी से निकलती है और चमकते लावा-प्रवाह बनते हैं।",
+              "गैस बिल्कुल नहीं निकलती और लावा नहीं बहता।",
+              "मैग्मा तुरंत पानी बन जाता है।",
+              "वेंट पत्थर से पूरी तरह बंद हो जाता है।"
+            ],
+            "correctAnswer": "गैस आसानी से निकलती है और चमकते लावा-प्रवाह बनते हैं।"
+          }
+        },
+        {
+          "id": "concept-3",
+          "title": "ज्वालामुखी नई भूमि बनाते हैं",
+          "learningObjective": "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।",
+          "sourceQuote": "Volcanoes also create new land.",
+          "sourcePage": 3,
+          "videoSearchQueries": [
+            "hot lava reaching ocean and creating new land",
+            "real footage explaining lava cooling to form new land"
+          ],
+          "explanation": "क्या तुमने सोचा है कि एक ज्वालामुखी ज़मीन कैसे बना सकता है? ज्वालामुखी की चट्टान में एक खुला रास्ता होता है, जिसे छिद्र कहते हैं। विस्फोट के समय इसी छिद्र से चमकीला लाल-नारंगी, पिघला हुआ लावा बाहर निकलता है। वह ऊपर उछल सकता है, फिर पास की सतह पर गिरकर फैल जाता है। गर्म लावा से धुआँ या भाप भी ऊपर उठ सकती है। कुछ लावा बहते-बहते पानी तक भी पहुँचता है। जब लावा ठंडा होता है, तो वह गहरे रंग की ठोस चट्टान बन जाता है। जैसे पिघली हुई चीज़ ठंडी होकर जम जाती है, वैसे ही लावा जमकर नई चट्टानी सतह जोड़ता है। एक देखे गए विस्फोट में लावा ने ज्वालामुखी के गड्ढे को लगभग 240 फीट नई चट्टान से भर दिया। इस तरह, ज्वालामुखी केवल विस्फोट नहीं करते—वे नई भूमि भी बनाते हैं। संक्षेप में, बाहर निकला लावा फैलकर ठंडा होता है और ठोस चट्टान बनाकर नई भूमि जोड़ सकता है।",
+          "quiz": {
+            "question": "ज्वालामुखी का लावा नई भूमि कैसे बना सकता है?",
+            "options": [
+              "ठंडा होकर ठोस चट्टान बनकर",
+              "धुआँ बनकर उड़कर",
+              "पानी को ऊपर उठाकर",
+              "हवा को चमकाकर"
+            ],
+            "correctAnswer": "ठंडा होकर ठोस चट्टान बनकर"
+          }
+        }
+      ],
+      "episodes": [
+        {
+          "id": "ccb8595d-8355-471b-aa97-4ed1991ba625",
+          "conceptId": "concept-1",
+          "title": "मैग्मा और लावा में अंतर",
+          "explanation": "क्या एक ही पिघली चट्टान के दो नाम हो सकते हैं? हाँ—उसका नाम इस बात पर बदलता है कि वह कहाँ है। पृथ्वी की सतह के नीचे मौजूद पिघली चट्टान को मैग्मा कहते हैं। चित्रों में मैग्मा अलग-अलग गहराइयों पर जमा और आगे बढ़ता दिखाया गया है। जब यही मैग्मा किसी दरार या रास्ते से पृथ्वी की सतह तक पहुँच जाता है, तब उसे लावा कहा जाता है। इसे ऐसे याद करो: जैसे घर के अंदर तुम्हारा नाम वही रहता है, पर मैदान में पहुँचते ही तुम्हें “खिलाड़ी” कहा जा सकता है—चीज वही है, जगह बदलने पर नाम बदल गया। सतह पर लावा चमकीला लाल-नारंगी दिखाई दे सकता है, जबकि उसके आसपास की ठोस चट्टान गहरी होती है। इसलिए कारण है स्थान बदलना, और प्रभाव है नाम बदलना। संक्षेप में: सतह के नीचे मैग्मा और सतह पर पहुँचा वही पिघला पत्थर लावा कहलाता है।",
+          "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface.",
+          "sourcePage": 4,
+          "whyThisClip": "Together, the clips form a logical contrast: clip-2 shows magma stored below the surface, and clip-9 shows molten rock emerging at the surface as lava. Narration should explicitly state the naming change because neither clip directly verbal",
+          "streamUrl": "https://stream.videodb.io/v3/published/manifests/6274d1e7-63d7-46d6-8687-b317049f5fc9.m3u8",
+          "durationSeconds": 60,
+          "evidence": [
+            {
+              "videoId": "m-z-019f9ea5-a590-7302-bb47-2623dd207881",
+              "videoTitle": "From Millennia to Minutes: Life Cycles of Volcanoes and Eruptions",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
+              "startSeconds": 606.002,
+              "endSeconds": 636.002,
+              "relevanceScore": 0.687353194,
+              "sourceUrl": "https://www.usgs.gov/media/videos/millennia-minutes-life-cycles-volcanoes-and-eruptions",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: Volcanoes, magma, eruptions, Earth science\n\n#### 1) Exactly what is visible across the frames\n- **Frame 1:** A scientific slide titled **“Tapping of different bodies within the spatially complex Augustine system affects eruptive style.”**\n  - Left side: a **cross-section diagram** with a **depth scale in km below sea level** from about **0 to 8 km**.\n  - Labels visible in the diagram include:\n    - **“Magma staging”**\n    - **“shallow system of cracks”**\n    - **“explosive events 3 to early 10 sourced by magma staged in upper 2 km”**\n    - **“multiple pathways to shallow conduit”**\n    - **“magma mixing”**\n    - **“magma origin by event”**\n    - **“mafic recharge”**\n    - **“shallow magma storage zone”**\n    - **“dikes linking magma storage”**\n    - **“HSA”**, **“LSA”**, **“old”**, **“young”**\n    - numbered circles **1, 2, 3** and a legend:\n      - **1 event 9**\n      - **2 early event 10**\n      - **3 late event 10**\n  - Right side: three stacked eruption timelines labeled **2006**, **1986**, and **1976** with colored eruption shapes and labels such as:\n    - **“seismic unrest & inflation”**\n    - **“phreatic explosions”**\n    - **“magmatic explosions”**\n    - **“dome & PFs”**\n    - **“lava flow & block-and-ash flows”**\n    - **“>100 magmatic explosions”**\n    - **“dome I”**\n    - **“dome II”**\n    - **“35 magmatic explosions”**\n    - **“dome I (explosive onset)”**\n  - Logos/text visible: **USGS**, **Benage et al., accepted; BV**, **Chris Nye, unpublished**.\n\n- **Frame 2:** A slide titled **“A geologic time-series reveals that the Augustine system has changed gradually during the Holocene.”**\n  - Left: a **vertical stratigraphic column** with labels including:\n    - **Tephra I**\n    - **Tephra G**\n    - **S4**\n    - **S3**\n    - **S2**\n    - **S1**\n    - **Younger low-K**\n    - **Older low-K ~7.8 ka**\n    - **High-P**\n    - **Rhyolite**\n    - a **5 m** scale marker\n  - Center: a **photo of layered volcanic deposits** with labels:\n    - **Katmai 1912**\n    - **Tephra B**\n    - **Tephra M**\n    - **Tephra C**\n    - **Tephra H**\n    - **Tephra I ~1.7 ka**\n    - **Post-1912 eruptions**\n  - Right: a **scatter plot** with axes **K2O** and **SiO2**, plus a color bar labeled **age (ka)** from **0 to 7**.\n  - Bottom text includes **“Tephras I through B from [Waitt and Beget, 2009; USGS PP 1762]”** and **“Coombs, Wallace et al., unpublished”**.\n\n#### 2) The process or change being demonstrated\n- **Frame 1 shows** that different kinds of magma movement and storage are linked to different eruption styles at Augustine.\n- The diagram shows magma in a **shallow storage zone** and **magma staging** at different depths.\n- The eruption timelines show different sequences in **1976, 1986, and 2006**, including:\n  - seismic unrest,\n  - phreatic explosions,\n  - magmatic explosions,\n  - dome growth,\n  - lava flow and block-and-ash flows.\n- **Frame 2 shows** a long-term change through the Holocene:\n  - volcanic deposits are stacked in layers,\n  - older and younger tephra layers are labeled,\n  - the composition plot shows points spread across **SiO2** and **K2O** values, with color indicating age.\n- The slide title says the system **changed gradually during the Holocene**.\n\n#### 3) Cause-and-effect evidence visible on the slide\n- In **Frame 1**, arrows and labels connect:\n  - **mafic recharge** and **magma staging** to\n  - **multiple pathways to shallow conduit**, **magma mixing**, and then to\n  - **explosive events** and other eruption products.\n- The right-hand timelines show that different years have different visible eruption patterns:\n  - **2006** includes **phreatic explosions**, **magmatic explosions**, **dome & PFs**, and **lava flow & block-and-ash flows**.\n  - **1986** shows **>100 magmatic explosions** and later **dome I** and **dome II**.\n  - **1976** shows **35 magmatic explosions** and **dome I (explosive onset)** plus **dome II**.\n- In **Frame 2**, the layered photo and labeled tephra units show that deposits are arranged in a sequence from deeper/older to upper/younger layers.\n- The scatter plot shows sample points of different ages colored from **0 to 7 ka**, visually supporting that compositions vary with age.\n\n#### 4) Any labels or on-screen facts\n- **Title 1:** “Tapping of different bodies within the spatially complex Augustine system affects eruptive style”\n- **Title 2:** “A geologic time-series reveals that the Augustine system has changed gradually during the Holocene”\n- Visible factual labels include:\n  - **Depth (km) bsl**\n  - **magma staging**\n  - **shallow magma storage zone**\n  - **mafic recharge**\n  - **seismic unrest**\n  - **phreatic explosions**\n  - **magmatic explosions**\n  - **dome & PFs**\n  - **lava flow & block-and-ash flows**\n  - **age (ka)**\n  - **SiO2**\n  - **K2O**\n  - **5 m**\n  - **Katmai 1912**\n  - **Tephra I, G, B, M, C, H**\n  - **~1.7 ka**\n  - **~7.8 ka**\n- Named sources/logos:\n  - **USGS**\n  - **Benage et al., accepted; BV**\n  - **Chris Nye, unpublished**\n  - **Coombs, Wallace et al., unpublished**\n\n#### 5) Which learning question this moment can answer\nThis scene can answer:\n- **How can magma storage and movement affect the kind of volcanic eruption that happens?**\n- **How do scientists use layers of volcanic ash and chemical plots to study changes in a volcano over time?**\n- **What visible evidence shows that eruption style and volcanic deposits can differ from one eruption or time period to another?**\n\nIf you want, I can also convert this into a **kid-friendly caption**, a **teacher answer key**, or a **frame-by-frame worksheet**.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "magma",
+                "eruptions",
+                "Earth science"
+              ],
+              "reviewConfidence": 0.68,
+              "selectionReason": "The cross-section diagram includes a depth scale below sea level and labels underground magma staging and cracks, providing visible evidence that molten rock beneath Earth’s سطح is"
+            },
+            {
+              "videoId": "m-z-019f9eaa-a6b4-7910-834d-f4addced211e",
+              "videoTitle": "Lava Fountains at Kīlauea’s Western Fissure",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/multimediaFile-3342.mp4",
+              "startSeconds": 11,
+              "endSeconds": 41,
+              "relevanceScore": 0.653013289,
+              "sourceUrl": "https://www.usgs.gov/media/videos/lava-fountains-western-fissure-halemaumau-kilauea-oct-5-2021",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "**Educational scene record: volcanoes, fissures, and lava**\n\n1. **What is visible across the frames**\n   - The first two frames show a close-up view of a rocky volcanic surface.\n   - A bright red-orange molten area is visible in the center-left of the scene.\n   - Dark, solid-looking rock surrounds the glowing area.\n   - A narrow opening or crack is visible where the red-orange material is coming out.\n   - Pale gray-white steam or gas is rising from parts of the rocky surface.\n   - On the right side, there is a smoother, darker, shiny-looking flow path beside the glowing area.\n   - The third frame is a black screen with a green **USGS** logo and the text **“science for a changing world.”**\n\n2. **Process or change being demonstrated**\n   - The frames show molten rock visible at the surface through a crack or opening in volcanic rock.\n   - The glowing red-orange material appears in the opening, and in the next frame it is still visible but the shape at the opening looks slightly different.\n   - The scene demonstrates lava at the surface and gas/steam rising from hot volcanic material.\n\n3. **Cause-and-effect evidence**\n   - A visible crack/opening in the rock is the place where the bright molten material appears.\n   - The red-orange color shows the material is much hotter than the surrounding dark rock.\n   - Steam or gas is visible above the hot area, showing heat affecting nearby material.\n   - The surrounding rock is dark and solid, while the center is glowing and moving-looking, showing a difference between cooled rock and molten lava.\n\n4. **Labels or on-screen facts**\n   - The only visible text is the **USGS** logo.\n   - The text reads: **“science for a changing world.”**\n   - No other labels, arrows, or captions are shown.\n\n5. **Learning question this moment can answer**\n   - **Where can lava be seen at a volcano?**\n   - It can also help answer: **What does hot molten rock look like when it reaches a crack or opening at the surface?**",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "fissures",
+                "lava"
+              ],
+              "reviewConfidence": 0.78,
+              "selectionReason": "Glowing molten material is visibly emerging through a crack onto the rocky surface, clearly demonstrating the surface stage that can be identified as lava."
+            }
+          ],
+          "coverageScore": 0.7000916207500001,
+          "kidSafe": true,
+          "selectionSummary": "Together, the clips form a logical contrast: clip-2 shows magma stored below the surface, and clip-9 shows molten rock emerging at the surface as lava. Narration should explicitly state the naming change because neither clip directly verbal"
+        },
+        {
+          "id": "dab83a99-c8fc-465a-ad1c-9a4b721549f0",
+          "conceptId": "concept-2",
+          "title": "बहता हुआ लावा",
+          "explanation": "क्या ज्वालामुखी के भीतर गैस भी बाहर निकलने का रास्ता खोजती है? जब मैग्मा पतला और आसानी से बहने वाला होता है, तो गैस उसमें से अधिक आसानी से निकल जाती है। इसे ऐसे सोचो जैसे पतले शरबत में बुलबुले जल्दी ऊपर आ जाते हैं। गैस के निकलने से पतला मैग्मा बहकर अक्सर चमकते लावा-प्रवाह बनाता है। ज्वालामुखी के पत्थरों में बने छिद्र को वेंट कहते हैं। इसी वेंट से चमकीला लाल-नारंगी लावा ऊपर उछल सकता है, बाहर आ सकता है और पास की जमीन पर फैल सकता है। हवाई के किलाउएआ ज्वालामुखी में दो वेंटों से लावा के फव्वारे निकले और उनसे लावा-प्रवाह बने। फैलने के बाद लावा ठंडा होकर गहरी, ठोस चट्टान जैसा दिखाई देता है। याद रखो: पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।",
+          "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows.",
+          "sourcePage": 3,
+          "whyThisClip": "ये दोनों क्षण मिलकर वेंट से गैस निकलने तथा चमकते लावा-प्रवाह बनने को दिखाते हैं। हालांकि कोई उम्मीदवार सीधे यह नहीं समझाता कि पतले मैग्मा की कम श्यानता ही गैस को आसानी से निकलने देती है; उस कारणात्मक संबंध को अध्याय-आधारित कथन में स्पष्ट बत",
+          "streamUrl": "https://stream.videodb.io/v3/published/manifests/04f5e9e9-0589-4c75-a27f-4bde6662bb71.m3u8",
+          "durationSeconds": 68,
+          "evidence": [
+            {
+              "videoId": "m-z-019f9ea9-2467-71d2-a921-4b7716601d13",
+              "videoTitle": "30 Episodes of Lava Fountaining at Kīlauea",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+              "startSeconds": 0,
+              "endSeconds": 38,
+              "relevanceScore": 0.706337,
+              "sourceUrl": "https://www.usgs.gov/media/videos/30-episodes-lava-fountaining-kilauea",
+              "licence": "Public Domain",
+              "matchType": "spoken_word",
+              "text": " Since December 23, 2024, 30 episodes of Lava fountaining have happened in the summit caldera of Kilauea Volcano in Hawaii Volcanoes National Park. Most episodes have lasted less than a day and have been separated by pauses generally lasting around a week. Lava fountains which have erupted from two vents in Halemaumau crater have reached up to 1,250ft high, feeding lava flows that are contained to the caldera floor. These lava flows have paved 840 acres in area and filled crater with about 240ft of new rock.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "eruptions"
+              ],
+              "reviewConfidence": 0.68,
+              "selectionReason": "स्पष्ट रूप से बताता है कि किलाउएआ के वेंट से निकले लावा-फव्वारे आगे बहते हुए लावा-प्रवाहों को पोषित करते हैं। यह वेंट से प्रवाह बनने की प्रक्रिया के लिए उपयोगी मौखिक आधार है।"
+            },
+            {
+              "videoId": "m-z-019f9eab-1c40-74b1-847f-dec1f7bef079",
+              "videoTitle": "Kīlauea Summit Lava Fountaining — February 2025",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/multimediaFile-4266.mp4",
+              "startSeconds": 1,
+              "endSeconds": 31,
+              "relevanceScore": 0.739339888,
+              "sourceUrl": "https://www.usgs.gov/media/videos/february-4-2025-video-fountaining-kilauea-summit",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: volcanoes, lava, vents\n\n**1) What is visible across the frames**\n- A dark, rocky volcanic surface fills the scene.\n- A glowing red-orange opening is visible near the lower right/center area in the first two frames.\n- Bright red lava is seen bursting upward from that opening.\n- Gray-white smoke or steam rises above the opening.\n- In the surrounding area, there are darker solid rock surfaces and lighter, smooth-looking lava crust patterns.\n- In the last frame, the camera is closer to the opening, showing the glowing lava and dark rock edges in more detail.\n- No people, animals, signs, or text labels are visible.\n\n**2) Process or change being demonstrated**\n- Lava is being pushed out through a vent in the volcanic rock.\n- The lava is moving upward and splashing outward.\n- The scene changes from a wider view of the vent and lava fountain to a closer view of the same erupting area.\n\n**3) Cause-and-effect evidence**\n- **Cause visible:** an opening in the rock acts as the vent.\n- **Effect visible:** bright molten lava comes out of that opening.\n- **Cause visible:** hot material escapes from the vent.\n- **Effect visible:** smoke/steam rises above the opening.\n- **Cause visible:** lava lands and spreads near the opening.\n- **Effect visible:** the nearby surface looks dark and solid where lava has cooled.\n\n**4) Labels or on-screen facts**\n- There are no on-screen labels, captions, diagrams, or written facts visible in these frames.\n\n**5) Learning question this moment can answer**\n- **Where does lava come out of a volcano?**\n- It can also help answer: **What does a volcanic vent look like during an eruption?**",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "vents"
+              ],
+              "reviewConfidence": 0.74,
+              "selectionReason": "वेंट से चमकता लाल-नारंगी लावा निकलता और ऊपर उठता दिखता है, साथ में गैस या भाप भी उठती दिखाई देती है। यह गैस के निकलने और चमकते लावा के बनने का प्रत्यक्ष दृश्य प्रमाण देता है।"
+            }
+          ],
+          "coverageScore": 0.7164192220000001,
+          "kidSafe": true,
+          "selectionSummary": "ये दोनों क्षण मिलकर वेंट से गैस निकलने तथा चमकते लावा-प्रवाह बनने को दिखाते हैं। हालांकि कोई उम्मीदवार सीधे यह नहीं समझाता कि पतले मैग्मा की कम श्यानता ही गैस को आसानी से निकलने देती है; उस कारणात्मक संबंध को अध्याय-आधारित कथन में स्पष्ट बत"
+        },
+        {
+          "id": "9d7bf064-91c6-4e83-8d08-1c5b94462408",
+          "conceptId": "concept-3",
+          "title": "ज्वालामुखी नई भूमि बनाते हैं",
+          "explanation": "क्या तुमने सोचा है कि एक ज्वालामुखी ज़मीन कैसे बना सकता है? ज्वालामुखी की चट्टान में एक खुला रास्ता होता है, जिसे छिद्र कहते हैं। विस्फोट के समय इसी छिद्र से चमकीला लाल-नारंगी, पिघला हुआ लावा बाहर निकलता है। वह ऊपर उछल सकता है, फिर पास की सतह पर गिरकर फैल जाता है। गर्म लावा से धुआँ या भाप भी ऊपर उठ सकती है। कुछ लावा बहते-बहते पानी तक भी पहुँचता है। जब लावा ठंडा होता है, तो वह गहरे रंग की ठोस चट्टान बन जाता है। जैसे पिघली हुई चीज़ ठंडी होकर जम जाती है, वैसे ही लावा जमकर नई चट्टानी सतह जोड़ता है। एक देखे गए विस्फोट में लावा ने ज्वालामुखी के गड्ढे को लगभग 240 फीट नई चट्टान से भर दिया। इस तरह, ज्वालामुखी केवल विस्फोट नहीं करते—वे नई भूमि भी बनाते हैं। संक्षेप में, बाहर निकला लावा फैलकर ठंडा होता है और ठोस चट्टान बनाकर नई भूमि जोड़ सकता है।",
+          "sourceQuote": "Volcanoes also create new land.",
+          "sourcePage": 3,
+          "whyThisClip": "ये दृश्य मिलकर एक तार्किक क्रम बनाते हैं: तरल लावा के ऊपर ठोस पपड़ी बनना, लावा का समुद्र तक पहुँचना और ठंडा होना, तथा जमा हुई नई चट्टान से भू-भाग का निर्माण।",
+          "streamUrl": "https://stream.videodb.io/v3/published/manifests/1d919a25-9514-4c2a-a433-0675e2f2217a.m3u8",
+          "durationSeconds": 69,
+          "evidence": [
+            {
+              "videoId": "m-z-019f9eab-1c40-74b1-847f-dec1f7bef079",
+              "videoTitle": "Kīlauea Summit Lava Fountaining — February 2025",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/multimediaFile-4266.mp4",
+              "startSeconds": 1,
+              "endSeconds": 31,
+              "relevanceScore": 0.622935355,
+              "sourceUrl": "https://www.usgs.gov/media/videos/february-4-2025-video-fountaining-kilauea-summit",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: volcanoes, lava, vents\n\n**1) What is visible across the frames**\n- A dark, rocky volcanic surface fills the scene.\n- A glowing red-orange opening is visible near the lower right/center area in the first two frames.\n- Bright red lava is seen bursting upward from that opening.\n- Gray-white smoke or steam rises above the opening.\n- In the surrounding area, there are darker solid rock surfaces and lighter, smooth-looking lava crust patterns.\n- In the last frame, the camera is closer to the opening, showing the glowing lava and dark rock edges in more detail.\n- No people, animals, signs, or text labels are visible.\n\n**2) Process or change being demonstrated**\n- Lava is being pushed out through a vent in the volcanic rock.\n- The lava is moving upward and splashing outward.\n- The scene changes from a wider view of the vent and lava fountain to a closer view of the same erupting area.\n\n**3) Cause-and-effect evidence**\n- **Cause visible:** an opening in the rock acts as the vent.\n- **Effect visible:** bright molten lava comes out of that opening.\n- **Cause visible:** hot material escapes from the vent.\n- **Effect visible:** smoke/steam rises above the opening.\n- **Cause visible:** lava lands and spreads near the opening.\n- **Effect visible:** the nearby surface looks dark and solid where lava has cooled.\n\n**4) Labels or on-screen facts**\n- There are no on-screen labels, captions, diagrams, or written facts visible in these frames.\n\n**5) Learning question this moment can answer**\n- **Where does lava come out of a volcano?**\n- It can also help answer: **What does a volcanic vent look like during an eruption?**",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "vents"
+              ],
+              "reviewConfidence": 0.68,
+              "selectionReason": "चमकते तरल लावा के आसपास गहरी, ठोस पपड़ी दिखाई देती है। इससे समझाया जा सकता है कि लावा ठंडा होकर ठोस चट्टान में बदलता है।"
+            },
+            {
+              "videoId": "m-z-019f9eac-347f-7613-a186-b8028a0159b9",
+              "videoTitle": "Lava Dropping into the Sea",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/20020809-Highcastledetail_DAS.mp4",
+              "startSeconds": 0,
+              "endSeconds": 9,
+              "relevanceScore": 0.641828597,
+              "sourceUrl": "https://www.usgs.gov/media/videos/lava-dropping-sea",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "**Educational scene record: volcanoes, lava, landforms**\n\n1. **Exactly what is visible across the frames**\n   - All three frames show a **dark rocky surface** on the right side and **moving water** on the left and lower parts of the image.\n   - In the upper-right area, there are **bright orange-red glowing streaks and drops** running downward.\n   - The glowing material appears in several narrow lines, with small bright points near the bottom of the streaks.\n   - The water below looks **gray-blue and foamy**, with visible motion from frame to frame.\n\n2. **Process or change being demonstrated**\n   - The scene shows **glowing molten material moving downward from a rocky area and reaching the water below**.\n   - Across the frames, the bright streaks remain in roughly the same place while the water continues to move underneath them.\n   - The visible change is the **ongoing flow or drip of hot liquid rock-like material into the water**.\n\n3. **Cause-and-effect evidence**\n   - **Cause visible:** bright orange-red material is descending from the dark rock edge.\n   - **Effect visible:** the material is seen above the moving water, with bright spots appearing lower in the frame as it falls.\n   - The frames show the **same glowing material continuing downward** while the water below remains active and foamy.\n\n4. **Labels or on-screen facts**\n   - **No labels, captions, or printed facts are visible** in these frames.\n\n5. **Learning question this moment can answer**\n   - **“What does lava look like when it flows near or into water?”**\n   - It can also help answer: **“What can be seen at the edge of a volcanic landform when molten material moves downward?”**\n\n",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "landforms"
+              ],
+              "reviewConfidence": 0.86,
+              "selectionReason": "गरम, चमकता लावा सीधे समुद्र के पानी तक पहुँचता दिखाई देता है। यह पानी के संपर्क में लावा के ठंडा और ठोस होने की प्रक्रिया समझाने के लिए स्पष्ट दृश्य प्रमाण है।"
+            },
+            {
+              "videoId": "m-z-019f9ea9-2467-71d2-a921-4b7716601d13",
+              "videoTitle": "30 Episodes of Lava Fountaining at Kīlauea",
+              "mediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+              "startSeconds": 21.03,
+              "endSeconds": 51.03,
+              "relevanceScore": 0.626213133,
+              "sourceUrl": "https://www.usgs.gov/media/videos/30-episodes-lava-fountaining-kilauea",
+              "licence": "Public Domain",
+              "matchType": "scene",
+              "text": "### Educational scene record: volcanoes, lava, eruptions\n\n#### Frame 1\n1. **What is visible**\n   - A dark nighttime scene.\n   - Bright orange-yellow glowing lava spreads across the ground.\n   - A tall bright yellow-orange vertical plume rises on the right side.\n   - The top text says: **“and filled the crater with about 240 feet of new rock.”**\n   - A **USGS** logo appears at the lower left.\n   - A timestamp appears at the top left: **2025-01-28 05:24:05**.\n\n2. **Process or change shown**\n   - Molten material is visible on the ground and near a crater-like opening.\n   - The on-screen text states that the crater was filled with **about 240 feet of new rock**.\n\n3. **Cause-and-effect evidence**\n   - The visible glowing material is associated with the crater area.\n   - The text directly links the event to the crater being filled with new rock.\n\n4. **Labels or on-screen facts**\n   - “and filled the crater with about **240 feet** of new rock.”\n   - USGS logo.\n   - Timestamp: 2025-01-28 05:24:05.\n\n5. **Learning question this can answer**\n   - **What can an eruption leave behind in a crater?**\n\n---\n\n#### Frame 2\n1. **What is visible**\n   - Daylight scene of a volcanic eruption.\n   - A dark, flat ground surface in the foreground.\n   - A red, vertical jet of material rising near the left-center.\n   - A large gray-brown cloud of ash or dust filling the center and right side of the frame.\n   - Small dark particles are scattered through the air.\n\n2. **Process or change shown**\n   - Material is being thrown upward from the volcanic opening.\n   - A cloud of ash and particles is expanding above the ground.\n\n3. **Cause-and-effect evidence**\n   - The red jet and the gray-brown cloud appear at the same eruption site.\n   - The airborne particles show material being pushed into the air.\n\n4. **Labels or on-screen facts**\n   - No text labels are visible in this frame.\n\n5. **Learning question this can answer**\n   - **What does a volcanic eruption look like while it is happening?**\n\n---\n\n#### Frame 3\n1. **What is visible**\n   - The same eruption scene continues.\n   - The red vertical jet remains visible on the left side.\n   - The gray-brown cloud is larger and more spread out across the center and right.\n   - Dark particles are still visible in the air.\n   - The dark ground remains in the foreground.\n\n2. **Process or change shown**\n   - The eruption continues.\n   - The cloud of volcanic gas and ash appears to spread outward more across the frame.\n\n3. **Cause-and-effect evidence**\n   - The continued upward red jet is followed by a wider cloud of material in the air.\n   - More airborne particles are visible around the cloud.\n\n4. **Labels or on-screen facts**\n   - Text on screen says: **“Volcanic gas emissions and tephra can be carried downwind”**\n   - The words appear across the lower half of the image.\n\n5. **Learning question this can answer**\n   - **What can move away from a volcano during an eruption?**\n\n---\n\n#### Simple child-friendly takeaway\n- Volcanoes can send out **glowing lava**, **ash**, **gas**, and **rock pieces**.\n- Eruptions can **fill a crater** and **throw material into the air**.\n- The on-screen text shows that volcanic material can be **carried downwind**.",
+              "kidSafe": true,
+              "sourceAuthority": "USGS",
+              "topics": [
+                "volcanoes",
+                "lava",
+                "eruptions"
+              ],
+              "reviewConfidence": 0.79,
+              "selectionReason": "दृश्य में लावा के साथ स्पष्ट पाठ है कि क्रेटर लगभग 240 फीट नई चट्टान से भर गया। यह ठोस ज्वालामुखीय पदार्थ के जमा होकर नया भू-भाग बनाने के परिणाम को सीधे समर्थन देता है।"
+            }
+          ],
+          "coverageScore": 0.7034961808333334,
+          "kidSafe": true,
+          "selectionSummary": "ये दृश्य मिलकर एक तार्किक क्रम बनाते हैं: तरल लावा के ऊपर ठोस पपड़ी बनना, लावा का समुद्र तक पहुँचना और ठंडा होना, तथा जमा हुई नई चट्टान से भू-भाग का निर्माण।"
+        }
+      ],
+      "presentation": {
+        "schemaVersion": "presentation-v1",
+        "promptVersion": "deterministic-fallback-v1",
+        "guide": {
+          "name": "Maya",
+          "role": "curious explorer"
+        },
+        "plan": {
+          "version": "lesson-plan-v1",
+          "title": "ज्वालामुखी: पृथ्वी के भीतर की आग",
+          "bigQuestion": "How do the three big ideas in ज्वालामुखी: पृथ्वी के भीतर की आग connect?",
+          "audience": "8-10",
+          "targetDurationSeconds": 198,
+          "learningObjectives": [
+            {
+              "conceptId": "concept-1",
+              "objective": "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।",
+              "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface."
+            },
+            {
+              "conceptId": "concept-2",
+              "objective": "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।",
+              "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows."
+            },
+            {
+              "conceptId": "concept-3",
+              "objective": "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।",
+              "sourceQuote": "Volcanoes also create new land."
+            }
+          ],
+          "teachingArc": [
+            "Spark curiosity",
+            "Build a visual model",
+            "Connect the model to real evidence",
+            "Pause and predict",
+            "Recap and retrieve"
+          ]
+        },
+        "script": {
+          "version": "video-script-v1",
+          "hook": "Hello, explorer! I am Maya. Today we will investigate ज्वालामुखी: पृथ्वी के भीतर की आग. Keep your eyes open for three clues, because each one will help us answer a big question about how this idea works.",
+          "fullNarration": "Hello, explorer! I am Maya. Today we will investigate ज्वालामुखी: पृथ्वी के भीतर की आग. Keep your eyes open for three clues, because each one will help us answer a big question about how this idea works. क्या एक ही पिघली चट्टान के दो नाम हो सकते हैं? हाँ—उसका नाम इस बात पर बदलता है कि वह कहाँ है। पृथ्वी की सतह के नीचे मौजूद पिघली चट्टान को मैग्मा कहते हैं। चित्रों में मैग्मा अलग-अलग गहराइयों पर जमा और आगे बढ़ता दिखाया गया है। जब यही मैग्मा किसी दरार या रास्ते से पृथ्वी की सतह तक पहुँच जाता है, तब उसे लावा कहा जाता है। इसे ऐसे याद करो: जैसे घर के अंदर तुम्हारा नाम वही रहता है, पर मैदान में पहुँचते ही तुम्हें “खिलाड़ी” कहा जा सकता है—चीज वही है, क्या ज्वालामुखी के भीतर गैस भी बाहर निकलने का रास्ता खोजती है? जब मैग्मा पतला और आसानी से बहने वाला होता है, तो गैस उसमें से अधिक आसानी से निकल जाती है। इसे ऐसे सोचो जैसे पतले शरबत में बुलबुले जल्दी ऊपर आ जाते हैं। गैस के निकलने से पतला मैग्मा बहकर अक्सर चमकते लावा-प्रवाह बनाता है। ज्वालामुखी के पत्थरों में बने छिद्र को वेंट कहते हैं। इसी वेंट से चमकीला लाल-नारंगी लावा ऊपर उछल सकता है, बाहर आ सकता है और पास की जमीन पर फैल सकता है। हवाई के किलाउएआ ज्वालामुखी में क्या तुमने सोचा है कि एक ज्वालामुखी ज़मीन कैसे बना सकता है? ज्वालामुखी की चट्टान में एक खुला रास्ता होता है, जिसे छिद्र कहते हैं। विस्फोट के समय इसी छिद्र से चमकीला लाल-नारंगी, पिघला हुआ लावा बाहर निकलता है। वह ऊपर उछल सकता है, फिर पास की सतह पर गिरकर फैल जाता है। गर्म लावा से धुआँ या भाप भी ऊपर उठ सकती है। कुछ लावा बहते-बहते पानी तक भी पहुँचता है। जब लावा ठंडा होता है, तो वह गहरे रंग की ठोस चट्टान बन जाता है। जैसे पिघली हुई चीज़ ठंडी होकर जम Pause for a moment and make a prediction. Which of the three ideas would you use first to explain the lesson to a friend, and what evidence would you show them? Excellent exploring! We connected मैग्मा और लावा में अंतर, बहता हुआ लावा, ज्वालामुखी नई भूमि बनाते हैं. Replay any scene that still feels mysterious, then try the quiz to see which idea is ready and which one deserves another adventure.",
+          "narrationWordCount": 390,
+          "closingLine": "Excellent exploring! We connected मैग्मा और लावा में अंतर, बहता हुआ लावा, ज्वालामुखी नई भूमि बनाते हैं. Replay any scene that still feels mysterious, then try the quiz to see which idea is ready and which one deserves another adventure."
+        },
+        "storyboard": {
+          "version": "storyboard-v1",
+          "fps": 30,
+          "width": 1280,
+          "height": 720,
+          "totalDurationSeconds": 198,
+          "scenes": [
+            {
+              "id": "scene-1",
+              "type": "guide",
+              "title": "ज्वालामुखी: पृथ्वी के भीतर की आग",
+              "narration": "Hello, explorer! I am Maya. Today we will investigate ज्वालामुखी: पृथ्वी के भीतर की आग. Keep your eyes open for three clues, because each one will help us answer a big question about how this idea works.",
+              "subtitle": "Maya’s mission: investigate ज्वालामुखी: पृथ्वी के भीतर की आग",
+              "durationSeconds": 20,
+              "keywords": [
+                "observe",
+                "wonder",
+                "discover"
+              ],
+              "transition": "zoom",
+              "visual": {
+                "diagramTemplate": "concept_map",
+                "labels": [
+                  "मैग्मा और लावा में अंतर",
+                  "बहता हुआ लावा",
+                  "ज्वालामुखी नई भूमि बनाते हैं"
+                ],
+                "motion": "reveal"
+              },
+              "evidenceRefs": []
+            },
+            {
+              "id": "scene-2",
+              "type": "diagram",
+              "conceptId": "concept-1",
+              "title": "मैग्मा और लावा में अंतर",
+              "narration": "क्या एक ही पिघली चट्टान के दो नाम हो सकते हैं? हाँ—उसका नाम इस बात पर बदलता है कि वह कहाँ है। पृथ्वी की सतह के नीचे मौजूद पिघली चट्टान को मैग्मा कहते हैं। चित्रों में मैग्मा अलग-अलग गहराइयों पर जमा और आगे बढ़ता दिखाया गया है। जब यही मैग्मा किसी दरार",
+              "subtitle": "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।",
+              "durationSeconds": 24,
+              "keywords": [
+                "मैग्मा और लावा में अंतर",
+                "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।"
+              ],
+              "transition": "slide",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "मैग्मा और लावा में अंतर",
+                  "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।"
+                ],
+                "motion": "flow"
+              },
+              "evidenceRefs": [
+                "chapter:concept-1"
+              ]
+            },
+            {
+              "id": "scene-3",
+              "type": "real_video",
+              "conceptId": "concept-1",
+              "title": "See it: मैग्मा और लावा में अंतर",
+              "narration": "या रास्ते से पृथ्वी की सतह तक पहुँच जाता है, तब उसे लावा कहा जाता है। इसे ऐसे याद करो: जैसे घर के अंदर तुम्हारा नाम वही रहता है, पर मैदान में पहुँचते ही तुम्हें “खिलाड़ी” कहा जा सकता है—चीज वही है,",
+              "subtitle": "Together, the clips form a logical contrast: clip-2 shows magma stored below the surface, and clip-9 shows molten rock emerging at the surface as lava. Narration should explicitly state the naming change because neither clip directly verbal",
+              "durationSeconds": 22,
+              "keywords": [
+                "मैग्मा और लावा में अंतर",
+                "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "मैग्मा और लावा में अंतर",
+                  "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।"
+                ],
+                "motion": "pan_zoom",
+                "footageEpisodeId": "ccb8595d-8355-471b-aa97-4ed1991ba625",
+                "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
+                "footageStartSeconds": 606.002,
+                "footageEndSeconds": 628.002
+              },
+              "evidenceRefs": [
+                "m-z-019f9ea5-a590-7302-bb47-2623dd207881:606.0-636.0"
+              ]
+            },
+            {
+              "id": "scene-4",
+              "type": "animation",
+              "conceptId": "concept-2",
+              "title": "बहता हुआ लावा",
+              "narration": "क्या ज्वालामुखी के भीतर गैस भी बाहर निकलने का रास्ता खोजती है? जब मैग्मा पतला और आसानी से बहने वाला होता है, तो गैस उसमें से अधिक आसानी से निकल जाती है। इसे ऐसे सोचो जैसे पतले शरबत में बुलबुले जल्दी ऊपर आ जाते हैं। गैस के निकलने से पतला मैग्मा बहकर",
+              "subtitle": "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।",
+              "durationSeconds": 24,
+              "keywords": [
+                "बहता हुआ लावा",
+                "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।"
+              ],
+              "transition": "wipe",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "बहता हुआ लावा",
+                  "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।"
+                ],
+                "motion": "pulse"
+              },
+              "evidenceRefs": [
+                "chapter:concept-2"
+              ]
+            },
+            {
+              "id": "scene-5",
+              "type": "real_video",
+              "conceptId": "concept-2",
+              "title": "See it: बहता हुआ लावा",
+              "narration": "अक्सर चमकते लावा-प्रवाह बनाता है। ज्वालामुखी के पत्थरों में बने छिद्र को वेंट कहते हैं। इसी वेंट से चमकीला लाल-नारंगी लावा ऊपर उछल सकता है, बाहर आ सकता है और पास की जमीन पर फैल सकता है। हवाई के किलाउएआ ज्वालामुखी में",
+              "subtitle": "ये दोनों क्षण मिलकर वेंट से गैस निकलने तथा चमकते लावा-प्रवाह बनने को दिखाते हैं। हालांकि कोई उम्मीदवार सीधे यह नहीं समझाता कि पतले मैग्मा की कम श्यानता ही गैस को आसानी से निकलने देती है; उस कारणात्मक संबंध को अध्याय-आधारित कथन में स्पष्ट बत",
+              "durationSeconds": 22,
+              "keywords": [
+                "बहता हुआ लावा",
+                "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "बहता हुआ लावा",
+                  "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।"
+                ],
+                "motion": "pan_zoom",
+                "footageEpisodeId": "dab83a99-c8fc-465a-ad1c-9a4b721549f0",
+                "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+                "footageStartSeconds": 0,
+                "footageEndSeconds": 22
+              },
+              "evidenceRefs": [
+                "m-z-019f9ea9-2467-71d2-a921-4b7716601d13:0.0-38.0"
+              ]
+            },
+            {
+              "id": "scene-6",
+              "type": "diagram",
+              "conceptId": "concept-3",
+              "title": "ज्वालामुखी नई भूमि बनाते हैं",
+              "narration": "क्या तुमने सोचा है कि एक ज्वालामुखी ज़मीन कैसे बना सकता है? ज्वालामुखी की चट्टान में एक खुला रास्ता होता है, जिसे छिद्र कहते हैं। विस्फोट के समय इसी छिद्र से चमकीला लाल-नारंगी, पिघला हुआ लावा बाहर निकलता है। वह ऊपर उछल सकता है, फिर पास की सतह पर गिरकर फैल जाता",
+              "subtitle": "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।",
+              "durationSeconds": 24,
+              "keywords": [
+                "ज्वालामुखी नई भूमि बनाते हैं",
+                "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।"
+              ],
+              "transition": "slide",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "ज्वालामुखी नई भूमि बनाते हैं",
+                  "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।"
+                ],
+                "motion": "flow"
+              },
+              "evidenceRefs": [
+                "chapter:concept-3"
+              ]
+            },
+            {
+              "id": "scene-7",
+              "type": "real_video",
+              "conceptId": "concept-3",
+              "title": "See it: ज्वालामुखी नई भूमि बनाते हैं",
+              "narration": "है। गर्म लावा से धुआँ या भाप भी ऊपर उठ सकती है। कुछ लावा बहते-बहते पानी तक भी पहुँचता है। जब लावा ठंडा होता है, तो वह गहरे रंग की ठोस चट्टान बन जाता है। जैसे पिघली हुई चीज़ ठंडी होकर जम",
+              "subtitle": "ये दृश्य मिलकर एक तार्किक क्रम बनाते हैं: तरल लावा के ऊपर ठोस पपड़ी बनना, लावा का समुद्र तक पहुँचना और ठंडा होना, तथा जमा हुई नई चट्टान से भू-भाग का निर्माण।",
+              "durationSeconds": 22,
+              "keywords": [
+                "ज्वालामुखी नई भूमि बनाते हैं",
+                "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "process",
+                "labels": [
+                  "ज्वालामुखी नई भूमि बनाते हैं",
+                  "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।"
+                ],
+                "motion": "pan_zoom",
+                "footageEpisodeId": "9d7bf064-91c6-4e83-8d08-1c5b94462408",
+                "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/multimediaFile-4266.mp4",
+                "footageStartSeconds": 1,
+                "footageEndSeconds": 23
+              },
+              "evidenceRefs": [
+                "m-z-019f9eab-1c40-74b1-847f-dec1f7bef079:1.0-31.0"
+              ]
+            },
+            {
+              "id": "scene-8",
+              "type": "checkpoint",
+              "title": "Pause and predict",
+              "narration": "Pause for a moment and make a prediction. Which of the three ideas would you use first to explain the lesson to a friend, and what evidence would you show them?",
+              "subtitle": "What would you explain first—and why?",
+              "durationSeconds": 18,
+              "keywords": [
+                "predict",
+                "explain",
+                "evidence"
+              ],
+              "transition": "slide",
+              "visual": {
+                "diagramTemplate": "concept_map",
+                "labels": [
+                  "मैग्मा और लावा में अंतर",
+                  "बहता हुआ लावा",
+                  "ज्वालामुखी नई भूमि बनाते हैं"
+                ],
+                "motion": "pulse"
+              },
+              "evidenceRefs": [
+                "chapter:concept-1",
+                "chapter:concept-2",
+                "chapter:concept-3"
+              ],
+              "interactionPrompt": "Choose one idea and explain it aloud before continuing."
+            },
+            {
+              "id": "scene-9",
+              "type": "recap",
+              "title": "Maya’s explorer recap",
+              "narration": "Excellent exploring! We connected मैग्मा और लावा में अंतर, बहता हुआ लावा, ज्वालामुखी नई भूमि बनाते हैं. Replay any scene that still feels mysterious, then try the quiz to see which idea is ready and which one deserves another adventure.",
+              "subtitle": "Three ideas connected—now test your understanding.",
+              "durationSeconds": 22,
+              "keywords": [
+                "मैग्मा और लावा में अंतर",
+                "बहता हुआ लावा",
+                "ज्वालामुखी नई भूमि बनाते हैं"
+              ],
+              "transition": "fade",
+              "visual": {
+                "diagramTemplate": "concept_map",
+                "labels": [
+                  "मैग्मा और लावा में अंतर",
+                  "बहता हुआ लावा",
+                  "ज्वालामुखी नई भूमि बनाते हैं"
+                ],
+                "motion": "reveal"
+              },
+              "evidenceRefs": [
+                "chapter:concept-1",
+                "chapter:concept-2",
+                "chapter:concept-3"
+              ]
+            }
+          ]
+        }
+      },
+      "traceId": "640646565465fd067c1040986315ba96",
+      "generationTimeMs": 148462,
+      "overallCoverage": 0.7066690078611112,
+      "sourceKind": "chapter-pack",
+      "createdAt": "2026-07-26T18:45:01.063Z"
+    }
+  }
+]

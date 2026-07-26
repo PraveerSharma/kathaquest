@@ -196,7 +196,9 @@ function LessonScene({
             paddingBottom: 120,
           }}
         >
-          <div style={{ fontSize: 94 }}>🤔</div>
+          <div style={{ transform: "scale(.72)", marginBottom: -34 }}>
+            <MayaGuide expression="thinking" />
+          </div>
           <div style={{ fontSize: 58, fontWeight: 950, marginTop: 20, maxWidth: 900, textAlign: "center" }}>
             {scene.interactionPrompt ?? scene.subtitle}
           </div>

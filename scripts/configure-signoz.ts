@@ -394,6 +394,146 @@ const dashboard = {
   },
 };
 
+const providerPanels = {
+  "voice-requests": panel({
+    title: "Voice requests by provider",
+    description: "Narration calls handled by each voice provider",
+    panelKind: "signoz/TimeSeriesPanel",
+    requestKind: "time_series",
+    query: {
+      ...traceQuery({
+        aggregations: [{ expression: "count()" }],
+        filter: "service.name = 'kathaquest' AND name = 'tts.generate'",
+        groupBy: [traceField("ai.provider", "attribute")],
+        legend: "{{ai.provider}}",
+      }),
+      stepInterval: 60,
+    },
+    pluginSpec: { legend: { position: "bottom" } },
+  }),
+  "voice-latency": panel({
+    title: "Voice p95 latency",
+    description: "95th-percentile narration latency by provider",
+    panelKind: "signoz/TimeSeriesPanel",
+    requestKind: "time_series",
+    query: {
+      ...traceQuery({
+        aggregations: [{ expression: "p95(duration_nano)" }],
+        filter: "service.name = 'kathaquest' AND name = 'tts.generate'",
+        groupBy: [traceField("ai.provider", "attribute")],
+        legend: "{{ai.provider}}",
+      }),
+      stepInterval: 60,
+    },
+    pluginSpec: {
+      legend: { position: "bottom" },
+      formatting: { unit: "ns" },
+    },
+  }),
+  "voice-errors": panel({
+    title: "Voice provider errors",
+    description: "Narration spans that ended with an error",
+    panelKind: "signoz/NumberPanel",
+    requestKind: "scalar",
+    query: traceQuery({
+      aggregations: [{ expression: "count()" }],
+      filter:
+        "service.name = 'kathaquest' AND name = 'tts.generate' AND has_error = true",
+    }),
+  }),
+  "voice-fallbacks": panel({
+    title: "Automatic voice fallbacks",
+    description: "Requests recovered by the backup voice provider",
+    panelKind: "signoz/NumberPanel",
+    requestKind: "scalar",
+    query: traceQuery({
+      aggregations: [{ expression: "count()" }],
+      filter: "service.name = 'kathaquest' AND name = 'tts.fallback'",
+    }),
+  }),
+  "voice-languages": panel({
+    title: "Narration language mix",
+    description: "Voice requests grouped by requested lesson language",
+    panelKind: "signoz/TablePanel",
+    requestKind: "scalar",
+    query: traceQuery({
+      aggregations: [{ expression: "count()", alias: "Requests" }],
+      filter:
+        "service.name = 'kathaquest' AND name = 'tts.generate' AND lesson.language EXISTS",
+      groupBy: [traceField("lesson.language", "attribute")],
+      legend: "{{lesson.language}}",
+    }),
+  }),
+  "recent-provider-spans": panel({
+    title: "Recent provider spans",
+    description: "Newest OpenAI, VideoDB, Sarvam, and ElevenLabs operations",
+    panelKind: "signoz/ListPanel",
+    requestKind: "raw",
+    query: traceQuery({
+      filter: "service.name = 'kathaquest' AND ai.provider EXISTS",
+      selectFields: [
+        traceField("name", "span"),
+        traceField("ai.provider", "attribute"),
+        traceField("ai.model", "attribute"),
+        traceField("lesson.language", "attribute"),
+        traceField("duration_nano", "span", "number"),
+        traceField("trace_id", "span"),
+      ],
+      limit: 30,
+    }),
+    pluginSpec: {
+      selectFields: [
+        traceField("name", "span"),
+        traceField("ai.provider", "attribute"),
+        traceField("ai.model", "attribute"),
+        traceField("lesson.language", "attribute"),
+        traceField("duration_nano", "span", "number"),
+        traceField("trace_id", "span"),
+      ],
+    },
+  }),
+} satisfies Record<string, ReturnType<typeof panel>>;
+
+const providerDashboard = {
+  schemaVersion: "v6",
+  generateName: true,
+  tags: [
+    { key: "project", value: "kathaquest" },
+    { key: "view", value: "provider-reliability" },
+  ],
+  spec: {
+    display: {
+      name: "KathaQuest AI provider reliability",
+      description:
+        "Voice-provider latency, errors, fallbacks, languages, and recent AI operations.",
+    },
+    variables: [],
+    links: [],
+    panels: providerPanels,
+    layouts: [
+      {
+        kind: "Grid",
+        spec: {
+          items: [
+            ["voice-errors", 0, 0, 3, 3],
+            ["voice-fallbacks", 3, 0, 3, 3],
+            ["voice-requests", 0, 3, 6, 7],
+            ["voice-latency", 6, 3, 6, 7],
+            ["voice-languages", 0, 10, 5, 7],
+            ["recent-provider-spans", 5, 10, 7, 9],
+          ].map(([id, x, y, width, height]) => ({
+            x,
+            y,
+            width,
+            height,
+            content: { $ref: `#/spec/panels/${id}` },
+          })),
+        },
+      },
+    ],
+  },
+};
+
 function executionFor(panelDefinition: ReturnType<typeof panel>) {
   const query = panelDefinition.spec.queries[0];
   return {
@@ -414,11 +554,15 @@ function executionFor(panelDefinition: ReturnType<typeof panel>) {
   };
 }
 
-async function ensureDashboard() {
+async function ensureDashboard(
+  name: string,
+  panels: Record<string, ReturnType<typeof panel>>,
+  definition: JsonObject,
+) {
   const existingResult = await mcpCall("signoz_list_dashboards", {
     limit: 50,
     offset: 0,
-    filter: "KathaQuest AI lesson pipeline",
+    filter: name,
   });
   const existing = parsedData(existingResult) as {
     data?: { dashboards?: Array<{ id?: string }> };
@@ -429,7 +573,7 @@ async function ensureDashboard() {
     return;
   }
 
-  for (const [id, panelDefinition] of Object.entries(dashboardPanels)) {
+  for (const [id, panelDefinition] of Object.entries(panels)) {
     await mcpCall("signoz_execute_builder_query", {
       query: executionFor(panelDefinition),
     });
@@ -438,7 +582,7 @@ async function ensureDashboard() {
 
   const created = await mcpCall(
     "signoz_create_dashboard",
-    dashboard as unknown as JsonObject,
+    definition,
   );
   const result = parsedData(created);
   console.log(`Dashboard created: ${JSON.stringify(result)}`);
@@ -701,7 +845,16 @@ async function ensureAlerts() {
   }
 }
 
-await ensureDashboard();
+await ensureDashboard(
+  "KathaQuest AI lesson pipeline",
+  dashboardPanels,
+  dashboard as unknown as JsonObject,
+);
+await ensureDashboard(
+  "KathaQuest AI provider reliability",
+  providerPanels,
+  providerDashboard as unknown as JsonObject,
+);
 await ensureAlerts();
 
 export {};

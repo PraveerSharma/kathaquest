@@ -8,6 +8,7 @@ import {
   extractConcepts,
   rewriteSearchQuery,
 } from "@/lib/llm";
+import { getCuratedLesson } from "@/lib/curated-lessons";
 import { logger } from "@/lib/logger";
 import { createFallbackPresentation } from "@/lib/presentation-fallback";
 import { assertKidSafeText } from "@/lib/safety";
@@ -78,6 +79,47 @@ export async function generateLesson({
     async (span) => {
       try {
         await assertKidSafeText(chapterText, "chapter");
+        const curatedLesson = getCuratedLesson({
+          chapterText,
+          ageGroup,
+          language,
+          sourceKind,
+        });
+        if (curatedLesson) {
+          const duration = performance.now() - started;
+          curatedLesson.generationTimeMs = Math.round(duration);
+          curatedLesson.traceId = span.spanContext().traceId;
+          span.setAttributes({
+            "chapter.title": curatedLesson.title,
+            "lesson.cache_hit": true,
+            "pipeline.status": "ready",
+            "video.relevance_score": curatedLesson.overallCoverage,
+            "storyboard.scene_count":
+              curatedLesson.presentation?.storyboard.scenes.length ?? 0,
+          });
+          await withSpan(
+            "lesson.persist",
+            { "lesson.id": curatedLesson.id },
+            async () => saveLesson(curatedLesson),
+          );
+          telemetry.lessonsGenerated.add(1, {
+            language,
+            source: "curated",
+          });
+          telemetry.lessonDuration.record(duration, {
+            status: "ready",
+            source: "curated",
+          });
+          logger.info(
+            {
+              event: "lesson.curated",
+              lessonId: curatedLesson.id,
+              durationMs: duration,
+            },
+            "Curated chapter lesson served",
+          );
+          return curatedLesson;
+        }
         let chapter:
           | Awaited<ReturnType<typeof extractConcepts>>
           | undefined;

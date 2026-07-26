@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "seed": "node --env-file=.env.local --import tsx scripts/seed-videodb.ts",
     "build:chapters": "node --import tsx scripts/build-chapter-pack.ts",
+    "build:curated": "node --import tsx scripts/build-curated-lessons.ts",
     "verify-services": "node --env-file=.env.local --import tsx scripts/verify-services.ts",
     "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
     "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts",
