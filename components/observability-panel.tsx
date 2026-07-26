@@ -60,12 +60,12 @@ export function ObservabilityPanel({
         </div>
         <div className="dev-stat">
           <small>Voice recovery</small>
-          <strong>{fallbackUsed ? "Sarvam fallback used" : "Ready"}</strong>
+          <strong>{fallbackUsed ? "Backup voice used" : "Ready"}</strong>
         </div>
       </div>
       <div className="dev-actions">
         <button className="danger" onClick={armFailure} type="button">
-          {armed ? "Failure armed" : "Simulate ElevenLabs failure"}
+          {armed ? "Failure armed" : "Simulate voice-provider failure"}
         </button>
         <a href="http://localhost:8080" rel="noreferrer" target="_blank">
           Open SigNoz

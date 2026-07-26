@@ -7,6 +7,7 @@ import { GenerationProgress } from "@/components/generation-progress";
 import { ObservabilityPanel } from "@/components/observability-panel";
 import { Quiz } from "@/components/quiz";
 import { VoiceQuestion } from "@/components/voice-question";
+import { getLessonLanguage, lessonLanguages } from "@/lib/languages";
 import type {
   ChapterPackItem,
   LessonLanguage,
@@ -43,6 +44,7 @@ function CheckIcon() {
 
 export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
   const lessonRef = useRef<HTMLElement>(null);
+  const personalizeRef = useRef<HTMLDivElement>(null);
   const [chapterText, setChapterText] = useState("");
   const [sourceLabel, setSourceLabel] = useState<string>();
   const [sourceKind, setSourceKind] =
@@ -55,11 +57,14 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
   const [error, setError] = useState<string>();
   const [extractingPdf, setExtractingPdf] = useState(false);
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [localizing, setLocalizing] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    const readyTimer = window.setTimeout(() => setHydrated(true), 0);
     try {
       const saved = window.localStorage.getItem(savedLessonKey);
-      if (!saved) return;
+      if (!saved) return () => window.clearTimeout(readyTimer);
       const parsed = JSON.parse(saved) as {
         lesson: PublicLesson;
         lessonToken: string;
@@ -68,12 +73,14 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
         window.setTimeout(() => {
           setLesson(parsed.lesson);
           setLessonToken(parsed.lessonToken);
+          setLanguage(parsed.lesson.language);
           setPhase("lesson");
         }, 0);
       }
     } catch {
       window.localStorage.removeItem(savedLessonKey);
     }
+    return () => window.clearTimeout(readyTimer);
   }, []);
 
   function chooseChapter(chapter: ChapterPackItem) {
@@ -81,6 +88,59 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
     setSourceLabel(`${chapter.title} • ${chapter.pages} pages`);
     setSourceKind("chapter-pack");
     setError(undefined);
+    if (window.innerWidth <= 700) {
+      window.setTimeout(
+        () =>
+          personalizeRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        100,
+      );
+    }
+  }
+
+  async function changeLessonLanguage(nextLanguage: LessonLanguage) {
+    if (!lesson || nextLanguage === lesson.language || localizing) return;
+    setLocalizing(true);
+    setError(undefined);
+    try {
+      const response = await fetch("/api/lessons/localize", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          lessonToken,
+          language: nextLanguage,
+        }),
+      });
+      const result = (await response.json()) as {
+        lesson?: PublicLesson;
+        lessonToken?: string;
+        error?: string;
+      };
+      if (!response.ok || !result.lesson || !result.lessonToken) {
+        throw new Error(result.error ?? "Could not change the lesson language");
+      }
+      setLanguage(nextLanguage);
+      setLesson(result.lesson);
+      setLessonToken(result.lessonToken);
+      window.localStorage.setItem(
+        savedLessonKey,
+        JSON.stringify({
+          lesson: result.lesson,
+          lessonToken: result.lessonToken,
+        }),
+      );
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not change the lesson language",
+      );
+    } finally {
+      setLocalizing(false);
+    }
   }
 
   async function uploadPdf(file?: File) {
@@ -164,7 +224,7 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-ready={hydrated}>
       <a className="skip-link" href="#main-content">Skip to the adventure</a>
       <header className="site-header container">
         <a aria-label="KathaQuest home" className="brand" href="#top">
@@ -196,7 +256,7 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
               </p>
               <div className="feature-row" aria-label="Product benefits">
                 <span><b>1</b> Source-grounded</span>
-                <span><b>2</b> English + हिंदी</span>
+                <span><b>2</b> 11 Indian languages</span>
                 <span><b>3</b> Kid-safe evidence</span>
               </div>
             </div>
@@ -233,6 +293,7 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
                   <button
                     aria-pressed={selected}
                     className={`chapter-card accent-${chapter.accent} ${selected ? "selected" : ""}`}
+                    disabled={!hydrated}
                     key={chapter.id}
                     onClick={() => chooseChapter(chapter)}
                     type="button"
@@ -247,10 +308,11 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
               })}
             </div>
 
-            <div className="builder-controls">
+            <div className="builder-controls" ref={personalizeRef}>
               <label className="upload-zone">
                 <input
                   accept="application/pdf"
+                  disabled={!hydrated}
                   onChange={(event) => uploadPdf(event.target.files?.[0])}
                   type="file"
                 />
@@ -277,8 +339,11 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
                   <div className="field">
                     <label htmlFor="language">Adventure language</label>
                     <select id="language" onChange={(event) => setLanguage(event.target.value as LessonLanguage)} value={language}>
-                      <option value="hi-IN">हिंदी</option>
-                      <option value="en-IN">English</option>
+                      {lessonLanguages.map((item) => (
+                        <option key={item.code} value={item.code}>
+                          {item.label} · {item.englishName}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -305,24 +370,59 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
               <div>
                 <span className="eyebrow">Your video adventure is ready</span>
                 <h1>{lesson.title}</h1>
-                <p>Three chapter-grounded ideas with reviewed, timestamped educational footage.</p>
+                <p>Three in-depth, chapter-grounded reels made from reviewed educational footage.</p>
                 <div className="lesson-trust">
                   <span><CheckIcon /> {Math.round(lesson.overallCoverage * 100)}% evidence match</span>
                   <span><CheckIcon /> All clips kid-safe</span>
                   <span><CheckIcon /> Answers hidden securely</span>
                 </div>
               </div>
-              <button className="ghost-button" onClick={resetQuest} type="button">Make another quest</button>
+              <div className="lesson-heading-actions">
+                <label className="lesson-language-control" htmlFor="lesson-language">
+                  <span>Learning language</span>
+                  <select
+                    disabled={localizing}
+                    id="lesson-language"
+                    onChange={(event) =>
+                      changeLessonLanguage(
+                        event.target.value as LessonLanguage,
+                      )
+                    }
+                    value={lesson.language}
+                  >
+                    {lessonLanguages.map((item) => (
+                      <option key={item.code} value={item.code}>
+                        {item.label} · {item.englishName}
+                      </option>
+                    ))}
+                  </select>
+                  <small>
+                    {localizing
+                      ? "Translating the lesson…"
+                      : `Content and narration: ${getLessonLanguage(lesson.language).englishName}`}
+                  </small>
+                </label>
+                <button className="ghost-button" onClick={resetQuest} type="button">Make another quest</button>
+              </div>
             </div>
+            {error ? <div className="form-error lesson-error" role="alert">{error}</div> : null}
 
             <div className="episode-grid">
               {lesson.episodes.map((episode, index) => (
-                <EpisodeCard episode={episode} index={index} key={episode.id} language={lesson.language} onFallback={() => setFallbackUsed(true)} />
+                <EpisodeCard
+                  episode={episode}
+                  index={index}
+                  key={`${episode.id}-${lesson.language}`}
+                  language={lesson.language}
+                  lessonId={lesson.id}
+                  lessonToken={lessonToken}
+                  onFallback={() => setFallbackUsed(true)}
+                />
               ))}
             </div>
             <div className="interactive-grid">
-              <VoiceQuestion lesson={lesson} lessonToken={lessonToken} />
-              <Quiz lesson={lesson} lessonToken={lessonToken} />
+              <VoiceQuestion key={`questions-${lesson.language}`} lesson={lesson} lessonToken={lessonToken} />
+              <Quiz key={`quiz-${lesson.language}`} lesson={lesson} lessonToken={lessonToken} />
             </div>
             <ObservabilityPanel fallbackUsed={fallbackUsed} lesson={lesson} />
           </div>

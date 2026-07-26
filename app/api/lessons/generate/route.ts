@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { lessonLanguageCodes } from "@/lib/languages";
 import { sealLesson, toPublicLesson } from "@/lib/lesson-session";
 import { generateLesson } from "@/lib/pipeline";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -11,7 +12,7 @@ export const maxDuration = 300;
 const requestSchema = z.object({
   chapterText: z.string().min(100).max(50_000),
   ageGroup: z.enum(["6-8", "8-10", "10-12"]),
-  language: z.enum(["en-IN", "hi-IN"]),
+  language: z.enum(lessonLanguageCodes),
   sourceKind: z.enum(["chapter-pack", "uploaded-pdf"]).default("uploaded-pdf"),
 });
 

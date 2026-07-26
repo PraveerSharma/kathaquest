@@ -1,6 +1,7 @@
 import "server-only";
 
 import { requireEnv } from "@/lib/env";
+import { getLessonLanguage } from "@/lib/languages";
 import { logger } from "@/lib/logger";
 import { telemetry, withSpan } from "@/lib/telemetry";
 import type { LessonLanguage } from "@/lib/types";
@@ -25,6 +26,7 @@ export async function generateSarvamNarration(
       "tts.provider": "sarvam",
     },
     async () => {
+      const voice = getLessonLanguage(language);
       const response = await fetch("https://api.sarvam.ai/text-to-speech", {
         method: "POST",
         headers: {
@@ -35,9 +37,12 @@ export async function generateSarvamNarration(
           text: text.slice(0, 2_500),
           target_language_code: language,
           model: "bulbul:v3",
-          speaker: language === "hi-IN" ? "ritu" : "shubh",
+          speaker: voice.speaker,
           output_audio_codec: "mp3",
-          pace: 0.9,
+          speech_sample_rate: 48_000,
+          pace: 0.92,
+          temperature: 0.6,
+          enable_preprocessing: true,
         }),
       });
 
@@ -64,6 +69,7 @@ export async function generateSarvamNarration(
           event: "tts.generated",
           provider: "sarvam",
           language,
+          speaker: voice.speaker,
           durationMs: duration,
           requestId: payload.request_id,
         },

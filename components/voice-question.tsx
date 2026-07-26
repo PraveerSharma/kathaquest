@@ -8,7 +8,8 @@ import type { PublicLesson } from "@/lib/types";
 type Answer = {
   transcript?: string;
   answer: string;
-  streamUrl: string;
+  streamUrl?: string;
+  videoUnavailable?: boolean;
 };
 
 export function VoiceQuestion({
@@ -95,8 +96,8 @@ export function VoiceQuestion({
       <span className="eyebrow">Ask with your voice</span>
       <h2>Still curious?</h2>
       <p>
-        Type a question or record a short Hindi question. The answer comes with
-        another exact moment from the real archive.
+        Type or record a question in your learning language. A matching video
+        appears only when the archive has strong direct evidence.
       </p>
       <form className="question-form" onSubmit={askTyped}>
         <input
@@ -133,9 +134,16 @@ export function VoiceQuestion({
             <p className="transcript">I heard: “{answer.transcript}”</p>
           ) : null}
           <p>{answer.answer}</p>
-          <div className="answer-video">
-            <HlsPlayer src={answer.streamUrl} />
-          </div>
+          {answer.streamUrl ? (
+            <div className="answer-video">
+              <HlsPlayer src={answer.streamUrl} />
+            </div>
+          ) : (
+            <p className="answer-note">
+              I could answer from your chapter, but I left out the video
+              because the archive did not have a strong enough match.
+            </p>
+          )}
         </div>
       ) : null}
     </section>

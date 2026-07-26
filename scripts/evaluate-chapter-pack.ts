@@ -7,6 +7,17 @@ import type {
 const chapters = chapterPackJson as ChapterPackItem[];
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 const limit = Number(process.env.EVAL_LIMIT ?? chapters.length);
+const requestedChapterIds = new Set(
+  (process.env.EVAL_CHAPTERS ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean),
+);
+const selectedChapters = (
+  requestedChapterIds.size > 0
+    ? chapters.filter((chapter) => requestedChapterIds.has(chapter.id))
+    : chapters
+).slice(0, limit);
 
 type Evaluation = {
   chapter: string;
@@ -18,12 +29,14 @@ type Evaluation = {
   answersHidden: boolean;
   overallCoverage: number;
   evidenceCount: number;
+  minimumEpisodeSeconds: number;
+  precisionReviewed: boolean;
   issues: string[];
 };
 
 const results: Evaluation[] = [];
 
-for (const chapter of chapters.slice(0, limit)) {
+for (const chapter of selectedChapters) {
   const response = await fetch(`${baseUrl}/api/lessons/generate`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -48,6 +61,8 @@ for (const chapter of chapters.slice(0, limit)) {
       answersHidden: false,
       overallCoverage: 0,
       evidenceCount: 0,
+      minimumEpisodeSeconds: 0,
+      precisionReviewed: false,
       issues: ["error" in payload ? payload.error : `HTTP ${response.status}`],
     });
     continue;
@@ -71,6 +86,17 @@ for (const chapter of chapters.slice(0, limit)) {
     (total, episode) => total + episode.evidence.length,
     0,
   );
+  const minimumEpisodeSeconds = Math.min(
+    ...lesson.episodes.map((episode) => episode.durationSeconds),
+  );
+  const precisionReviewed = lesson.episodes.every((episode) =>
+    episode.evidence.every(
+      (item) =>
+        typeof item.reviewConfidence === "number" &&
+        item.reviewConfidence >= 0.55 &&
+        Boolean(item.selectionReason),
+    ),
+  );
   const issues = [
     lesson.concepts.length === 3 ? "" : "concept_count",
     lesson.episodes.length === 3 ? "" : "episode_count",
@@ -79,6 +105,8 @@ for (const chapter of chapters.slice(0, limit)) {
     answersHidden ? "" : "answer_leak",
     lesson.overallCoverage > 0 ? "" : "zero_coverage",
     evidenceCount >= 3 ? "" : "insufficient_evidence",
+    minimumEpisodeSeconds >= 50 ? "" : "episode_too_short",
+    precisionReviewed ? "" : "evidence_not_precision_reviewed",
     lessonToken ? "" : "missing_session_token",
   ].filter(Boolean);
 
@@ -92,6 +120,8 @@ for (const chapter of chapters.slice(0, limit)) {
     answersHidden,
     overallCoverage: lesson.overallCoverage,
     evidenceCount,
+    minimumEpisodeSeconds,
+    precisionReviewed,
     issues,
   });
 }

@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 const steps = [
   "Reading your chapter",
   "Finding three key ideas",
-  "Searching real educational videos",
-  "Creating your episodes",
+  "Reviewing spoken and visual evidence",
+  "Stitching useful lesson reels",
   "Preparing the lesson",
   "Finishing your adventure",
 ];

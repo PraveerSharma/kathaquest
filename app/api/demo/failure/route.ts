@@ -18,6 +18,6 @@ export async function POST() {
   armElevenLabsFailure();
   return NextResponse.json({
     armed: isElevenLabsFailureArmed(),
-    message: "The next English narration will simulate ElevenLabs failure.",
+    message: "The next narration will simulate a primary voice-provider failure.",
   });
 }

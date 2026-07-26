@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
+import { getLessonLanguage } from "@/lib/languages";
 import type { Episode, LessonLanguage } from "@/lib/types";
 
 function formatDuration(seconds: number) {
@@ -16,24 +17,76 @@ export function EpisodeCard({
   episode,
   index,
   language,
+  lessonId,
+  lessonToken,
   onFallback,
 }: {
   episode: Episode;
   index: number;
   language: LessonLanguage;
+  lessonId: string;
+  lessonToken: string;
   onFallback: () => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [loading, setLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>();
+  const [localizedStream, setLocalizedStream] = useState<string>();
+  const [showLocalized, setShowLocalized] = useState(false);
+  const [syncMode, setSyncMode] = useState<"videodb-timeline" | "browser">();
   const [provider, setProvider] = useState<"sarvam" | "elevenlabs">();
   const [fallbackUsed, setFallbackUsed] = useState(false);
   const [error, setError] = useState<string>();
+  const languageName = getLessonLanguage(language).label;
 
-  async function listen() {
+  useEffect(() => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (!video || !audio || !audioUrl || syncMode !== "browser") return;
+
+    const align = () => {
+      if (!Number.isFinite(video.duration) || !Number.isFinite(audio.duration)) {
+        return;
+      }
+      const ratio = audio.duration / video.duration;
+      audio.playbackRate = Math.max(0.65, Math.min(1.35, ratio));
+      audio.currentTime = Math.min(
+        audio.duration,
+        video.currentTime * ratio,
+      );
+    };
+    const play = () => {
+      align();
+      void audio.play().catch(() => undefined);
+    };
+    const pause = () => audio.pause();
+    video.addEventListener("play", play);
+    video.addEventListener("pause", pause);
+    video.addEventListener("seeked", align);
+    video.addEventListener("ended", pause);
+    return () => {
+      video.removeEventListener("play", play);
+      video.removeEventListener("pause", pause);
+      video.removeEventListener("seeked", align);
+      video.removeEventListener("ended", pause);
+    };
+  }, [audioUrl, syncMode]);
+
+  async function prepareLocalizedVideo() {
     setError(undefined);
-    if (audioUrl) {
-      await audioRef.current?.play();
+    if (localizedStream) {
+      setShowLocalized(true);
+      return;
+    }
+    if (audioUrl && syncMode === "browser") {
+      const video = videoRef.current;
+      if (video) {
+        video.muted = true;
+        video.currentTime = 0;
+        audioRef.current!.currentTime = 0;
+        await Promise.allSettled([video.play(), audioRef.current?.play()]);
+      }
       return;
     }
     setLoading(true);
@@ -42,7 +95,9 @@ export function EpisodeCard({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          text: episode.explanation,
+          lessonId,
+          lessonToken,
+          episodeId: episode.id,
           language,
         }),
       });
@@ -50,6 +105,8 @@ export function EpisodeCard({
         audioUrl?: string;
         provider?: "sarvam" | "elevenlabs";
         fallbackUsed?: boolean;
+        streamUrl?: string;
+        syncMode?: "videodb-timeline" | "browser";
         error?: string;
       };
       if (!response.ok || !result.audioUrl || !result.provider) {
@@ -57,9 +114,24 @@ export function EpisodeCard({
       }
       setAudioUrl(result.audioUrl);
       setProvider(result.provider);
+      setSyncMode(result.syncMode);
+      if (result.streamUrl) {
+        setLocalizedStream(result.streamUrl);
+        setShowLocalized(true);
+      }
       setFallbackUsed(Boolean(result.fallbackUsed));
       if (result.fallbackUsed) onFallback();
-      window.setTimeout(() => audioRef.current?.play(), 0);
+      if (!result.streamUrl) {
+        window.setTimeout(() => {
+          const video = videoRef.current;
+          const audio = audioRef.current;
+          if (!video || !audio) return;
+          video.muted = true;
+          video.currentTime = 0;
+          audio.currentTime = 0;
+          void Promise.allSettled([video.play(), audio.play()]);
+        }, 0);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Narration failed");
     } finally {
@@ -71,8 +143,19 @@ export function EpisodeCard({
     <article className="episode-card">
       <div className="episode-layout">
         <div className="video-shell">
-          <HlsPlayer src={episode.streamUrl} />
-          <span className="video-badge">Real VideoDB stream</span>
+          <HlsPlayer
+            ref={videoRef}
+            src={
+              showLocalized && localizedStream
+                ? localizedStream
+                : episode.streamUrl
+            }
+          />
+          <span className="video-badge">
+            {showLocalized && localizedStream
+              ? `${languageName} narrated reel`
+              : "VideoDB lesson reel"}
+          </span>
         </div>
         <div className="episode-content">
           <div className="episode-kicker">
@@ -85,27 +168,40 @@ export function EpisodeCard({
             <span>From your chapter{episode.sourcePage ? ` · page ${episode.sourcePage}` : ""}</span>
             “{episode.sourceQuote}”
           </blockquote>
-          <button
-            className="listen-button"
-            disabled={loading}
-            onClick={listen}
-            type="button"
-          >
-            <svg aria-hidden="true" className="button-icon" fill="none" viewBox="0 0 24 24">
-              {audioUrl ? (
-                <path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" />
-              ) : (
+          <div className="video-language-actions">
+            <button
+              className="listen-button"
+              disabled={loading}
+              onClick={prepareLocalizedVideo}
+              type="button"
+            >
+              <svg aria-hidden="true" className="button-icon" fill="none" viewBox="0 0 24 24">
                 <path d="m9 7 8 5-8 5V7Z" />
-              )}
-            </svg>
-            {loading ? "Preparing voice…" : audioUrl ? "Listen again" : "Listen to explanation"}
-          </button>
+              </svg>
+              {loading
+                ? `Creating ${languageName} video…`
+                : localizedStream
+                  ? `Play in ${languageName}`
+                  : `Add friendly ${languageName} voice`}
+            </button>
+            {localizedStream && showLocalized ? (
+              <button
+                className="text-button"
+                onClick={() => setShowLocalized(false)}
+                type="button"
+              >
+                Hear original audio
+              </button>
+            ) : null}
+          </div>
           <audio ref={audioRef} src={audioUrl} />
           {provider ? (
             <div className="provider-message">
               {fallbackUsed
-                ? "Primary voice provider failed • Recovered using Sarvam AI"
-                : `Narrated with ${provider === "sarvam" ? "Sarvam AI" : "ElevenLabs"}`}
+                ? "Primary voice provider recovered with a backup voice."
+                : syncMode === "videodb-timeline"
+                  ? `Friendly ${languageName} narration synchronized with the stitched video.`
+                  : `Friendly ${languageName} narration synchronized in your browser.`}
             </div>
           ) : null}
           {error ? <div className="form-error">{error}</div> : null}
@@ -120,7 +216,11 @@ export function EpisodeCard({
                 key={`${evidence.videoId}-${evidence.startSeconds}`}
               >
                 <span className="score-pill">
-                  {Math.round((evidence.relevanceScore ?? 0) * 100)}% match
+                  {Math.round(
+                    (evidence.reviewConfidence ??
+                      evidence.relevanceScore ??
+                      0) * 100,
+                  )}% reviewed
                 </span>
                 <span>
                   {Math.round(evidence.startSeconds)}s–
@@ -139,6 +239,11 @@ export function EpisodeCard({
                   <span>{evidence.videoTitle}</span>
                 )}
                 <span>• {evidence.licence ?? "Licence documented"}</span>
+                {evidence.selectionReason ? (
+                  <small className="evidence-reason">
+                    {evidence.selectionReason}
+                  </small>
+                ) : null}
               </div>
             ))}
           </div>

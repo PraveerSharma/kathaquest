@@ -13,7 +13,8 @@
     "build:chapters": "node --import tsx scripts/build-chapter-pack.ts",
     "verify-services": "node --env-file=.env.local --import tsx scripts/verify-services.ts",
     "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
-    "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts"
+    "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^24.10.13",
     "@types/react": "^19.2.14",
@@ -44,5 +46,10 @@
     "tailwindcss": "^4.2.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "postcss": "8.5.23",
+    "sharp": "0.35.3",
+    "uuid": "11.1.1"
   }
 }

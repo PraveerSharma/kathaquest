@@ -38,7 +38,7 @@ export async function GET() {
       detail:
         env.ELEVENLABS_API_KEY && env.ELEVENLABS_VOICE_ID
           ? "Configured"
-          : "Optional credentials not configured; Sarvam fallback is active",
+          : "Optional backup not configured; Sarvam is the primary Indian-language voice",
     } satisfies ServiceHealth,
     opentelemetry: {
       status:

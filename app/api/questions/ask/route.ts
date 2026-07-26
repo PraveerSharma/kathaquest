@@ -78,18 +78,16 @@ export async function POST(request: Request) {
       lessonTitle: lesson.title,
       concepts: lesson.concepts,
     });
-    const support = await searchEducationalArchive(searchQuery);
-    if (!support) {
-      return NextResponse.json(
-        { error: "No supporting VideoDB evidence was found" },
-        { status: 422 },
-      );
-    }
+    const support = await searchEducationalArchive(searchQuery, {
+      conceptTitle: question,
+      learningObjective: `Answer the child's question with direct visual or spoken evidence from ${lesson.title}.`,
+      purpose: "answer",
+    });
     const answer = await answerQuestion({
       question,
       lessonTitle: lesson.title,
       concepts: lesson.concepts,
-      evidence: support.evidence,
+      evidence: support?.evidence ?? [],
       language: lesson.language,
     });
     await assertKidSafeText(answer, "answer");
@@ -97,8 +95,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       transcript,
       answer,
-      streamUrl: support.streamUrl,
-      evidence: support.evidence,
+      streamUrl: support?.streamUrl,
+      evidence: support?.evidence ?? [],
+      videoUnavailable: !support,
     });
   } catch (error) {
     const message =

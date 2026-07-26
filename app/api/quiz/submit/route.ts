@@ -64,7 +64,11 @@ export async function POST(request: Request) {
                 "revision.concept_count": incorrectConceptIds.length,
               },
               async () =>
-                searchEducationalArchive(concept.videoSearchQueries),
+                searchEducationalArchive(concept.videoSearchQueries, {
+                  conceptTitle: concept.title,
+                  learningObjective: concept.learningObjective,
+                  purpose: "revision",
+                }),
             );
             revisionReelUrl = revision?.streamUrl;
             if (revisionReelUrl) telemetry.revisionsGenerated.add(1);

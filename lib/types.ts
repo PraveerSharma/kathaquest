@@ -7,7 +7,18 @@ export type LessonStatus =
   | "ready"
   | "failed";
 
-export type LessonLanguage = "en-IN" | "hi-IN";
+export type LessonLanguage =
+  | "en-IN"
+  | "hi-IN"
+  | "bn-IN"
+  | "ta-IN"
+  | "te-IN"
+  | "mr-IN"
+  | "gu-IN"
+  | "kn-IN"
+  | "ml-IN"
+  | "pa-IN"
+  | "od-IN";
 
 export type LearningConcept = {
   id: string;
@@ -37,6 +48,8 @@ export type VideoEvidence = {
   kidSafe: boolean;
   sourceAuthority?: string;
   topics?: string[];
+  reviewConfidence?: number;
+  selectionReason?: string;
 };
 
 export type Episode = {
@@ -54,6 +67,7 @@ export type Episode = {
   evidence: VideoEvidence[];
   coverageScore: number;
   kidSafe: boolean;
+  selectionSummary?: string;
 };
 
 export type Lesson = {
@@ -119,6 +133,8 @@ export type VideoDbCacheEntry = DemoVideo & {
   spokenIndexed: boolean;
   sceneIndexed: boolean;
   sceneIndexId?: string;
+  educationalAudioIndexId?: string;
+  indexVersion?: number;
   updatedAt: string;
 };
 

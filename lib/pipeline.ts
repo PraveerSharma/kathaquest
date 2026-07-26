@@ -23,14 +23,22 @@ async function retrieveEpisodeEvidence(
   concept: Omit<LearningConcept, "explanation" | "quiz">,
 ) {
   let queries = concept.videoSearchQueries;
-  let search = await searchEducationalArchive(queries);
+  let search = await searchEducationalArchive(queries, {
+    conceptTitle: concept.title,
+    learningObjective: concept.learningObjective,
+    purpose: "lesson",
+  });
   let rewriteUsed = false;
 
   if (!search) {
     const rewritten = await rewriteSearchQuery(queries[0], concept.title);
     queries = [rewritten];
     rewriteUsed = true;
-    search = await searchEducationalArchive(queries);
+    search = await searchEducationalArchive(queries, {
+      conceptTitle: concept.title,
+      learningObjective: concept.learningObjective,
+      purpose: "lesson",
+    });
   }
 
   if (!search) {
@@ -68,19 +76,74 @@ export async function generateLesson({
     async (span) => {
       try {
         await assertKidSafeText(chapterText, "chapter");
-        const chapter = await extractConcepts({
-          chapterText,
-          ageGroup,
-          language,
-        });
+        let chapter:
+          | Awaited<ReturnType<typeof extractConcepts>>
+          | undefined;
+        let retrievals:
+          | Array<Awaited<ReturnType<typeof retrieveEpisodeEvidence>>>
+          | undefined;
+        const excludedConcepts: string[] = [];
+        let lastRetrievalError: unknown;
+
+        for (let attempt = 1; attempt <= 3; attempt += 1) {
+          const plan = await extractConcepts({
+            chapterText,
+            ageGroup,
+            language,
+            excludedConcepts,
+          });
+          const attemptedRetrievals = await Promise.allSettled(
+            plan.concepts.map((concept) => retrieveEpisodeEvidence(concept)),
+          );
+          const failedIndexes = attemptedRetrievals.flatMap((result, index) =>
+            result.status === "rejected" ? [index] : [],
+          );
+          if (failedIndexes.length === 0) {
+            chapter = plan;
+            retrievals = attemptedRetrievals.map((result) => {
+              if (result.status !== "fulfilled") {
+                throw new Error("Unexpected retrieval planning state");
+              }
+              return result.value;
+            });
+            break;
+          }
+
+          const firstFailure = attemptedRetrievals[failedIndexes[0]];
+          lastRetrievalError =
+            firstFailure.status === "rejected"
+              ? firstFailure.reason
+              : undefined;
+          excludedConcepts.push(
+            ...failedIndexes.map((index) => {
+              const concept = plan.concepts[index];
+              return `${concept.title}: ${concept.learningObjective}`;
+            }),
+          );
+          logger.warn(
+            {
+              event: "lesson.plan_retried",
+              attempt,
+              rejectedConcepts: failedIndexes.map(
+                (index) => plan.concepts[index].title,
+              ),
+            },
+            "Replanning around concepts without direct archive evidence",
+          );
+        }
+
+        if (!chapter || !retrievals) {
+          throw lastRetrievalError instanceof Error
+            ? lastRetrievalError
+            : new Error(
+                "The reviewed video archive does not yet cover three chapter concepts",
+              );
+        }
         span.setAttributes({
           "chapter.title": chapter.chapterTitle,
           "pipeline.status": "searching",
         });
 
-        const retrievals = await Promise.all(
-          chapter.concepts.map((concept) => retrieveEpisodeEvidence(concept)),
-        );
         const concepts = await Promise.all(
           chapter.concepts.map((concept, index) =>
             createGroundedConcept({
@@ -109,12 +172,13 @@ export async function generateLesson({
             explanation: concept.explanation,
             sourceQuote: concept.sourceQuote,
             sourcePage: concept.sourcePage,
-            whyThisClip: `VideoDB matched ${search.matchType === "scene" ? "visible educational scenes" : "spoken educational evidence"} to “${search.queryUsed}”${rewriteUsed ? " after one automatic query rewrite" : ""}. Every source is from the reviewed all-ages catalog.`,
+            whyThisClip: `${search.selectionSummary}${rewriteUsed ? " The search was automatically clarified once to improve coverage." : ""}`,
             streamUrl: search.streamUrl,
             durationSeconds,
             evidence: search.evidence,
             coverageScore: search.coverageScore,
             kidSafe: search.evidence.every((item) => item.kidSafe),
+            selectionSummary: search.selectionSummary,
           };
         });
 

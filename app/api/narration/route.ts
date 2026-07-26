@@ -2,16 +2,20 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { consumeElevenLabsFailure } from "@/lib/demo-state";
-import { generateNarration } from "@/lib/narration-router";
+import { lessonLanguageCodes } from "@/lib/languages";
+import { openLesson } from "@/lib/lesson-session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { assertKidSafeText } from "@/lib/safety";
+import { createLocalizedEpisodeVideo } from "@/lib/video-localization";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const requestSchema = z.object({
-  text: z.string().min(1).max(5_000),
-  language: z.enum(["en-IN", "hi-IN"]),
+  lessonId: z.string().uuid(),
+  lessonToken: z.string().min(40).max(200_000),
+  episodeId: z.string().uuid(),
+  language: z.enum(lessonLanguageCodes),
   forceFailure: z.boolean().optional(),
 });
 
@@ -25,12 +29,23 @@ export async function POST(request: Request) {
   }
   try {
     const input = requestSchema.parse(await request.json());
-    await assertKidSafeText(input.text, "answer");
+    const lesson = openLesson(input.lessonToken);
+    if (lesson.id !== input.lessonId || lesson.language !== input.language) {
+      return NextResponse.json(
+        { error: "Lesson session or language mismatch" },
+        { status: 401 },
+      );
+    }
+    const episode = lesson.episodes.find((item) => item.id === input.episodeId);
+    if (!episode) {
+      return NextResponse.json({ error: "Episode not found" }, { status: 404 });
+    }
+    await assertKidSafeText(episode.explanation, "answer");
     const forced =
       input.forceFailure === true || consumeElevenLabsFailure();
     return NextResponse.json(
-      await generateNarration({
-        text: input.text,
+      await createLocalizedEpisodeVideo({
+        episode,
         language: input.language,
         forceFailure: forced,
       }),

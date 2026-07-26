@@ -14,6 +14,7 @@ import type { DemoVideo, VideoDbCacheEntry } from "../lib/types";
 
 const demoVideos = demoVideosJson as DemoVideo[];
 const cachePath = path.join(process.cwd(), "data", "videodb-cache.json");
+const indexVersion = 2;
 
 function required(key: string): string {
   const value = process.env[key];
@@ -89,6 +90,7 @@ async function seed() {
       videoDbId: video.id,
       spokenIndexed: cached?.spokenIndexed ?? false,
       sceneIndexed: cached?.sceneIndexed ?? false,
+      indexVersion: cached?.indexVersion ?? 1,
       updatedAt: cached?.updatedAt ?? new Date().toISOString(),
     };
 
@@ -109,7 +111,7 @@ async function seed() {
       await saveCache(cache);
     }
 
-    if (!entry.sceneIndexed) {
+    if (!entry.sceneIndexed || (entry.indexVersion ?? 1) < indexVersion) {
       console.log(
         JSON.stringify({
           event: "seed.indexing_scenes",
@@ -118,24 +120,55 @@ async function seed() {
         }),
       );
       const isLongVideo = video.length > 300;
-      entry.sceneIndexId = await video.indexScenes({
-        extractionType: SceneExtractionType.timeBased,
-        extractionConfig: {
-          time: isLongVideo ? 30 : 10,
-          frame_count: 1,
-        },
-        prompt:
-          `Describe visible, age-appropriate educational evidence related to these topics: ${source.topics.join(", ")}. Identify processes, objects, changes, and cause-and-effect relationships. Be concrete, factual, and do not infer anything that is not visible.`,
-        metadata: {
-          archive: "kathaquest-kid-safe",
-          licence: source.licence.slice(0, 30),
-          source_id: source.id,
-          kid_safe: "true",
-          source_authority: source.sourceAuthority,
-        },
-        name: "kathaquest-educational-scenes",
-      });
+      try {
+        entry.sceneIndexId = await video.indexScenes({
+          extractionType: SceneExtractionType.timeBased,
+          extractionConfig: {
+            time: isLongVideo ? 15 : 10,
+            frame_count: 3,
+          },
+          prompt:
+            `Create a precise educational scene record for children about these topics: ${source.topics.join(", ")}. Describe (1) exactly what is visible across the frames, (2) the process or change being demonstrated, (3) cause-and-effect evidence, (4) any labels or on-screen facts, and (5) which learning question this moment can answer. Be concrete and factual. Never infer something that is not visible.`,
+          metadata: {
+            archive: "kathaquest-kid-safe",
+            licence: source.licence.slice(0, 30),
+            source_id: source.id,
+            kid_safe: "true",
+            source_authority: source.sourceAuthority,
+          },
+          name: "kathaquest-educational-scenes-v2",
+        });
+      } catch (error) {
+        console.log(
+          JSON.stringify({
+            event: "seed.scene_upgrade_skipped",
+            videoId: video.id,
+            title: source.title,
+            detail: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      }
       entry.sceneIndexed = true;
+      try {
+        entry.educationalAudioIndexId = await video.indexAudio({
+          prompt:
+            `Turn each transcript segment into a child-safe educational evidence record about ${source.topics.join(", ")}. Preserve concrete facts, definitions, explanations, examples, and cause-and-effect statements. State the learning question the segment directly answers. Do not add facts that the speaker did not say.`,
+          modelName: "pro",
+          languageCode: "en",
+          batchConfig: { type: "sentence", value: 3 },
+          name: "kathaquest-educational-explanations-v2",
+        });
+      } catch (error) {
+        console.log(
+          JSON.stringify({
+            event: "seed.audio_upgrade_skipped",
+            videoId: video.id,
+            title: source.title,
+            detail: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      }
+      entry.indexVersion = indexVersion;
       entry.updatedAt = new Date().toISOString();
       const index = cache.findIndex((item) => item.id === entry.id);
       if (index >= 0) cache[index] = entry;

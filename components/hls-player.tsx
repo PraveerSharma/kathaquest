@@ -1,47 +1,61 @@
 "use client";
 
 import Hls from "hls.js";
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
-export function HlsPlayer({
-  src,
-  controls = true,
-  className,
-}: {
+type HlsPlayerProps = {
   src: string;
   controls?: boolean;
   className?: string;
-}) {
-  const ref = useRef<HTMLVideoElement>(null);
+};
 
-  useEffect(() => {
-    const video = ref.current;
-    if (!video || !src) return;
+export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
+  function HlsPlayer({ src, controls = true, className }, forwardedRef) {
+    const ref = useRef<HTMLVideoElement>(null);
+    useImperativeHandle(forwardedRef, () => ref.current as HTMLVideoElement);
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      return;
-    }
+    useEffect(() => {
+      const video = ref.current;
+      if (!video || !src) return;
 
-    if (!Hls.isSupported()) return;
-    const hls = new Hls({
-      enableWorker: true,
-      lowLatencyMode: false,
-    });
-    hls.loadSource(src);
-    hls.attachMedia(video);
-    return () => hls.destroy();
-  }, [src]);
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          startFragPrefetch: true,
+        });
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => hls.loadSource(src));
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (!data.fatal) return;
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+            hls.startLoad();
+          } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+            hls.recoverMediaError();
+          }
+        });
+        hls.attachMedia(video);
+        return () => {
+          hls.destroy();
+          video.removeAttribute("src");
+          video.load();
+        };
+      }
 
-  return (
-    <video
-      ref={ref}
-      className={className}
-      controls={controls}
-      playsInline
-      preload="metadata"
-    >
-      Your browser does not support HLS video.
-    </video>
-  );
-}
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = src;
+      }
+    }, [src]);
+
+    return (
+      <video
+        ref={ref}
+        className={className}
+        controls={controls}
+        playsInline
+        preload="metadata"
+      >
+        Your browser does not support HLS video.
+      </video>
+    );
+  },
+);

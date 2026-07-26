@@ -148,5 +148,35 @@
     "safetyNotes": "Reviewed NASA science explanation with no unsafe content.",
     "sourceAuthority": "NASA/JPL",
     "contentRating": "all-ages"
+  },
+  {
+    "id": "nasa-cool-clouds",
+    "title": "Our World: Cool Clouds",
+    "url": "https://assets.science.nasa.gov/content/dam/science/cds/eclips/assets/videos/our-world-cool-clouds/video.mp4",
+    "sourcePage": "https://science.nasa.gov/eclips/videos/cool-clouds/",
+    "licence": "NASA educational media",
+    "creator": "NASA eClips",
+    "description": "A grades K–5 lesson explains how water vapor cools and condenses into cloud droplets, with a child-friendly cloud-formation demonstration.",
+    "topics": ["water cycle", "water vapor", "condensation", "cloud formation", "precipitation"],
+    "ageRange": { "min": 5, "max": 11 },
+    "kidSafe": true,
+    "safetyNotes": "NASA identifies this resource for grades K–5.",
+    "sourceAuthority": "NASA",
+    "contentRating": "all-ages"
+  },
+  {
+    "id": "nasa-plants-in-space",
+    "title": "Our World: Plants in Space",
+    "url": "https://assets.science.nasa.gov/content/dam/science/cds/eclips/assets/videos/our-world-plants-in-space/video.mp4",
+    "sourcePage": "https://science.nasa.gov/eclips/videos/plants-in-space/",
+    "licence": "NASA educational media",
+    "creator": "NASA eClips",
+    "description": "A grades K–5 lesson explains how plants use light, water, and carbon dioxide during photosynthesis and how astronauts grow plants in space.",
+    "topics": ["photosynthesis", "plants", "sunlight", "water", "carbon dioxide", "plant food", "oxygen"],
+    "ageRange": { "min": 5, "max": 11 },
+    "kidSafe": true,
+    "safetyNotes": "NASA identifies this resource for grades K–5.",
+    "sourceAuthority": "NASA",
+    "contentRating": "all-ages"
   }
 ]

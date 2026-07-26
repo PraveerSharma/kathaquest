@@ -43,10 +43,15 @@ if (
 }
 if (
   lesson.episodes.some(
-    (episode) => !episode.streamUrl || !episode.evidence?.length,
+    (episode) =>
+      !episode.streamUrl ||
+      !episode.evidence?.length ||
+      episode.durationSeconds < 50,
   )
 ) {
-  throw new Error("One or more episodes lacks a real stream or evidence");
+  throw new Error(
+    "One or more episodes lacks a meaningful-length stream or evidence",
+  );
 }
 
 const questionResult = await request("/api/questions/ask", {
@@ -58,26 +63,62 @@ const questionResult = await request("/api/questions/ask", {
     question: "Why does magma rise toward the surface?",
   }),
 });
-if (!questionResult.answer || !questionResult.streamUrl) {
-  throw new Error("Question answer lacked an explanation or evidence stream");
+if (!questionResult.answer) {
+  throw new Error("Question answer lacked a grounded explanation");
 }
 
-const wrongAnswers = Object.fromEntries(
-  lesson.concepts.map((concept) => [concept.id, concept.quiz.options[0]]),
-);
-const quizResult = await request("/api/quiz/submit", {
+const localizedResult = await request("/api/lessons/localize", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
     lessonId: lesson.id,
     lessonToken,
+    language: "bn-IN",
+  }),
+});
+const localizedLesson = localizedResult.lesson as PublicLesson;
+const localizedToken = localizedResult.lessonToken as string;
+if (
+  localizedLesson.language !== "bn-IN" ||
+  localizedLesson.title === lesson.title ||
+  !localizedToken
+) {
+  throw new Error("Regional-language lesson localization failed");
+}
+
+const narrationResult = await request("/api/narration", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    lessonId: localizedLesson.id,
+    lessonToken: localizedToken,
+    episodeId: localizedLesson.episodes[0].id,
+    language: localizedLesson.language,
+  }),
+});
+if (!narrationResult.audioUrl || !narrationResult.syncMode) {
+  throw new Error("Localized child-friendly narration failed");
+}
+
+const wrongAnswers = Object.fromEntries(
+  localizedLesson.concepts.map((concept) => [
+    concept.id,
+    concept.quiz.options[0],
+  ]),
+);
+const quizResult = await request("/api/quiz/submit", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    lessonId: localizedLesson.id,
+    lessonToken: localizedToken,
     answers: wrongAnswers,
   }),
 });
 if (
   typeof quizResult.score !== "number" ||
   quizResult.score < 0 ||
-  quizResult.score > lesson.concepts.length
+  quizResult.score > localizedLesson.concepts.length
 ) {
   throw new Error("Quiz did not return a valid score");
 }
@@ -89,7 +130,13 @@ console.log(
       lessonId: lesson.id,
       conceptCount: lesson.concepts.length,
       episodeCount: lesson.episodes.length,
+      minimumEpisodeSeconds: Math.min(
+        ...lesson.episodes.map((episode) => episode.durationSeconds),
+      ),
       questionAnswered: true,
+      regionalLanguageSwitch: localizedLesson.language,
+      narrationSyncMode: narrationResult.syncMode,
+      localizedVideoCreated: Boolean(narrationResult.streamUrl),
       secureLessonToken: true,
       revisionReelCreated: Boolean(quizResult.revisionReelUrl),
       health,

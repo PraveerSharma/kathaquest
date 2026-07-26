@@ -21,69 +21,40 @@ export async function generateNarration({
   fallbackUsed: boolean;
   primaryFailure?: string;
 }> {
-  if (language === "hi-IN") {
-    try {
-      return {
-        audioUrl: await generateSarvamNarration(text, language),
-        provider: "sarvam",
-        fallbackUsed: false,
-      };
-    } catch (primaryError) {
-      if (!env.ELEVENLABS_API_KEY || !env.ELEVENLABS_VOICE_ID) {
-        throw primaryError;
-      }
-      return withSpan(
-        "tts.fallback",
-        { "tts.fallback_used": true, "tts.provider": "elevenlabs" },
-        async () => {
-          telemetry.ttsFallbacks.add(1, {
-            from: "sarvam",
-            to: "elevenlabs",
-          });
-          return {
-            audioUrl: await generateElevenLabsNarration(text),
-            provider: "elevenlabs" as const,
-            fallbackUsed: true,
-            primaryFailure:
-              primaryError instanceof Error
-                ? primaryError.message
-                : String(primaryError),
-          };
-        },
-      );
-    }
-  }
-
   try {
+    if (forceFailure) throw new Error("Controlled Sarvam failure for demo");
     return {
-      audioUrl: await generateElevenLabsNarration(text, forceFailure),
-      provider: "elevenlabs",
+      audioUrl: await generateSarvamNarration(text, language),
+      provider: "sarvam",
       fallbackUsed: false,
     };
   } catch (primaryError) {
+    if (!env.ELEVENLABS_API_KEY || !env.ELEVENLABS_VOICE_ID) {
+      throw primaryError;
+    }
     return withSpan(
       "tts.fallback",
-      { "tts.fallback_used": true, "tts.provider": "sarvam" },
+      { "tts.fallback_used": true, "tts.provider": "elevenlabs" },
       async () => {
         telemetry.ttsFallbacks.add(1, {
-          from: "elevenlabs",
-          to: "sarvam",
+          from: "sarvam",
+          to: "elevenlabs",
         });
         logger.warn(
           {
             event: "tts.fallback",
-            provider: "sarvam",
-            primaryProvider: "elevenlabs",
+            provider: "elevenlabs",
+            primaryProvider: "sarvam",
             error:
               primaryError instanceof Error
                 ? primaryError.message
                 : String(primaryError),
           },
-          "Primary voice provider failed; recovered using Sarvam AI",
+          "Primary voice provider failed; recovered using ElevenLabs",
         );
         return {
-          audioUrl: await generateSarvamNarration(text, language),
-          provider: "sarvam" as const,
+          audioUrl: await generateElevenLabsNarration(text),
+          provider: "elevenlabs" as const,
           fallbackUsed: true,
           primaryFailure:
             primaryError instanceof Error
