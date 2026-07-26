@@ -326,7 +326,7 @@ export function EpisodeCard({
             >
               <span className="loading-spinner" aria-hidden="true" />
               <span>
-                <strong>Creating a {languageName} voice…</strong>
+                <strong>Creating {languageName} voice audio…</strong>
                 Translating, speaking and syncing it with this video.
               </span>
             </div>
