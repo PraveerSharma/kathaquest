@@ -9,7 +9,12 @@ declare global {
   var __kathaquestOtelStarted: boolean | undefined;
 }
 
-if (!globalThis.__kathaquestOtelStarted) {
+const hasProductionExporter = Boolean(
+  process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+);
+const shouldStart = !process.env.VERCEL || hasProductionExporter;
+
+if (shouldStart && !globalThis.__kathaquestOtelStarted) {
   const serviceName = process.env.OTEL_SERVICE_NAME ?? "kathaquest";
   const tracesUrl =
     process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ??

@@ -41,8 +41,16 @@ export async function GET() {
           : "Optional credentials not configured; Sarvam fallback is active",
     } satisfies ServiceHealth,
     opentelemetry: {
-      status: "ok",
-      detail: `Exporter configured for ${env.OTEL_EXPORTER_OTLP_ENDPOINT}`,
+      status:
+        process.env.VERCEL &&
+        !process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+          ? "missing"
+          : "ok",
+      detail:
+        process.env.VERCEL &&
+        !process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+          ? "No reachable production exporter configured; local SigNoz remains supported"
+          : `Exporter configured for ${env.OTEL_EXPORTER_OTLP_ENDPOINT}`,
     } satisfies ServiceHealth,
   };
 
