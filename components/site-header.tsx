@@ -3,7 +3,13 @@ import Link from "next/link";
 export function SiteHeader({
   active,
 }: {
-  active?: "home" | "content" | "adventure" | "lesson" | "blog";
+  active?:
+    | "home"
+    | "content"
+    | "adventure"
+    | "lesson"
+    | "observability"
+    | "blog";
 }) {
   return (
     <header className="site-header container">
@@ -16,22 +22,52 @@ export function SiteHeader({
           Home
         </Link>
         <Link
+          aria-label="Explore chapters"
           aria-current={active === "content" ? "page" : undefined}
           href="/content"
         >
-          Explore chapters
+          <span aria-hidden="true" className="nav-long">
+            Explore chapters
+          </span>
+          <span aria-hidden="true" className="nav-short">
+            Chapters
+          </span>
         </Link>
         <Link
+          aria-label="My adventure"
           aria-current={active === "adventure" ? "page" : undefined}
           href="/adventure"
         >
-          My adventure
+          <span aria-hidden="true" className="nav-long">
+            My adventure
+          </span>
+          <span aria-hidden="true" className="nav-short">
+            Adventure
+          </span>
         </Link>
         <Link
+          aria-label="Mission control"
+          aria-current={active === "observability" ? "page" : undefined}
+          href="/observability"
+        >
+          <span aria-hidden="true" className="nav-long">
+            Mission control
+          </span>
+          <span aria-hidden="true" className="nav-short">
+            Dashboard
+          </span>
+        </Link>
+        <Link
+          aria-label="Build story"
           aria-current={active === "blog" ? "page" : undefined}
           href="/blog/kathaquest-signoz"
         >
-          Build story
+          <span aria-hidden="true" className="nav-long">
+            Build story
+          </span>
+          <span aria-hidden="true" className="nav-short">
+            Story
+          </span>
         </Link>
       </nav>
       <span className="trust-pill">

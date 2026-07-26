@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata = {
   title: "Inside KathaQuest: Observing an AI Lesson Pipeline with SigNoz",
   description:
-    "How I used OpenTelemetry and SigNoz to understand a multilingual PDF-to-lesson pipeline.",
+    "What real OpenTelemetry traces taught me about a multilingual PDF-to-lesson pipeline.",
 };
 
 export default function KathaQuestSigNozBlog() {
@@ -15,20 +15,19 @@ export default function KathaQuestSigNozBlog() {
       <SiteHeader active="blog" />
       <article className="blog-article container">
         <header className="blog-hero">
-          <p className="eyebrow">BUILD STORY · SIGNOZ HACKATHON 2026</p>
+          <p className="eyebrow">BUILD STORY · SIGNOZ</p>
           <h1>
-            I could see the lesson. SigNoz showed me why it took a minute to
+            I could see the lesson. SigNoz showed me why it took two minutes to
             arrive.
           </h1>
           <p className="blog-deck">
-            Building KathaQuest, an AI lesson studio that turns a school
-            chapter into a narrated, visual lesson, forced me to treat
-            observability as part of the product rather than a dashboard added
-            at the end.
+            KathaQuest turns a school chapter into a narrated, visual lesson.
+            Once the pipeline grew past a single AI call, I needed to understand
+            the wait from the learner&apos;s point of view.
           </p>
           <div className="blog-byline">
             <span>By Praveer Sharma</span>
-            <span>12 minute read</span>
+            <span>8 minute read</span>
           </div>
         </header>
 
@@ -43,44 +42,42 @@ export default function KathaQuestSigNozBlog() {
 
         <section>
           <p>
-            A child does not care that an application made seven API calls.
-            They care that the explanation makes sense, the voice feels
-            friendly, and the next scene appears before curiosity turns into
-            impatience. That was the useful constraint behind KathaQuest.
+            My first KathaQuest prototype looked convincing for about thirty
+            seconds. It extracted topics from a PDF and found related video
+            clips. Then I tried learning from it. A short clip of a volcano
+            erupting is memorable, but it does not explain pressure, magma, or
+            what is happening under the ground.
           </p>
           <p>
-            The first prototype extracted topics from a PDF and returned a few
-            related video clips. It technically worked, but it solved only the
-            retrieval part of learning. A short clip of an eruption does not
-            explain pressure, magma, or what happens below the surface. I
-            rebuilt the workflow as a small lesson studio: parse the chapter,
-            create a pedagogical plan, write a scene-by-scene script, retrieve
-            real footage, compose diagrams and highlighted vocabulary, narrate
-            it in the child&apos;s language, and finish with a quiz.
+            I rebuilt the flow around a complete lesson: parse the chapter,
+            choose learning goals, write a scene-by-scene script, retrieve
+            footage, add diagrams and highlighted words, create narration, save
+            the lesson, and finish with a quiz. That made the product more
+            useful. It also made a single request depend on OpenAI, VideoDB, a
+            presentation engine, text-to-speech, and storage.
           </p>
           <p>
-            That stronger workflow also created a harder engineering problem.
-            One request now crosses document parsing, OpenAI, VideoDB, media
-            ranking, a presentation engine, text-to-speech, and storage. A
-            generic request-duration graph could tell me the whole operation
-            was slow. It could not tell me which creative step was slow, what
-            language was affected, or whether the final video was actually
-            relevant.
+            The page could tell me that generation was taking a long time. It
+            could not tell me whether the delay came from planning, footage
+            retrieval, or narration. Worse, a fast request could still return
+            an irrelevant clip. I needed both engineering signals and learning
+            quality signals in the same trace.
           </p>
         </section>
 
         <section>
-          <h2>Tracing the lesson, not just the HTTP request</h2>
+          <h2>I traced the work a learner actually waits for</h2>
           <p>
-            I instrumented the pipeline with OpenTelemetry and used a
-            self-hosted SigNoz deployment installed through Foundry. The root
-            span is <code>lesson.generate</code>. Beneath it are spans named
-            after product decisions: <code>llm.extract_concepts</code>,{" "}
+            KathaQuest uses OpenTelemetry and a self-hosted SigNoz stack
+            installed with Foundry. The root span is{" "}
+            <code>lesson.generate</code>. Its children use product language:
+            <code>llm.extract_concepts</code>,{" "}
             <code>videodb.search_concept</code>,{" "}
             <code>videodb.rerank_candidates</code>,{" "}
             <code>videodb.compile_episode</code>,{" "}
             <code>llm.create_lesson_presentation</code>, and{" "}
-            <code>tts.generate</code>.
+            <code>lesson.persist</code>. Narration and quiz attempts have their
+            own spans too.
           </p>
           <pre>
             <code>{`lesson.generate
@@ -90,14 +87,33 @@ export default function KathaQuestSigNozBlog() {
 │   └── videodb.rerank_candidates
 ├── videodb.compile_episode
 ├── llm.create_lesson_presentation
-└── tts.generate`}</code>
+└── lesson.persist`}</code>
           </pre>
           <p>
-            Each span carries the context I need during a demo or an incident:
-            provider, model, age band, target language, scene count, media
-            source, result count, relevance score, and fallback status. API
-            keys and chapter text are deliberately excluded. The result is a
-            trace that reads like the lesson&apos;s production diary.
+            I register an OTLP/HTTP exporter at startup, then wrap each
+            meaningful stage with a small helper. The production exporter URL
+            comes from the environment rather than being baked into the app:
+          </p>
+          <pre>
+            <code>{`registerOTel({
+  serviceName: "kathaquest",
+  traceExporter: new OTLPHttpJsonTraceExporter({
+    url: process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+    headers: exporterHeaders(),
+  }),
+});
+
+await withSpan("lesson.generate", {
+  "lesson.language": language,
+  "lesson.age_band": ageBand,
+}, async (span) => buildLesson(span));`}</code>
+          </pre>
+          <p>
+            The attributes include provider, model, age band, target language,
+            scene count, media source, result count, relevance score, and
+            fallback status. Chapter text, children&apos;s answers, API keys,
+            and signed media URLs are left out. A trace should help with a
+            problem without becoming a second copy of private data.
           </p>
           <figure>
             <Image
@@ -107,37 +123,34 @@ export default function KathaQuestSigNozBlog() {
               width={1600}
             />
             <figcaption>
-              Real KathaQuest lesson traces in the local SigNoz instance.
+              Real KathaQuest traces in the self-hosted SigNoz instance.
             </figcaption>
           </figure>
         </section>
 
         <section>
-          <h2>The first numbers changed what I worked on</h2>
+          <h2>The trace contradicted my first guess</h2>
           <p>
-            During the final test run, SigNoz received 320 spans across 34
-            lesson-generation traces. Eighteen lessons completed in the
-            selected window. It also received 27 KathaQuest-specific metrics,
-            plus 224 OpenAI spans and six Sarvam narration spans. The average
-            retrieved-video relevance score was about 0.615.
+            I expected the interface or the final video composition to be the
+            bottleneck. The 24-hour snapshot on 27 July said otherwise. After
+            deduplicating retried records, SigNoz contained 8,427 unique spans
+            across 1,135 traces. Thirty-eight{" "}
+            <code>lesson.generate</code> spans were recorded, and 27 completed
+            successfully. The unsuccessful runs include provider recovery tests
+            and failed development attempts, which I kept visible on purpose.
           </p>
           <p>
-            The most useful finding was less flattering: the visible UI was
-            responsive, but the end-to-end pipeline could approach a minute.
-            VideoDB work reached roughly 6.46 seconds at p95, and storyboard
-            creation added another large block. Without distributed traces I
-            would have optimized the React interface because that was the part
-            I could see. The trace made it obvious that retrieval fan-out and
-            repeated generation were the real targets.
+            Lesson generation reached 145.8 seconds at p95. Concept searches in
+            VideoDB reached roughly 25 seconds at p95, while the average
+            recorded relevance score was 0.62. Those numbers pointed to
+            retrieval fan-out, ranking, and repeated generation. Shaving fifty
+            milliseconds from a React render would not change the experience.
           </p>
           <p>
-            I added a ten-panel KathaQuest dashboard through the SigNoz API and
-            MCP tools. It tracks completed and failed lessons, p95 generation
-            time, LLM and TTS latency, VideoDB latency, video relevance,
-            provider volume, scene volume, and fallback behavior. Every query
-            was dry-run before the dashboard was created. That last detail
-            mattered: telemetry labels are easy to assume and expensive to
-            discover during a live demo.
+            Relevance was the more important lesson. A healthy HTTP response
+            with weak footage is still a bad result for a child. Recording the
+            score beside latency lets me see whether a faster retrieval strategy
+            also made the lesson less useful.
           </p>
           <figure>
             <Image
@@ -147,18 +160,69 @@ export default function KathaQuestSigNozBlog() {
               width={1600}
             />
             <figcaption>
-              The service view confirmed that traces were arriving before I
-              built project-specific panels.
+              The service view confirmed that production traces were arriving
+              before I built KathaQuest-specific views.
             </figcaption>
           </figure>
         </section>
 
         <section>
-          <h2>Reproducible by design</h2>
+          <h2>The production mistake was localhost</h2>
           <p>
-            The repository includes both <code>casting.yaml</code> and{" "}
-            <code>casting.yaml.lock</code>, so the observability stack can be
-            reproduced with Foundry:
+            Local development was simple: the Next.js app exported OTLP to{" "}
+            <code>localhost:4318</code>, where the collector was listening. I
+            initially carried that mental model into Vercel. Of course, a
+            serverless function&apos;s localhost is not my laptop. The app
+            looked healthy while the production traces went nowhere.
+          </p>
+          <p>
+            For the live deployment, Vercel now sends traces to a
+            network-reachable TLS gateway, which forwards OTLP to the
+            self-hosted collector. I verified the path by creating a full Water
+            Cycle lesson and a quiz event, then finding both in ClickHouse and
+            SigNoz. This gateway is an interim bridge. The repository also has a
+            cost-guarded AWS CDK stack for a permanent host, but the AWS account
+            is still awaiting compute verification.
+          </p>
+          <p>
+            That boundary matters. “Exporter configured” and “trace received”
+            are different claims. My health route checks the configuration; my
+            deployment test checks for the actual span ID at the other end.
+          </p>
+        </section>
+
+        <section>
+          <h2>A dashboard for people who do not speak in span IDs</h2>
+          <p>
+            The SigNoz workspace has detailed panels for lesson failures,
+            generation p95, OpenAI and TTS latency, VideoDB latency, relevance,
+            fallback behavior, and scene volume. Those views are useful while
+            debugging. They are dense for a judge, teacher, or product reviewer
+            who wants the story quickly.
+          </p>
+          <p>
+            I added a public Mission Control page inside KathaQuest. It reads
+            safe aggregates from the SigNoz ClickHouse store and refreshes every
+            fifteen seconds. It shows lesson success, p95 generation time,
+            relevance, dependency calls, trace traffic, and recent semantic
+            operations. It never exposes raw attributes or credentials. The
+            page also explains what the numbers suggest, because a chart without
+            a decision is decoration.
+          </p>
+          <p>
+            The lesson detail page still shows its own trace ID and generation
+            time. That gives me two useful levels: a learner can report one
+            problematic lesson, while Mission Control shows whether the problem
+            is part of a pattern.
+          </p>
+        </section>
+
+        <section>
+          <h2>The setup is reproducible</h2>
+          <p>
+            The repository includes <code>casting.yaml</code> and{" "}
+            <code>casting.yaml.lock</code>. Foundry can recreate the Docker
+            deployment and its SigNoz MCP server:
           </p>
           <pre>
             <code>{`foundryctl cast -f casting.yaml
@@ -166,81 +230,61 @@ export default function KathaQuestSigNozBlog() {
 # SigNoz UI
 open http://localhost:8080
 
-# The app exports OTLP/HTTP telemetry here
+# Local OTLP/HTTP endpoint
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`}</code>
           </pre>
           <p>
-            I also added a configuration script that checks existing
-            dashboards, validates each query, then creates the KathaQuest
-            dashboard. If a public, authenticated webhook is supplied, the same
-            script can create notification channels and alerts for failed
-            lessons, slow p95 generation, and low media relevance.
+            A configuration script checks for existing dashboards, dry-runs
+            each query, and then creates the KathaQuest panels. It can also
+            configure alerts for failed lessons, slow p95 generation, and low
+            media relevance when an authenticated notification channel is
+            supplied. Dry-running the queries saved time because attribute
+            names that look obvious in application code are easy to misread in
+            the telemetry schema.
           </p>
           <p>
-            One real deployment lesson was that a Vercel function cannot export
-            to <code>localhost:4318</code> on my laptop. Local development and
-            the self-hosted stack work together, but production needs a
-            network-reachable OpenTelemetry collector with TLS and
-            authentication. I kept that boundary explicit instead of making
-            the production badge claim telemetry that could not arrive.
-          </p>
-        </section>
-
-        <section>
-          <h2>Observability became a product feature</h2>
-          <p>
-            The lesson quality score is not an infrastructure metric in the
-            traditional sense, yet it is the number that matters most here. A
-            healthy 200 response with irrelevant footage is still a failed
-            learning experience. Recording relevance, fallback source, language
-            selection, and scene count beside latency lets me ask better
-            questions: Are Hindi lessons slower? Does a fallback image improve
-            completion but reduce relevance? Do younger age bands need fewer
-            scenes?
-          </p>
-          <p>
-            KathaQuest now supports eleven Indian languages and lets the learner
-            switch narration without rebuilding the visual lesson. Sarvam
-            supplies regional-language speech, while the provider boundary also
-            supports ElevenLabs when valid credentials are configured. The
-            presentation itself is deterministic React composition, inspired
-            by Remotion: real clips when they teach the concept well, diagrams
-            when the concept is invisible, captions for every narration line,
-            and short knowledge checks that turn watching into participation.
-          </p>
-          <p>
-            The next optimization is trace-driven. I want to cache stable lesson
-            plans, parallelize independent media searches, set a hard retrieval
-            budget per scene, and evaluate relevance before rendering. SigNoz
-            gives each change an honest before-and-after result.
+            The complete setup, including the instrumentation and Foundry
+            manifests, is available in the{" "}
+            <a
+              href="https://github.com/PraveerSharma/kathaquest"
+              rel="noreferrer"
+              target="_blank"
+            >
+              KathaQuest repository
+            </a>
+            .
           </p>
         </section>
 
         <section>
-          <h2>What I learned</h2>
+          <h2>What I would tell myself at the start</h2>
           <p>
-            I started this hackathon thinking observability would help me prove
-            that the app worked. It did something more valuable: it showed me
-            where the product did not yet respect a child&apos;s time.
-            Instrumenting semantic stages made the system easier to explain,
-            debug, and improve. Foundry made the stack repeatable, and the
-            SigNoz traces connected technical latency to an actual learning
-            moment.
+            Name spans after decisions in the product, not after helper
+            functions. Add quality attributes early. Test the route from the
+            production runtime, not only from a laptop. Finally, keep failed
+            experiments visible. The 71.1% lesson success rate is less polished
+            than a perfect green card, but it tells me where the product still
+            needs work.
           </p>
           <p>
-            AI assisted with implementation and editing during the build. The
-            measurements, screenshots, architecture decisions, failures, and
-            conclusions in this article come from the running KathaQuest
-            system.
+            SigNoz began as a way to prove that KathaQuest was running. It
+            became the tool that showed me where the app was wasting a
+            child&apos;s time and where “working” still meant “not useful
+            enough.” That is the kind of feedback I can build from.
           </p>
           <div className="blog-cta">
             <div>
-              <h2>Turn a chapter into a lesson</h2>
-              <p>Try a sample chapter or upload your own PDF.</p>
+              <h2>See the system for yourself</h2>
+              <p>Explore the live signals or turn a chapter into a lesson.</p>
             </div>
-            <Link className="primary-button" href="/content">
-              Open KathaQuest
-            </Link>
+            <div className="blog-cta-actions">
+              <Link className="secondary-button" href="/observability">
+                Open Mission Control
+              </Link>
+              <Link className="primary-button" href="/content">
+                Try KathaQuest
+              </Link>
+            </div>
           </div>
         </section>
       </article>

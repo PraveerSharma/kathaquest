@@ -516,3 +516,86 @@ test("microphone-unavailable feedback is explicit", async ({ page }) => {
     }),
   ).toBeVisible();
 });
+
+test("Mission Control makes live SigNoz signals understandable", async ({
+  page,
+}) => {
+  await page.route("**/api/observability/summary", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "live",
+        service: "kathaquest",
+        windowHours: 24,
+        generatedAt: new Date().toISOString(),
+        latestSpanAt: "2026-07-26 23:00:00.000",
+        metrics: {
+          traces: 42,
+          spans: 318,
+          errors: 3,
+          errorRate: 0.94,
+          lessons: 12,
+          successfulLessons: 10,
+          lessonSuccessRate: 83.3,
+          p95LatencyMs: 8400,
+          lessonP95LatencyMs: 92400,
+          relevanceScore: 0.78,
+          openaiCalls: 38,
+          videoDbCalls: 24,
+          narrations: 11,
+          quizChecks: 7,
+        },
+        trend: [
+          { bucket: "2026-07-26 18:00:00", traces: 8, spans: 52 },
+          { bucket: "2026-07-26 20:00:00", traces: 13, spans: 91 },
+          { bucket: "2026-07-26 22:00:00", traces: 21, spans: 175 },
+        ],
+        recent: [
+          {
+            event_time: "2026-07-26 23:00:00.000",
+            name: "lesson.generate",
+            duration_ms: 48200,
+            has_error: 0,
+            language: "hi-IN",
+            provider: "",
+          },
+          {
+            event_time: "2026-07-26 22:58:00.000",
+            name: "videodb.search_concept",
+            duration_ms: 8500,
+            has_error: 0,
+            language: "",
+            provider: "",
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.goto("/");
+  const missionControl = page.getByRole("link", { name: "Mission control" });
+  await expect(missionControl).toHaveAttribute("href", "/observability");
+  await page.goto("/observability");
+
+  await expect(page).toHaveURL(/\/observability$/);
+  await expect(
+    page.getByRole("heading", { name: "See each lesson being built." }),
+  ).toBeVisible();
+  await expect(page.getByText("Live telemetry")).toBeVisible();
+  await expect(page.getByText("83.3%")).toBeVisible();
+  await expect(page.getByText("78%", { exact: true })).toBeVisible();
+  await expect(page.getByText("Complete lesson")).toBeVisible();
+  await expect(page.getByText("Search VideoDB")).toBeVisible();
+
+  const dimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+
+  await page.goto("/blog/kathaquest-signoz");
+  await expect(page.locator(".blog-hero .eyebrow")).toHaveText(
+    "BUILD STORY · SIGNOZ",
+  );
+  await expect(page.getByText(/SIGNOZ HACKATHON 2026/i)).toHaveCount(0);
+});
