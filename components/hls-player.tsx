@@ -39,6 +39,7 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
     const fallbackCallbackRef = useRef(onSourceFallback);
     const [failed, setFailed] = useState(false);
     const [usingFallback, setUsingFallback] = useState(false);
+    const [ready, setReady] = useState(false);
     const [retryKey, setRetryKey] = useState(0);
     const canUseFallback =
       src.startsWith("https://stream.videodb.io/") && Boolean(fallbackSrc);
@@ -89,6 +90,7 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
       if (!video || !src) return;
       fallbackActiveRef.current = false;
       setFailed(false);
+      setReady(false);
       setUsingFallback(false);
       const playbackSrc = src.startsWith("https://stream.videodb.io/")
         ? `/api/media/proxy?url=${encodeURIComponent(src)}`
@@ -128,6 +130,12 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
 
     return (
       <div className="hls-player-wrap">
+        {!ready && !failed ? (
+          <div className="hls-loading" role="status">
+            <span className="loading-spinner" aria-hidden="true" />
+            Preparing the reviewed clip
+          </div>
+        ) : null}
         <video
           ref={ref}
           aria-label="Educational video"
@@ -136,7 +144,10 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
           onError={() => {
             if (!activateFallback()) setFailed(true);
           }}
-          onLoadedData={() => setFailed(false)}
+          onLoadedData={() => {
+            setFailed(false);
+            setReady(true);
+          }}
           onLoadedMetadata={(event) => {
             if (
               usingFallback &&

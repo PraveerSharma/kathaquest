@@ -280,17 +280,15 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
   await openReadyApp(page);
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
-  await expect(page).toHaveURL(/\/adventure$/);
+  await expect(page).toHaveURL(new RegExp(`/adventure/${lessonId}$`), {
+    timeout: 15_000,
+  });
   await expect(page.getByRole("heading", { name: "Volcano Adventure" })).toBeVisible();
   await expect(page.locator(".episode-card")).toHaveCount(3);
   await expect(page.getByText("1m 15s").first()).toBeVisible();
 
   await page.getByLabel("Learning language").selectOption("bn-IN");
   await expect(page.getByRole("heading", { name: "আগ্নেয়গিরির অভিযান" })).toBeVisible();
-  await page
-    .getByRole("button", { name: /Add friendly বাংলা voice/i })
-    .first()
-    .click();
   await expect(
     page
       .getByText(
@@ -324,6 +322,15 @@ test("content navigation and the continuous lesson studio are usable", async ({
   page,
 }) => {
   await mockGeneratedLesson(page);
+  await page.route("**/api/lessons/localize", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        lesson: lesson("mr-IN", true),
+        lessonToken: "kq1.marathi-secure-token-that-is-long-enough",
+      }),
+    });
+  });
   await page.route("**/api/presentations/narrate", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -333,6 +340,17 @@ test("content navigation and the continuous lesson studio are usable", async ({
         fallbackUsed: true,
         language: "mr-IN",
         durationSeconds: 180,
+      }),
+    });
+  });
+  await page.route("**/api/narration", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        audioUrl: "data:audio/mpeg;base64,SUQz",
+        provider: "sarvam",
+        fallbackUsed: false,
+        syncMode: "browser",
       }),
     });
   });
@@ -351,14 +369,18 @@ test("content navigation and the continuous lesson studio are usable", async ({
   await expect(page.locator('.app-shell[data-ready="true"]')).toBeVisible();
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
-  await expect(page).toHaveURL(/\/adventure$/);
+  await expect(page).toHaveURL(new RegExp(`/adventure/${lessonId}$`), {
+    timeout: 15_000,
+  });
   const lessonLink = page.getByRole("link", {
     name: /Watch complete lesson film/i,
   });
-  await expect(lessonLink).toHaveAttribute("href", "/lesson");
-  await page.goto("/lesson");
+  await expect(lessonLink).toHaveAttribute("href", `/lesson/${lessonId}`);
+  await lessonLink.click();
 
-  await expect(page).toHaveURL(/\/lesson$/);
+  await expect(page).toHaveURL(new RegExp(`/lesson/${lessonId}$`), {
+    timeout: 15_000,
+  });
   await expect(
     page.getByRole("heading", { name: "Volcano Adventure" }),
   ).toBeVisible({ timeout: 15_000 });
@@ -373,13 +395,52 @@ test("content navigation and the continuous lesson studio are usable", async ({
     studioDimensions.viewport + 1,
   );
 
-  await page.getByLabel("Lesson film audio language").selectOption("mr-IN");
+  await page.getByLabel("Learning language").selectOption("mr-IN");
   await expect(page.getByText("Voice: Sarvam AI")).toBeVisible();
-  await page.getByLabel("Lesson film voice engine").selectOption("elevenlabs");
+  await page
+    .getByLabel("Voice engine for the complete lesson")
+    .selectOption("elevenlabs");
   await expect(page.getByText("Voice: Sarvam AI")).toBeVisible();
   await expect(
     page.getByText(/backup voice kept your lesson film ready/i),
   ).toBeVisible();
+});
+
+test("a durable lesson URL can restore a session in a fresh browser", async ({
+  page,
+}) => {
+  await page.route(`**/api/lessons/${lessonId}`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        lesson: lesson(),
+        lessonToken: "kq1.shared-secure-token-that-is-long-enough",
+      }),
+    });
+  });
+  await page.route("**/api/narration", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        audioUrl: "data:audio/mpeg;base64,SUQz",
+        provider: "sarvam",
+        fallbackUsed: false,
+        syncMode: "browser",
+      }),
+    });
+  });
+
+  await page.goto(`/adventure/${lessonId}`);
+  await expect(
+    page.getByRole("heading", { name: "Volcano Adventure" }),
+  ).toBeVisible();
+  await expect(page.locator(".episode-card")).toHaveCount(3);
+  await expect(page.getByRole("button", { name: /Share this lesson/i })).toBeVisible();
+  const savedId = await page.evaluate(() => {
+    const raw = window.localStorage.getItem("kathaquest.lesson.v1");
+    return raw ? JSON.parse(raw).lesson.id : null;
+  });
+  expect(savedId).toBe(lessonId);
 });
 
 test("generation failures recover without trapping the child", async ({ page }) => {
@@ -431,10 +492,23 @@ test("microphone-unavailable feedback is explicit", async ({ page }) => {
     });
   });
   await mockGeneratedLesson(page);
+  await page.route("**/api/narration", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        audioUrl: "data:audio/mpeg;base64,SUQz",
+        provider: "sarvam",
+        fallbackUsed: false,
+        syncMode: "browser",
+      }),
+    });
+  });
   await openReadyApp(page);
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
-  await expect(page).toHaveURL(/\/adventure$/);
+  await expect(page).toHaveURL(new RegExp(`/adventure/${lessonId}$`), {
+    timeout: 15_000,
+  });
   await page.getByRole("button", { name: "Record a question" }).click();
   await expect(
     page.getByRole("alert").filter({

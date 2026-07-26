@@ -129,7 +129,7 @@ export function VoiceQuestion({
           </svg>
         </button>
         <button className="secondary-button" disabled={loading} type="submit">
-          {loading ? "Searching…" : "Ask"}
+          {loading ? "Searching..." : "Ask"}
         </button>
       </form>
       {error ? (

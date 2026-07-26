@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
-import {
-  getLessonLanguage,
-  lessonLanguages,
-} from "@/lib/languages";
+import { getLessonLanguage } from "@/lib/languages";
 import type { Episode, LessonLanguage } from "@/lib/types";
+
+export type VoiceProviderPreference = "auto" | "sarvam" | "elevenlabs";
+export type NarrationStatus = "loading" | "ready" | "error";
 
 function formatDuration(seconds: number) {
   if (!Number.isFinite(seconds)) return "short clip";
@@ -23,6 +23,8 @@ export function EpisodeCard({
   lessonId,
   lessonToken,
   onFallback,
+  providerPreference,
+  onNarrationStatusChange,
 }: {
   episode: Episode;
   index: number;
@@ -30,22 +32,24 @@ export function EpisodeCard({
   lessonId: string;
   lessonToken: string;
   onFallback: () => void;
+  providerPreference: VoiceProviderPreference;
+  onNarrationStatusChange?: (
+    episodeId: string,
+    status: NarrationStatus,
+  ) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const preparedRequestRef = useRef<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>();
   const [localizedStream, setLocalizedStream] = useState<string>();
   const [showLocalized, setShowLocalized] = useState(false);
   const [syncMode, setSyncMode] = useState<"videodb-timeline" | "browser">();
   const [provider, setProvider] = useState<"sarvam" | "elevenlabs">();
-  const [audioLanguage, setAudioLanguage] =
-    useState<LessonLanguage>(language);
-  const [providerPreference, setProviderPreference] =
-    useState<"auto" | "sarvam" | "elevenlabs">("auto");
   const [fallbackUsed, setFallbackUsed] = useState(false);
   const [error, setError] = useState<string>();
-  const languageName = getLessonLanguage(audioLanguage).label;
+  const languageName = getLessonLanguage(language).label;
 
   function resetLocalizedMedia() {
     audioRef.current?.pause();
@@ -57,22 +61,6 @@ export function EpisodeCard({
     setProvider(undefined);
     setFallbackUsed(false);
     setError(undefined);
-  }
-
-  async function changeAudioLanguage(nextLanguage: LessonLanguage) {
-    if (nextLanguage === audioLanguage || loading) return;
-    setAudioLanguage(nextLanguage);
-    resetLocalizedMedia();
-    await requestLocalizedVideo(nextLanguage, providerPreference);
-  }
-
-  async function changeProvider(
-    nextProvider: "auto" | "sarvam" | "elevenlabs",
-  ) {
-    if (nextProvider === providerPreference || loading) return;
-    setProviderPreference(nextProvider);
-    resetLocalizedMedia();
-    await requestLocalizedVideo(audioLanguage, nextProvider);
   }
 
   function hearOriginalAudio() {
@@ -139,10 +127,11 @@ export function EpisodeCard({
 
   async function requestLocalizedVideo(
     targetLanguage: LessonLanguage,
-    targetProvider: "auto" | "sarvam" | "elevenlabs",
+    targetProvider: VoiceProviderPreference,
   ) {
     setError(undefined);
     setLoading(true);
+    onNarrationStatusChange?.(episode.id, "loading");
     try {
       const response = await fetch("/api/narration", {
         method: "POST",
@@ -186,12 +175,24 @@ export function EpisodeCard({
           void Promise.allSettled([video.play(), audio.play()]);
         }, 0);
       }
+      onNarrationStatusChange?.(episode.id, "ready");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Narration failed");
+      onNarrationStatusChange?.(episode.id, "error");
     } finally {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    const requestKey = `${lessonId}:${episode.id}:${language}:${providerPreference}`;
+    if (preparedRequestRef.current === requestKey) return;
+    preparedRequestRef.current = requestKey;
+    resetLocalizedMedia();
+    void requestLocalizedVideo(language, providerPreference);
+    // This request is intentionally keyed to the lesson-wide controls.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [episode.id, language, lessonId, providerPreference]);
 
   async function prepareLocalizedVideo() {
     setError(undefined);
@@ -210,7 +211,7 @@ export function EpisodeCard({
       }
       return;
     }
-    await requestLocalizedVideo(audioLanguage, providerPreference);
+    await requestLocalizedVideo(language, providerPreference);
   }
 
   return (
@@ -234,11 +235,13 @@ export function EpisodeCard({
                 : episode.streamUrl
             }
           />
-          <span className="video-badge">
+          <div className="video-frame-caption">
             {showLocalized
               ? `${languageName} narrated video`
-              : "VideoDB lesson reel"}
-          </span>
+              : loading
+                ? `Preparing ${languageName} narration`
+                : "Reviewed VideoDB lesson reel"}
+          </div>
         </div>
         <div className="episode-content">
           <div className="episode-kicker">
@@ -252,45 +255,6 @@ export function EpisodeCard({
             “{episode.sourceQuote}”
           </blockquote>
           <div className="video-language-actions">
-            <label className="compact-select">
-              <span>Audio language</span>
-              <select
-                aria-label={`Audio language for ${episode.title}`}
-                disabled={loading}
-                onChange={(event) =>
-                  void changeAudioLanguage(
-                    event.target.value as LessonLanguage,
-                  )
-                }
-                value={audioLanguage}
-              >
-                {lessonLanguages.map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="compact-select">
-              <span>Voice engine</span>
-              <select
-                aria-label={`Voice engine for ${episode.title}`}
-                disabled={loading}
-                onChange={(event) =>
-                  void changeProvider(
-                    event.target.value as
-                      | "auto"
-                      | "sarvam"
-                      | "elevenlabs",
-                  )
-                }
-                value={providerPreference}
-              >
-                <option value="auto">Auto</option>
-                <option value="sarvam">Sarvam</option>
-                <option value="elevenlabs">ElevenLabs</option>
-              </select>
-            </label>
             <button
               className="listen-button"
               disabled={loading}
@@ -298,14 +262,11 @@ export function EpisodeCard({
               aria-busy={loading}
               type="button"
             >
-              <svg aria-hidden="true" className="button-icon" fill="none" viewBox="0 0 24 24">
-                <path d="m9 7 8 5-8 5V7Z" />
-              </svg>
               {loading
-                ? `Creating ${languageName} video…`
+                ? `Preparing ${languageName} voice...`
                 : audioUrl
                   ? `Replay in ${languageName}`
-                  : `Add friendly ${languageName} voice`}
+                  : `Try ${languageName} voice again`}
             </button>
             {showLocalized ? (
               <button
@@ -326,7 +287,7 @@ export function EpisodeCard({
             >
               <span className="loading-spinner" aria-hidden="true" />
               <span>
-                <strong>Creating {languageName} voice audio…</strong>
+                <strong>Creating {languageName} voice audio...</strong>
                 Translating, speaking and syncing it with this video.
               </span>
             </div>
@@ -359,7 +320,7 @@ export function EpisodeCard({
                   )}% reviewed
                 </span>
                 <span>
-                  {Math.round(evidence.startSeconds)}s–
+                  {Math.round(evidence.startSeconds)}s to{" "}
                   {Math.round(evidence.endSeconds)}s
                 </span>
                 {evidence.sourceUrl ? (

@@ -96,7 +96,7 @@ export function Quiz({
         style={{ marginTop: 22 }}
         type="button"
       >
-        {loading ? "Building your result…" : "Check my answers"}
+        {loading ? "Building your result..." : "Check my answers"}
       </button>
       {error ? <div className="form-error">{error}</div> : null}
       {result ? (
@@ -112,7 +112,7 @@ export function Quiz({
               />
             </div>
           ) : (
-            <span> Brilliant—no revision reel needed!</span>
+            <span> Brilliant, no revision reel needed!</span>
           )}
         </div>
       ) : null}

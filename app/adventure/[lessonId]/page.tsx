@@ -3,17 +3,22 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata = {
-  title: "My video adventure | KathaQuest",
+  title: "Shared video adventure | KathaQuest",
   description:
-    "Explore your saved evidence-backed video lesson, ask questions and play the quiz.",
+    "Open a persistent, evidence-backed KathaQuest video lesson.",
 };
 
-export default function AdventurePage() {
+export default async function SharedAdventurePage({
+  params,
+}: {
+  params: Promise<{ lessonId: string }>;
+}) {
+  const { lessonId } = await params;
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">Skip to my adventure</a>
       <SiteHeader active="adventure" />
-      <AdventureExperience />
+      <AdventureExperience lessonId={lessonId} />
       <SiteFooter />
     </div>
   );

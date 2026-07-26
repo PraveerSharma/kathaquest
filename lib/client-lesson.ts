@@ -24,6 +24,44 @@ export function saveLessonSession(session: SavedLessonSession) {
   window.dispatchEvent(new Event("kathaquest:lesson-saved"));
 }
 
+export async function loadLessonSession(
+  lessonId: string,
+): Promise<SavedLessonSession> {
+  const token =
+    lessonId === "shared"
+      ? new URLSearchParams(window.location.hash.slice(1)).get("lesson")
+      : null;
+  if (lessonId === "shared" && !token) {
+    throw new Error("This shared lesson link is incomplete");
+  }
+  const response = await fetch(
+    token
+      ? "/api/lessons/resume"
+      : `/api/lessons/${encodeURIComponent(lessonId)}`,
+    token
+      ? {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ lessonToken: token }),
+        }
+      : { cache: "no-store" },
+  );
+  const result = (await response.json()) as {
+    lesson?: PublicLesson;
+    lessonToken?: string;
+    error?: string;
+  };
+  if (!response.ok || !result.lesson || !result.lessonToken) {
+    throw new Error(result.error ?? "This shared lesson is unavailable");
+  }
+  const session = {
+    lesson: result.lesson,
+    lessonToken: result.lessonToken,
+  };
+  saveLessonSession(session);
+  return session;
+}
+
 export function clearLessonSession() {
   window.localStorage.removeItem(savedLessonKey);
   window.dispatchEvent(new Event("kathaquest:lesson-saved"));

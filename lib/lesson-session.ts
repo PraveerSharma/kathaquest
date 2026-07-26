@@ -6,12 +6,13 @@ import {
   createHash,
   randomBytes,
 } from "node:crypto";
+import { deflateRawSync, inflateRawSync } from "node:zlib";
 
 import { env } from "@/lib/env";
 import type { Lesson, PublicLesson } from "@/lib/types";
 
-const tokenVersion = "kq1";
-const tokenLifetimeMs = 24 * 60 * 60 * 1000;
+const tokenVersion = "kq2";
+const legacyTokenVersion = "kq1";
 
 function key(): Buffer {
   const secret =
@@ -52,10 +53,15 @@ export function sealLesson(lesson: Lesson): string {
   const payload = Buffer.from(
     JSON.stringify({
       lesson,
-      expiresAt: Date.now() + tokenLifetimeMs,
+      expiresAt:
+        Date.now() + env.LESSON_RETENTION_DAYS * 24 * 60 * 60 * 1000,
     }),
   );
-  const encrypted = Buffer.concat([cipher.update(payload), cipher.final()]);
+  const compressed = deflateRawSync(payload);
+  const encrypted = Buffer.concat([
+    cipher.update(compressed),
+    cipher.final(),
+  ]);
   const tag = cipher.getAuthTag();
   return [tokenVersion, encode(iv), encode(tag), encode(encrypted)].join(".");
 }
@@ -63,7 +69,7 @@ export function sealLesson(lesson: Lesson): string {
 export function openLesson(token: string): Lesson {
   const [version, ivValue, tagValue, encryptedValue, extra] = token.split(".");
   if (
-    version !== tokenVersion ||
+    (version !== tokenVersion && version !== legacyTokenVersion) ||
     !ivValue ||
     !tagValue ||
     !encryptedValue ||
@@ -79,7 +85,9 @@ export function openLesson(token: string): Lesson {
       decipher.update(decode(encryptedValue)),
       decipher.final(),
     ]);
-    const payload = JSON.parse(decrypted.toString("utf8")) as {
+    const serialized =
+      version === tokenVersion ? inflateRawSync(decrypted) : decrypted;
+    const payload = JSON.parse(serialized.toString("utf8")) as {
       lesson: Lesson;
       expiresAt: number;
     };

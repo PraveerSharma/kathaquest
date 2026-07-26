@@ -12,6 +12,7 @@ import { getCuratedLesson } from "@/lib/curated-lessons";
 import { logger } from "@/lib/logger";
 import { createFallbackPresentation } from "@/lib/presentation-fallback";
 import { assertKidSafeText } from "@/lib/safety";
+import { enrichSelectiveVisuals } from "@/lib/selective-visuals";
 import { saveLesson } from "@/lib/storage";
 import { telemetry, withSpan } from "@/lib/telemetry";
 import type {
@@ -258,6 +259,10 @@ export async function generateLesson({
             episodes,
           });
         }
+        presentation = await enrichSelectiveVisuals({
+          lessonId,
+          presentation,
+        });
         telemetry.presentationsGenerated.add(1, {
           prompt_version: presentation.promptVersion,
         });

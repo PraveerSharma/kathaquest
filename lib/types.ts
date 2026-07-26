@@ -71,6 +71,14 @@ export type DiagramTemplate =
   | "cause_effect"
   | "concept_map";
 
+export type GeneratedVisualAsset = {
+  kind: "manim" | "image_to_video";
+  status: "ready" | "fallback";
+  mediaUrl?: string;
+  renderer: "manim-worker" | "openai-image-motion";
+  selectionReason: string;
+};
+
 export type StoryboardScene = {
   id: string;
   type: StoryboardSceneType;
@@ -89,6 +97,7 @@ export type StoryboardScene = {
     footageMediaUrl?: string;
     footageStartSeconds?: number;
     footageEndSeconds?: number;
+    generatedAsset?: GeneratedVisualAsset;
   };
   evidenceRefs: string[];
   interactionPrompt?: string;

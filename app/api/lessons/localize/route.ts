@@ -10,6 +10,7 @@ import {
 import { localizeLesson } from "@/lib/llm";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { assertKidSafeText } from "@/lib/safety";
+import { saveLesson } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
         .join("\n"),
       "answer",
     );
+    await saveLesson(localized);
     return NextResponse.json({
       lesson: toPublicLesson(localized),
       lessonToken: sealLesson(localized),

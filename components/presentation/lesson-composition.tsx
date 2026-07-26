@@ -136,6 +136,25 @@ function LessonScene({
   index: number;
 }) {
   const { fps } = useVideoConfig();
+  if (scene.visual.generatedAsset?.mediaUrl) {
+    return (
+      <SceneChrome index={index} scene={scene}>
+        <AbsoluteFill style={{ background: "#131020" }}>
+          <Html5Video
+            muted
+            src={scene.visual.generatedAsset.mediaUrl}
+            style={{ height: "100%", objectFit: "cover", width: "100%" }}
+          />
+          <AbsoluteFill
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(18,14,34,.48), transparent 32%, rgba(18,14,34,.58))",
+            }}
+          />
+        </AbsoluteFill>
+      </SceneChrome>
+    );
+  }
   if (scene.type === "real_video" && scene.visual.footageMediaUrl) {
     return (
       <SceneChrome index={index} scene={scene}>

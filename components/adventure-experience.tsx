@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { EpisodeCard } from "@/components/episode-card";
+import {
+  EpisodeCard,
+  type NarrationStatus,
+  type VoiceProviderPreference,
+} from "@/components/episode-card";
 import { ObservabilityPanel } from "@/components/observability-panel";
 import { Quiz } from "@/components/quiz";
 import { VoiceQuestion } from "@/components/voice-question";
 import {
   clearLessonSession,
+  loadLessonSession,
   readSavedLesson,
   saveLessonSession,
   type SavedLessonSession,
@@ -25,21 +30,54 @@ function CheckIcon() {
   );
 }
 
-export function AdventureExperience() {
+export function AdventureExperience({ lessonId }: { lessonId?: string }) {
   const router = useRouter();
   const [session, setSession] = useState<SavedLessonSession>();
   const [ready, setReady] = useState(false);
   const [fallbackUsed, setFallbackUsed] = useState(false);
   const [localizing, setLocalizing] = useState(false);
+  const [providerPreference, setProviderPreference] =
+    useState<VoiceProviderPreference>("auto");
+  const [narrationStatuses, setNarrationStatuses] = useState<
+    Record<string, NarrationStatus>
+  >({});
+  const [shareState, setShareState] = useState<"idle" | "copied">("idle");
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSession(readSavedLesson());
-      setReady(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
+    let active = true;
+    const saved = readSavedLesson();
+    if (!lessonId || saved?.lesson.id === lessonId) {
+      const timer = window.setTimeout(() => {
+        if (!active) return;
+        setSession(saved);
+        setReady(true);
+      }, 0);
+      return () => {
+        active = false;
+        window.clearTimeout(timer);
+      };
+    }
+    void loadLessonSession(lessonId)
+      .then((loaded) => {
+        if (active) setSession(loaded);
+      })
+      .catch((caught) => {
+        if (active) {
+          setError(
+            caught instanceof Error
+              ? caught.message
+              : "This shared lesson is unavailable",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [lessonId]);
 
   async function changeLessonLanguage(nextLanguage: LessonLanguage) {
     if (
@@ -50,6 +88,7 @@ export function AdventureExperience() {
       return;
     }
     setLocalizing(true);
+    setNarrationStatuses({});
     setError(undefined);
     try {
       const response = await fetch("/api/lessons/localize", {
@@ -91,12 +130,56 @@ export function AdventureExperience() {
     router.push("/");
   }
 
+  async function shareLesson() {
+    if (!session) return;
+    setError(undefined);
+    try {
+      const response = await fetch("/api/lessons/share", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          lessonId: session.lesson.id,
+          lessonToken: session.lessonToken,
+        }),
+      });
+      const result = (await response.json()) as {
+        path?: string;
+        error?: string;
+      };
+      if (!response.ok || !result.path) {
+        throw new Error(result.error ?? "Could not create a share link");
+      }
+      const shareUrl = `${window.location.origin}${result.path}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: session.lesson.title,
+            text: "Explore this KathaQuest lesson with me.",
+            url: shareUrl,
+          });
+          return;
+        } catch {
+          // The native share sheet may be dismissed; copying remains available.
+        }
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      setShareState("copied");
+      window.setTimeout(() => setShareState("idle"), 2_000);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not create a share link",
+      );
+    }
+  }
+
   if (!ready) {
     return (
       <main className="container lesson-studio-empty" id="main-content">
         <div className="loading-orbit" aria-hidden="true" />
         <span className="eyebrow">Opening your adventure</span>
-        <h1>Gathering your videos and lesson tools…</h1>
+        <h1>Gathering your videos and lesson tools...</h1>
         <p role="status">Your saved quest will appear in a moment.</p>
       </main>
     );
@@ -111,6 +194,7 @@ export function AdventureExperience() {
           Choose a chapter or upload a PDF first. We will keep the resulting
           lesson here so Home, Back and My adventure behave predictably.
         </p>
+        {error ? <div className="form-error" role="alert">{error}</div> : null}
         <Link className="primary-button inline-button" href="/">
           Create a lesson
         </Link>
@@ -119,13 +203,17 @@ export function AdventureExperience() {
   }
 
   const { lesson, lessonToken } = session;
+  const narrationPreparing = Object.values(narrationStatuses).some(
+    (status) => status === "loading",
+  );
+  const busy = localizing || narrationPreparing;
   return (
     <main
-      aria-busy={localizing}
+      aria-busy={busy}
       className="lesson-wrap"
       id="main-content"
     >
-      {localizing ? (
+      {busy ? (
         <div
           aria-live="assertive"
           className="language-progress-banner"
@@ -133,8 +221,14 @@ export function AdventureExperience() {
         >
           <span className="loading-spinner" aria-hidden="true" />
           <span>
-            <strong>Changing the whole lesson language…</strong>
-            Captions, explanations, questions and quiz are being translated.
+            <strong>
+              {localizing
+                ? "Changing the whole lesson language..."
+                : `Preparing ${getLessonLanguage(lesson.language).label} voices...`}
+            </strong>
+            {localizing
+              ? "Captions, explanations, questions and quiz are being translated."
+              : "Every lesson reel is receiving the same kid-friendly learning language."}
           </span>
         </div>
       ) : null}
@@ -154,9 +248,16 @@ export function AdventureExperience() {
             </div>
           </div>
           <div className="lesson-heading-actions">
-            <Link className="primary-button" href="/lesson">
+            <Link className="primary-button" href={`/lesson/${lesson.id}`}>
               Watch complete lesson film
             </Link>
+            <button
+              className="secondary-button"
+              onClick={() => void shareLesson()}
+              type="button"
+            >
+              {shareState === "copied" ? "Lesson link copied" : "Share this lesson"}
+            </button>
             <label className="lesson-language-control" htmlFor="lesson-language">
               <span>Learning language</span>
               <select
@@ -177,9 +278,28 @@ export function AdventureExperience() {
               </select>
               <small aria-live="polite">
                 {localizing
-                  ? "Translating the lesson…"
-                  : `Content language: ${getLessonLanguage(lesson.language).englishName}`}
+                  ? "Translating the lesson..."
+                  : `Sets all content and video voices to ${getLessonLanguage(lesson.language).englishName}`}
               </small>
+            </label>
+            <label className="lesson-language-control" htmlFor="lesson-voice">
+              <span>Voice engine for all videos</span>
+              <select
+                disabled={localizing}
+                id="lesson-voice"
+                onChange={(event) => {
+                  setNarrationStatuses({});
+                  setProviderPreference(
+                    event.target.value as VoiceProviderPreference,
+                  );
+                }}
+                value={providerPreference}
+              >
+                <option value="auto">Auto, best available</option>
+                <option value="sarvam">Sarvam AI</option>
+                <option value="elevenlabs">ElevenLabs</option>
+              </select>
+              <small>One voice choice applies to every lesson reel.</small>
             </label>
             <button className="ghost-button" onClick={resetQuest} type="button">
               Make another quest
@@ -200,6 +320,13 @@ export function AdventureExperience() {
               lessonId={lesson.id}
               lessonToken={lessonToken}
               onFallback={() => setFallbackUsed(true)}
+              onNarrationStatusChange={(episodeId, status) =>
+                setNarrationStatuses((current) => ({
+                  ...current,
+                  [episodeId]: status,
+                }))
+              }
+              providerPreference={providerPreference}
             />
           ))}
         </div>

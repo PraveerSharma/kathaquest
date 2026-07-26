@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connect } from "videodb";
 
 import { env } from "@/lib/env";
+import { hasDurableLessonStorage } from "@/lib/storage";
 import type { ServiceHealth } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -69,6 +70,34 @@ export async function GET() {
       detail: env.SARVAM_API_KEY ? "Configured" : "Not configured",
     } satisfies ServiceHealth,
     elevenlabs: await checkElevenLabs(),
+    lessonStorage: {
+      status: hasDurableLessonStorage()
+        ? "ok"
+        : process.env.VERCEL
+          ? "missing"
+          : "ok",
+      detail: hasDurableLessonStorage()
+        ? `Durable lesson links retained for ${env.LESSON_RETENTION_DAYS} days`
+        : process.env.VERCEL
+          ? "Redis REST credentials are required for durable production lesson links"
+          : "Local JSON storage is active",
+    } satisfies ServiceHealth,
+    manimRenderer: {
+      status: env.MANIM_RENDERER_URL ? "ok" : "missing",
+      detail: env.MANIM_RENDERER_URL
+        ? "External Manim render worker configured"
+        : "SVG and Remotion fallback active",
+    } satisfies ServiceHealth,
+    selectiveImageVideo: {
+      status:
+        env.IMAGE_VIDEO_RENDERER_URL && env.OPENAI_API_KEY
+          ? "ok"
+          : "missing",
+      detail:
+        env.IMAGE_VIDEO_RENDERER_URL && env.OPENAI_API_KEY
+          ? "Selective OpenAI image and motion renderer configured"
+          : "External image-motion worker is not configured",
+    } satisfies ServiceHealth,
     opentelemetry: {
       status:
         process.env.VERCEL &&

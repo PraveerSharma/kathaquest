@@ -141,7 +141,7 @@ export function KathaQuestApp({
         lesson: result.lesson,
         lessonToken: result.lessonToken,
       });
-      router.push("/adventure");
+      router.push(`/adventure/${result.lesson.id}`);
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Lesson generation failed",
@@ -235,7 +235,7 @@ export function KathaQuestApp({
                   <svg fill="none" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
                 </span>
                 <span>
-                  <strong>{extractingPdf ? "Reading your PDF…" : "Upload your own chapter"}</strong>
+                  <strong>{extractingPdf ? "Reading your PDF..." : "Upload your own chapter"}</strong>
                   <small>Text-based PDF · up to 10 MB</small>
                 </span>
               </label>
@@ -246,9 +246,9 @@ export function KathaQuestApp({
                   <div className="field">
                     <label htmlFor="age">Explorer age</label>
                     <select id="age" onChange={(event) => setAgeGroup(event.target.value)} value={ageGroup}>
-                      <option value="6-8">6–8 years</option>
-                      <option value="8-10">8–10 years</option>
-                      <option value="10-12">10–12 years</option>
+                      <option value="6-8">6 to 8 years</option>
+                      <option value="8-10">8 to 10 years</option>
+                      <option value="10-12">10 to 12 years</option>
                     </select>
                   </div>
                   <div className="field">

@@ -46,7 +46,7 @@ export function ObservabilityPanel({
           <strong>
             {lesson.generationTimeMs
               ? `${(lesson.generationTimeMs / 1_000).toFixed(1)} seconds`
-              : "—"}
+              : "Not available"}
           </strong>
         </div>
         <div className="dev-stat">

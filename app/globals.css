@@ -1201,32 +1201,65 @@ textarea:focus-visible {
 
 .episode-layout {
   display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(360px, 1.05fr) minmax(0, 0.95fr);
 }
 
 .video-shell {
+  align-self: start;
+  background: #121a17;
+  border: 6px solid #203029;
+  border-radius: 22px;
+  box-shadow: 0 20px 48px rgb(17 28 23 / 20%);
+  display: grid;
+  grid-template-rows: auto auto;
+  margin: 18px;
+  overflow: hidden;
   position: relative;
-  min-height: 320px;
-  background: #15231d;
+  top: 18px;
 }
 
 .video-shell video {
   display: block;
-  width: 100%;
   height: 100%;
-  min-height: 320px;
   object-fit: cover;
+  width: 100%;
 }
 
 .hls-player-wrap {
-  height: 100%;
+  aspect-ratio: 16 / 9;
+  background:
+    radial-gradient(circle at 50% 45%, rgb(88 116 103 / 35%), transparent 42%),
+    #101713;
+  min-height: 0;
+  overflow: hidden;
   position: relative;
   width: 100%;
 }
 
 .hls-player-wrap video {
   display: block;
+  height: 100%;
+  object-fit: cover;
   width: 100%;
+}
+
+.hls-loading {
+  align-items: center;
+  color: rgb(255 255 255 / 82%);
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 10px;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 1;
+}
+
+.hls-loading .loading-spinner {
+  border-color: rgb(255 255 255 / 24%);
+  border-top-color: var(--yellow);
 }
 
 .hls-error {
@@ -1255,19 +1288,15 @@ textarea:focus-visible {
   padding: 9px 18px;
 }
 
-.video-badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  border-radius: 999px;
-  background: rgba(20, 30, 25, 0.76);
-  color: white;
-  padding: 8px 11px;
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  backdrop-filter: blur(10px);
+.video-frame-caption {
+  align-items: center;
+  background: #203029;
+  color: rgb(255 255 255 / 88%);
+  display: flex;
+  font-size: 11px;
+  font-weight: 800;
+  min-height: 38px;
+  padding: 9px 12px;
 }
 
 .episode-content {
@@ -1661,6 +1690,12 @@ textarea:focus-visible {
   .episode-layout,
   .interactive-grid {
     grid-template-columns: 1fr;
+  }
+
+  .video-shell {
+    margin-bottom: 36px;
+    position: relative;
+    top: 0;
   }
 
   .lesson-heading {
@@ -2077,10 +2112,37 @@ textarea:focus-visible {
 
 .presentation-player-shell {
   background: #181324;
-  border: 8px solid var(--ink);
+  border: 7px solid #282139;
   border-radius: 24px;
   box-shadow: 0 28px 70px rgba(41, 32, 70, 0.2);
   overflow: hidden;
+}
+
+.presentation-frame-bar {
+  align-items: center;
+  background: #282139;
+  color: white;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 10px 14px;
+}
+
+.presentation-frame-bar strong {
+  font-size: 13px;
+}
+
+.presentation-frame-bar span {
+  color: rgb(255 255 255 / 68%);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.studio-voice-control {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .film-controls {
@@ -2299,6 +2361,12 @@ textarea:focus-visible {
   .presentation-player-shell {
     border-radius: 16px;
     border-width: 4px;
+  }
+
+  .presentation-frame-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
   }
 
   .film-controls {

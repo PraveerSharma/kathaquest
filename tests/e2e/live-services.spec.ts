@@ -15,7 +15,7 @@ test("real child journey generates, plays, localizes, narrates, asks, and quizze
   await page.getByLabel("Adventure language").selectOption("en-IN");
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
 
-  await expect(page).toHaveURL(/\/adventure$/);
+  await expect(page).toHaveURL(/\/adventure\/[0-9a-f-]+$/);
   await expect(page.locator(".lesson-wrap")).toBeVisible({ timeout: 120_000 });
   await expect(page.locator(".episode-card")).toHaveCount(3);
   await expect(page.locator(".episode-kicker").first()).not.toContainText(
@@ -24,12 +24,12 @@ test("real child journey generates, plays, localizes, narrates, asks, and quizze
   await page
     .getByRole("link", { name: /Watch complete lesson film/i })
     .click();
-  await expect(page).toHaveURL(/\/lesson$/);
+  await expect(page).toHaveURL(/\/lesson\/[0-9a-f-]+$/);
   await expect(page.locator(".presentation-player-shell")).toBeVisible({
     timeout: 60_000,
   });
   await expect(page.locator(".scene-rail button")).toHaveCount(9);
-  await page.getByLabel("Lesson film audio language").selectOption("hi-IN");
+  await page.getByLabel("Learning language").selectOption("hi-IN");
   await expect(page.getByText(/^Voice:/)).toBeVisible({ timeout: 120_000 });
 
   await page.getByRole("link", { name: "My adventure", exact: true }).click();
@@ -51,13 +51,6 @@ test("real child journey generates, plays, localizes, narrates, asks, and quizze
     .toBe(true);
 
   await page.getByLabel("Learning language").selectOption("hi-IN");
-  await expect(page.getByText(/Content and narration: Hindi/i)).toBeVisible({
-    timeout: 120_000,
-  });
-  await page
-    .getByRole("button", { name: /Add friendly हिंदी voice/i })
-    .first()
-    .click();
   await expect(page.getByText("हिंदी narrated video").first()).toBeVisible({
     timeout: 120_000,
   });

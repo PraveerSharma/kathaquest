@@ -1,0 +1,7 @@
+# Safe baseline from the official SigNoz AWS Kubernetes guide.
+# Replace the storage class only if your EKS cluster uses a different default.
+global:
+  storageClass: gp3
+
+clickhouse:
+  installCustomStorageClass: true

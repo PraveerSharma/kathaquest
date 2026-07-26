@@ -8,6 +8,7 @@ import { PresentationPlayer } from "@/components/presentation/presentation-playe
 import { Quiz } from "@/components/quiz";
 import { VoiceQuestion } from "@/components/voice-question";
 import {
+  loadLessonSession,
   readSavedLesson,
   saveLessonSession,
   type SavedLessonSession,
@@ -21,13 +22,11 @@ import type {
   PublicLesson,
 } from "@/lib/types";
 
-export function LessonExperience() {
+export function LessonExperience({ lessonId }: { lessonId?: string }) {
   const playerRef = useRef<PlayerRef>(null);
   const [session, setSession] = useState<SavedLessonSession>();
   const [ready, setReady] = useState(false);
   const [narrationUrl, setNarrationUrl] = useState<string>();
-  const [audioLanguage, setAudioLanguage] =
-    useState<LessonLanguage>("hi-IN");
   const [providerPreference, setProviderPreference] =
     useState<"auto" | "sarvam" | "elevenlabs">("auto");
   const [actualProvider, setActualProvider] =
@@ -38,14 +37,43 @@ export function LessonExperience() {
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const saved = readSavedLesson();
-      setSession(saved);
-      if (saved) setAudioLanguage(saved.lesson.language);
-      setReady(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
+    let active = true;
+    const saved = readSavedLesson();
+    const resolveSession =
+      lessonId && saved?.lesson.id !== lessonId
+        ? loadLessonSession(lessonId)
+        : Promise.resolve(saved);
+    void resolveSession
+      .then((loaded) => {
+        if (!active) return;
+        setSession(loaded);
+        if (loaded) {
+          void createNarratedFilm(
+            loaded.lesson.language,
+            providerPreference,
+            loaded,
+            false,
+          );
+        }
+      })
+      .catch((caught) => {
+        if (active) {
+          setError(
+            caught instanceof Error
+              ? caught.message
+              : "This shared lesson is unavailable",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setReady(true);
+      });
+    return () => {
+      active = false;
+    };
+    // Loading a route ID is the only trigger; voice changes have their own handler.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonId]);
 
   function resetVoice() {
     setNarrationUrl(undefined);
@@ -81,8 +109,12 @@ export function LessonExperience() {
         lessonToken: result.lessonToken,
       };
       setSession(next);
-      setAudioLanguage(language);
       saveLessonSession(next);
+      await createNarratedFilm(
+        language,
+        providerPreference,
+        next,
+      );
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -95,10 +127,12 @@ export function LessonExperience() {
   }
 
   async function createNarratedFilm(
-    targetLanguage = audioLanguage,
+    targetLanguage = session?.lesson.language ?? "en-IN",
     targetProvider = providerPreference,
+    targetSession = session,
+    playWhenReady = true,
   ) {
-    if (!session) return;
+    if (!targetSession) return;
     setNarrating(true);
     setError(undefined);
     try {
@@ -106,8 +140,8 @@ export function LessonExperience() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          lessonId: session.lesson.id,
-          lessonToken: session.lessonToken,
+          lessonId: targetSession.lesson.id,
+          lessonToken: targetSession.lessonToken,
           language: targetLanguage,
           provider: targetProvider,
         }),
@@ -124,8 +158,10 @@ export function LessonExperience() {
       setNarrationUrl(result.audioUrl);
       setActualProvider(result.provider);
       setVoiceFallbackUsed(Boolean(result.fallbackUsed));
-      playerRef.current?.seekTo(0);
-      playerRef.current?.play();
+      if (playWhenReady) {
+        playerRef.current?.seekTo(0);
+        playerRef.current?.play();
+      }
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -137,27 +173,20 @@ export function LessonExperience() {
     }
   }
 
-  async function changeFilmAudioLanguage(language: LessonLanguage) {
-    if (language === audioLanguage || narrating) return;
-    setAudioLanguage(language);
-    resetVoice();
-    await createNarratedFilm(language, providerPreference);
-  }
-
   async function changeFilmVoiceEngine(
     provider: "auto" | "sarvam" | "elevenlabs",
   ) {
     if (provider === providerPreference || narrating) return;
     setProviderPreference(provider);
     resetVoice();
-    await createNarratedFilm(audioLanguage, provider);
+    await createNarratedFilm(session?.lesson.language ?? "en-IN", provider);
   }
 
   if (!ready) {
     return (
       <main className="container lesson-studio-empty" id="main-content">
         <span className="eyebrow">Opening your lesson studio</span>
-        <h1>Loading the storyboard…</h1>
+        <h1>Loading the storyboard...</h1>
       </main>
     );
   }
@@ -171,6 +200,7 @@ export function LessonExperience() {
           Choose a chapter or upload a PDF. Your structured lesson film will
           appear here.
         </p>
+        {error ? <div className="form-error" role="alert">{error}</div> : null}
         <Link className="primary-button inline-button" href="/">
           Create a lesson
         </Link>
@@ -209,14 +239,14 @@ export function LessonExperience() {
         >
           <span className="loading-spinner" aria-hidden="true" />
           <span>
-            <strong>Localizing all nine scenes…</strong>
+            <strong>Localizing all nine scenes...</strong>
             Script, captions, storyboard and quiz are being translated.
           </span>
         </div>
       ) : null}
       <section className="container lesson-studio-heading">
         <div>
-          <span className="eyebrow">AI lesson studio · presentation v1</span>
+          <span className="eyebrow">AI lesson studio | presentation v1</span>
           <h1>{presentation.plan.title}</h1>
           <p>{presentation.plan.bigQuestion}</p>
           <div className="lesson-trust">
@@ -228,12 +258,15 @@ export function LessonExperience() {
           </div>
         </div>
         <div className="studio-heading-actions">
-          <Link className="text-button back-to-adventure" href="/adventure">
+          <Link
+            className="text-button back-to-adventure"
+            href={`/adventure/${lesson.id}`}
+          >
             Back to lesson chapters
           </Link>
           <div className="studio-language">
             <label>
-              <span>Content language</span>
+              <span>Learning language</span>
               <select
                 disabled={localizing}
                 onChange={(event) =>
@@ -251,8 +284,30 @@ export function LessonExperience() {
               </select>
             </label>
             <small aria-live="polite">
-              {localizing ? "Localizing all nine scenes…" : "Changes captions, script and quiz"}
+              {localizing
+                ? "Localizing every scene..."
+                : "Sets captions, script, quiz and film audio together"}
             </small>
+            <label className="studio-voice-control">
+              <span>Voice engine</span>
+              <select
+                aria-label="Voice engine for the complete lesson"
+                disabled={narrating}
+                onChange={(event) => {
+                  void changeFilmVoiceEngine(
+                    event.target.value as
+                      | "auto"
+                      | "sarvam"
+                      | "elevenlabs",
+                  );
+                }}
+                value={providerPreference}
+              >
+                <option value="auto">Auto, best available</option>
+                <option value="sarvam">Sarvam AI</option>
+                <option value="elevenlabs">ElevenLabs</option>
+              </select>
+            </label>
           </div>
         </div>
       </section>
@@ -265,45 +320,6 @@ export function LessonExperience() {
             presentation={presentation}
           />
           <div className="film-controls">
-            <label className="compact-select">
-              <span>Film audio</span>
-              <select
-                aria-label="Lesson film audio language"
-                disabled={narrating}
-                onChange={(event) => {
-                  void changeFilmAudioLanguage(
-                    event.target.value as LessonLanguage,
-                  );
-                }}
-                value={audioLanguage}
-              >
-                {lessonLanguages.map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {item.label} · {item.englishName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="compact-select">
-              <span>Voice engine</span>
-              <select
-                aria-label="Lesson film voice engine"
-                disabled={narrating}
-                onChange={(event) => {
-                  void changeFilmVoiceEngine(
-                    event.target.value as
-                      | "auto"
-                      | "sarvam"
-                      | "elevenlabs",
-                  );
-                }}
-                value={providerPreference}
-              >
-                <option value="auto">Auto · best available</option>
-                <option value="sarvam">Sarvam AI</option>
-                <option value="elevenlabs">ElevenLabs</option>
-              </select>
-            </label>
             <button
               className="listen-button"
               disabled={narrating}
@@ -312,10 +328,10 @@ export function LessonExperience() {
               type="button"
             >
               {narrating
-                ? `Creating ${getLessonLanguage(audioLanguage).label} narration…`
+                ? `Creating ${getLessonLanguage(lesson.language).label} narration...`
                 : narrationUrl
                   ? "Replay narrated film"
-                  : "Add narration to the whole film"}
+                  : "Prepare narration again"}
             </button>
             {actualProvider ? (
               <span className="provider-chip">
@@ -332,7 +348,7 @@ export function LessonExperience() {
               <span className="loading-spinner" aria-hidden="true" />
               <span>
                 <strong>
-                  Creating {getLessonLanguage(audioLanguage).label} film audio…
+                  Creating {getLessonLanguage(lesson.language).label} film audio...
                 </strong>
                 Translating the script and preparing a child-friendly voice.
               </span>
@@ -407,7 +423,7 @@ export function LessonExperience() {
               <blockquote>{presentation.script.hook}</blockquote>
             </article>
             <article>
-              <span>Layers 3–8</span>
+              <span>Layers 3 to 8</span>
               <h2>Presentation engine</h2>
               <p>
                 React/SVG diagrams, deterministic motion, VideoDB footage,

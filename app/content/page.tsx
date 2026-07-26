@@ -5,7 +5,7 @@ import chapterPackJson from "@/data/chapter-pack.json";
 import type { ChapterPackItem } from "@/lib/types";
 
 export const metadata = {
-  title: "Explore chapters — KathaQuest",
+  title: "Explore chapters | KathaQuest",
   description: "Choose a chapter and turn it into an interactive lesson film.",
 };
 

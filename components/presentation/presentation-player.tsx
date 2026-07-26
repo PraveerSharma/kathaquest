@@ -18,6 +18,10 @@ export function PresentationPlayer({
 }) {
   return (
     <div className="presentation-player-shell">
+      <div className="presentation-frame-bar">
+        <strong>{presentation.plan.title}</strong>
+        <span>{presentation.storyboard.scenes.length} scene learning film</span>
+      </div>
       <Player
         acknowledgeRemotionLicense
         component={LessonComposition}

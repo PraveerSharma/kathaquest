@@ -27,6 +27,8 @@
 /.playwright-cli
 *.tsbuildinfo
 .eslintcache
+__pycache__/
+*.py[cod]
 
 # OS/editor
 .DS_Store

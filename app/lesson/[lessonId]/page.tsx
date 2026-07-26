@@ -3,17 +3,22 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata = {
-  title: "My lesson studio | KathaQuest",
+  title: "Shared lesson studio | KathaQuest",
   description:
-    "Watch one continuous interactive lesson film made from script, diagrams, animation and real evidence.",
+    "Watch a shareable KathaQuest lesson film with its storyboard and activities.",
 };
 
-export default function LessonPage() {
+export default async function SharedLessonPage({
+  params,
+}: {
+  params: Promise<{ lessonId: string }>;
+}) {
+  const { lessonId } = await params;
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">Skip to lesson</a>
       <SiteHeader active="lesson" />
-      <LessonExperience />
+      <LessonExperience lessonId={lessonId} />
       <SiteFooter />
     </div>
   );
