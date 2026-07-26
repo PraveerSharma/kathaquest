@@ -248,9 +248,9 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
             </div>
           </div>
           <div className="lesson-heading-actions">
-            <Link className="primary-button" href={`/lesson/${lesson.id}`}>
+            <a className="primary-button" href={`/lesson/${lesson.id}`}>
               Watch complete lesson film
-            </Link>
+            </a>
             <button
               className="secondary-button"
               onClick={() => void shareLesson()}
