@@ -34,9 +34,9 @@ Last updated: 2026-07-26
 - [x] No secrets are committed or exposed in browser responses
 - [x] README and architecture diagram complete
 - [x] Demo script and submission copy complete
-- [ ] Production deployment complete
+- [x] Production deployment complete
 - [ ] Demo recording complete
-- [ ] Tagged release complete
+- [x] Tagged release complete
 - [ ] VideoDB submission sent
 - [ ] SigNoz submission sent
 
