@@ -1,25 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { EpisodeCard } from "@/components/episode-card";
 import { GenerationProgress } from "@/components/generation-progress";
-import { ObservabilityPanel } from "@/components/observability-panel";
-import { Quiz } from "@/components/quiz";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { VoiceQuestion } from "@/components/voice-question";
-import {
-  clearLessonSession,
-  readSavedLesson,
-  saveLessonSession,
-} from "@/lib/client-lesson";
-import { getLessonLanguage, lessonLanguages } from "@/lib/languages";
+import { saveLessonSession } from "@/lib/client-lesson";
+import { lessonLanguages } from "@/lib/languages";
 import type {
   ChapterPackItem,
   LessonLanguage,
   LessonResponse,
-  PublicLesson,
 } from "@/lib/types";
 
 function BookIcon({ id }: { id: string }) {
@@ -54,10 +46,10 @@ export function KathaQuestApp({
   chapters: ChapterPackItem[];
   initialChapterId?: string;
 }) {
+  const router = useRouter();
   const initialChapter = chapters.find(
     (chapter) => chapter.id === initialChapterId,
   );
-  const lessonRef = useRef<HTMLElement>(null);
   const personalizeRef = useRef<HTMLDivElement>(null);
   const [chapterText, setChapterText] = useState(initialChapter?.text ?? "");
   const [sourceLabel, setSourceLabel] = useState<string | undefined>(
@@ -69,31 +61,13 @@ export function KathaQuestApp({
     useState<"chapter-pack" | "uploaded-pdf">("chapter-pack");
   const [ageGroup, setAgeGroup] = useState("8-10");
   const [language, setLanguage] = useState<LessonLanguage>("hi-IN");
-  const [phase, setPhase] = useState<"input" | "generating" | "lesson">("input");
-  const [lesson, setLesson] = useState<PublicLesson>();
-  const [lessonToken, setLessonToken] = useState("");
+  const [phase, setPhase] = useState<"input" | "generating">("input");
   const [error, setError] = useState<string>();
   const [extractingPdf, setExtractingPdf] = useState(false);
-  const [fallbackUsed, setFallbackUsed] = useState(false);
-  const [localizing, setLocalizing] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const readyTimer = window.setTimeout(() => setHydrated(true), 0);
-    try {
-      const parsed = readSavedLesson();
-      if (!parsed) return () => window.clearTimeout(readyTimer);
-      if (parsed.lesson?.id && parsed.lessonToken) {
-        window.setTimeout(() => {
-          setLesson(parsed.lesson);
-          setLessonToken(parsed.lessonToken);
-          setLanguage(parsed.lesson.language);
-          setPhase("lesson");
-        }, 0);
-      }
-    } catch {
-      clearLessonSession();
-    }
     return () => window.clearTimeout(readyTimer);
   }, []);
 
@@ -111,46 +85,6 @@ export function KathaQuestApp({
           }),
         100,
       );
-    }
-  }
-
-  async function changeLessonLanguage(nextLanguage: LessonLanguage) {
-    if (!lesson || nextLanguage === lesson.language || localizing) return;
-    setLocalizing(true);
-    setError(undefined);
-    try {
-      const response = await fetch("/api/lessons/localize", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          lessonId: lesson.id,
-          lessonToken,
-          language: nextLanguage,
-        }),
-      });
-      const result = (await response.json()) as {
-        lesson?: PublicLesson;
-        lessonToken?: string;
-        error?: string;
-      };
-      if (!response.ok || !result.lesson || !result.lessonToken) {
-        throw new Error(result.error ?? "Could not change the lesson language");
-      }
-      setLanguage(nextLanguage);
-      setLesson(result.lesson);
-      setLessonToken(result.lessonToken);
-      saveLessonSession({
-        lesson: result.lesson,
-        lessonToken: result.lessonToken,
-      });
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "Could not change the lesson language",
-      );
-    } finally {
-      setLocalizing(false);
     }
   }
 
@@ -203,32 +137,17 @@ export function KathaQuestApp({
       if (!response.ok || !result.lesson || !result.lessonToken) {
         throw new Error(result.error ?? "Lesson generation failed");
       }
-      setLesson(result.lesson);
-      setLessonToken(result.lessonToken);
       saveLessonSession({
         lesson: result.lesson,
         lessonToken: result.lessonToken,
       });
-      setPhase("lesson");
-      window.setTimeout(
-        () => lessonRef.current?.scrollIntoView({ behavior: "smooth" }),
-        100,
-      );
+      router.push("/adventure");
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Lesson generation failed",
       );
       setPhase("input");
     }
-  }
-
-  function resetQuest() {
-    setLesson(undefined);
-    setLessonToken("");
-    setPhase("input");
-    setFallbackUsed(false);
-    clearLessonSession();
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -358,78 +277,6 @@ export function KathaQuestApp({
       ) : null}
 
       {phase === "generating" ? <GenerationProgress /> : null}
-
-      {phase === "lesson" && lesson ? (
-        <main className="lesson-wrap" id="main-content" ref={lessonRef}>
-          <div className="container">
-            <div className="lesson-heading">
-              <div>
-                <span className="eyebrow">Your video adventure is ready</span>
-                <h1>{lesson.title}</h1>
-                <p>
-                  One scripted lesson film plus three deep evidence chapters,
-                  all grounded in your source.
-                </p>
-                <div className="lesson-trust">
-                  <span><CheckIcon /> {Math.round(lesson.overallCoverage * 100)}% evidence match</span>
-                  <span><CheckIcon /> All clips kid-safe</span>
-                  <span><CheckIcon /> Answers hidden securely</span>
-                </div>
-              </div>
-              <div className="lesson-heading-actions">
-                <a className="primary-button" href="/lesson">
-                  Watch complete lesson film
-                </a>
-                <label className="lesson-language-control" htmlFor="lesson-language">
-                  <span>Learning language</span>
-                  <select
-                    disabled={localizing}
-                    id="lesson-language"
-                    onChange={(event) =>
-                      changeLessonLanguage(
-                        event.target.value as LessonLanguage,
-                      )
-                    }
-                    value={lesson.language}
-                  >
-                    {lessonLanguages.map((item) => (
-                      <option key={item.code} value={item.code}>
-                        {item.label} · {item.englishName}
-                      </option>
-                    ))}
-                  </select>
-                  <small>
-                    {localizing
-                      ? "Translating the lesson…"
-                      : `Content and narration: ${getLessonLanguage(lesson.language).englishName}`}
-                  </small>
-                </label>
-                <button className="ghost-button" onClick={resetQuest} type="button">Make another quest</button>
-              </div>
-            </div>
-            {error ? <div className="form-error lesson-error" role="alert">{error}</div> : null}
-
-            <div className="episode-grid">
-              {lesson.episodes.map((episode, index) => (
-                <EpisodeCard
-                  episode={episode}
-                  index={index}
-                  key={`${episode.id}-${lesson.language}`}
-                  language={lesson.language}
-                  lessonId={lesson.id}
-                  lessonToken={lessonToken}
-                  onFallback={() => setFallbackUsed(true)}
-                />
-              ))}
-            </div>
-            <div className="interactive-grid">
-              <VoiceQuestion key={`questions-${lesson.language}`} lesson={lesson} lessonToken={lessonToken} />
-              <Quiz key={`quiz-${lesson.language}`} lesson={lesson} lessonToken={lessonToken} />
-            </div>
-            <ObservabilityPanel fallbackUsed={fallbackUsed} lesson={lesson} />
-          </div>
-        </main>
-      ) : null}
 
       <SiteFooter />
     </div>

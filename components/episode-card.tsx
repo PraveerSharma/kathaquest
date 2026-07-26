@@ -48,6 +48,8 @@ export function EpisodeCard({
   const languageName = getLessonLanguage(audioLanguage).label;
 
   function resetLocalizedMedia() {
+    audioRef.current?.pause();
+    if (videoRef.current) videoRef.current.muted = false;
     setAudioUrl(undefined);
     setLocalizedStream(undefined);
     setShowLocalized(false);
@@ -57,22 +59,39 @@ export function EpisodeCard({
     setError(undefined);
   }
 
-  function changeAudioLanguage(nextLanguage: LessonLanguage) {
+  async function changeAudioLanguage(nextLanguage: LessonLanguage) {
+    if (nextLanguage === audioLanguage || loading) return;
     setAudioLanguage(nextLanguage);
     resetLocalizedMedia();
+    await requestLocalizedVideo(nextLanguage, providerPreference);
   }
 
-  function changeProvider(
+  async function changeProvider(
     nextProvider: "auto" | "sarvam" | "elevenlabs",
   ) {
+    if (nextProvider === providerPreference || loading) return;
     setProviderPreference(nextProvider);
     resetLocalizedMedia();
+    await requestLocalizedVideo(audioLanguage, nextProvider);
+  }
+
+  function hearOriginalAudio() {
+    audioRef.current?.pause();
+    if (videoRef.current) videoRef.current.muted = false;
+    setShowLocalized(false);
   }
 
   useEffect(() => {
     const video = videoRef.current;
     const audio = audioRef.current;
-    if (!video || !audio || !audioUrl || syncMode !== "browser") return;
+    if (!video || !audio) return;
+    if (!showLocalized || !audioUrl || syncMode !== "browser") {
+      audio.pause();
+      video.muted = false;
+      return;
+    }
+
+    video.muted = true;
 
     const align = () => {
       if (!Number.isFinite(video.duration) || !Number.isFinite(audio.duration)) {
@@ -85,6 +104,16 @@ export function EpisodeCard({
         video.currentTime * ratio,
       );
     };
+    const maintainSync = () => {
+      if (!Number.isFinite(video.duration) || !Number.isFinite(audio.duration)) {
+        return;
+      }
+      const ratio = audio.duration / video.duration;
+      const expected = video.currentTime * ratio;
+      if (Math.abs(audio.currentTime - expected) > 0.4) {
+        audio.currentTime = Math.min(audio.duration, expected);
+      }
+    };
     const play = () => {
       align();
       void audio.play().catch(() => undefined);
@@ -93,31 +122,26 @@ export function EpisodeCard({
     video.addEventListener("play", play);
     video.addEventListener("pause", pause);
     video.addEventListener("seeked", align);
+    video.addEventListener("timeupdate", maintainSync);
     video.addEventListener("ended", pause);
+    audio.addEventListener("loadedmetadata", align);
+    if (!video.paused) play();
     return () => {
       video.removeEventListener("play", play);
       video.removeEventListener("pause", pause);
       video.removeEventListener("seeked", align);
+      video.removeEventListener("timeupdate", maintainSync);
       video.removeEventListener("ended", pause);
+      audio.removeEventListener("loadedmetadata", align);
+      audio.pause();
     };
-  }, [audioUrl, syncMode]);
+  }, [audioUrl, showLocalized, syncMode]);
 
-  async function prepareLocalizedVideo() {
+  async function requestLocalizedVideo(
+    targetLanguage: LessonLanguage,
+    targetProvider: "auto" | "sarvam" | "elevenlabs",
+  ) {
     setError(undefined);
-    if (localizedStream) {
-      setShowLocalized(true);
-      return;
-    }
-    if (audioUrl && syncMode === "browser") {
-      const video = videoRef.current;
-      if (video) {
-        video.muted = true;
-        video.currentTime = 0;
-        audioRef.current!.currentTime = 0;
-        await Promise.allSettled([video.play(), audioRef.current?.play()]);
-      }
-      return;
-    }
     setLoading(true);
     try {
       const response = await fetch("/api/narration", {
@@ -127,8 +151,8 @@ export function EpisodeCard({
           lessonId,
           lessonToken,
           episodeId: episode.id,
-          language: audioLanguage,
-          provider: providerPreference,
+          language: targetLanguage,
+          provider: targetProvider,
         }),
       });
       const result = (await response.json()) as {
@@ -144,10 +168,11 @@ export function EpisodeCard({
       }
       setAudioUrl(result.audioUrl);
       setProvider(result.provider);
-      setSyncMode(result.syncMode);
+      setSyncMode(result.syncMode ?? "browser");
+      setShowLocalized(true);
       if (result.streamUrl) {
         setLocalizedStream(result.streamUrl);
-        setShowLocalized(true);
+        if (videoRef.current) videoRef.current.muted = false;
       }
       setFallbackUsed(Boolean(result.fallbackUsed));
       if (result.fallbackUsed) onFallback();
@@ -157,8 +182,7 @@ export function EpisodeCard({
           const audio = audioRef.current;
           if (!video || !audio) return;
           video.muted = true;
-          video.currentTime = 0;
-          audio.currentTime = 0;
+          audio.currentTime = video.currentTime;
           void Promise.allSettled([video.play(), audio.play()]);
         }, 0);
       }
@@ -169,8 +193,28 @@ export function EpisodeCard({
     }
   }
 
+  async function prepareLocalizedVideo() {
+    setError(undefined);
+    if (localizedStream) {
+      if (videoRef.current) videoRef.current.muted = false;
+      setShowLocalized(true);
+      return;
+    }
+    if (audioUrl && syncMode === "browser") {
+      setShowLocalized(true);
+      const video = videoRef.current;
+      const audio = audioRef.current;
+      if (video && audio) {
+        video.muted = true;
+        await Promise.allSettled([video.play(), audio.play()]);
+      }
+      return;
+    }
+    await requestLocalizedVideo(audioLanguage, providerPreference);
+  }
+
   return (
-    <article className="episode-card">
+    <article aria-busy={loading} className="episode-card">
       <div className="episode-layout">
         <div className="video-shell">
           <HlsPlayer
@@ -180,7 +224,7 @@ export function EpisodeCard({
             onSourceFallback={() => {
               if (!showLocalized || !audioUrl) return;
               setLocalizedStream(undefined);
-              setShowLocalized(false);
+              setShowLocalized(true);
               setSyncMode("browser");
             }}
             ref={videoRef}
@@ -191,8 +235,8 @@ export function EpisodeCard({
             }
           />
           <span className="video-badge">
-            {showLocalized && localizedStream
-              ? `${languageName} narrated reel`
+            {showLocalized
+              ? `${languageName} narrated video`
               : "VideoDB lesson reel"}
           </span>
         </div>
@@ -212,8 +256,9 @@ export function EpisodeCard({
               <span>Audio language</span>
               <select
                 aria-label={`Audio language for ${episode.title}`}
+                disabled={loading}
                 onChange={(event) =>
-                  changeAudioLanguage(
+                  void changeAudioLanguage(
                     event.target.value as LessonLanguage,
                   )
                 }
@@ -230,8 +275,9 @@ export function EpisodeCard({
               <span>Voice engine</span>
               <select
                 aria-label={`Voice engine for ${episode.title}`}
+                disabled={loading}
                 onChange={(event) =>
-                  changeProvider(
+                  void changeProvider(
                     event.target.value as
                       | "auto"
                       | "sarvam"
@@ -249,6 +295,7 @@ export function EpisodeCard({
               className="listen-button"
               disabled={loading}
               onClick={prepareLocalizedVideo}
+              aria-busy={loading}
               type="button"
             >
               <svg aria-hidden="true" className="button-icon" fill="none" viewBox="0 0 24 24">
@@ -256,14 +303,14 @@ export function EpisodeCard({
               </svg>
               {loading
                 ? `Creating ${languageName} video…`
-                : localizedStream
-                  ? `Play in ${languageName}`
+                : audioUrl
+                  ? `Replay in ${languageName}`
                   : `Add friendly ${languageName} voice`}
             </button>
-            {localizedStream && showLocalized ? (
+            {showLocalized ? (
               <button
                 className="text-button"
-                onClick={() => setShowLocalized(false)}
+                onClick={hearOriginalAudio}
                 type="button"
               >
                 Hear original audio
@@ -271,8 +318,21 @@ export function EpisodeCard({
             ) : null}
           </div>
           <audio ref={audioRef} src={audioUrl} />
+          {loading ? (
+            <div
+              aria-live="assertive"
+              className="language-change-status"
+              role="status"
+            >
+              <span className="loading-spinner" aria-hidden="true" />
+              <span>
+                <strong>Creating a {languageName} voice…</strong>
+                Translating, speaking and syncing it with this video.
+              </span>
+            </div>
+          ) : null}
           {provider ? (
-            <div className="provider-message">
+            <div className="provider-message" role="status">
               {fallbackUsed
                 ? "Primary voice provider recovered with a backup voice."
                 : syncMode === "videodb-timeline"

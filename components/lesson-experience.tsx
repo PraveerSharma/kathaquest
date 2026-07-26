@@ -94,7 +94,10 @@ export function LessonExperience() {
     }
   }
 
-  async function createNarratedFilm() {
+  async function createNarratedFilm(
+    targetLanguage = audioLanguage,
+    targetProvider = providerPreference,
+  ) {
     if (!session) return;
     setNarrating(true);
     setError(undefined);
@@ -105,8 +108,8 @@ export function LessonExperience() {
         body: JSON.stringify({
           lessonId: session.lesson.id,
           lessonToken: session.lessonToken,
-          language: audioLanguage,
-          provider: providerPreference,
+          language: targetLanguage,
+          provider: targetProvider,
         }),
       });
       const result = (await response.json()) as {
@@ -132,6 +135,22 @@ export function LessonExperience() {
     } finally {
       setNarrating(false);
     }
+  }
+
+  async function changeFilmAudioLanguage(language: LessonLanguage) {
+    if (language === audioLanguage || narrating) return;
+    setAudioLanguage(language);
+    resetVoice();
+    await createNarratedFilm(language, providerPreference);
+  }
+
+  async function changeFilmVoiceEngine(
+    provider: "auto" | "sarvam" | "elevenlabs",
+  ) {
+    if (provider === providerPreference || narrating) return;
+    setProviderPreference(provider);
+    resetVoice();
+    await createNarratedFilm(audioLanguage, provider);
   }
 
   if (!ready) {
@@ -177,7 +196,24 @@ export function LessonExperience() {
   }
 
   return (
-    <main className="lesson-studio" id="main-content">
+    <main
+      aria-busy={localizing || narrating}
+      className="lesson-studio"
+      id="main-content"
+    >
+      {localizing ? (
+        <div
+          aria-live="assertive"
+          className="language-progress-banner"
+          role="status"
+        >
+          <span className="loading-spinner" aria-hidden="true" />
+          <span>
+            <strong>Localizing all nine scenes…</strong>
+            Script, captions, storyboard and quiz are being translated.
+          </span>
+        </div>
+      ) : null}
       <section className="container lesson-studio-heading">
         <div>
           <span className="eyebrow">AI lesson studio · presentation v1</span>
@@ -191,28 +227,33 @@ export function LessonExperience() {
             <span>✓ {lesson.episodes.length} reviewed evidence chapters</span>
           </div>
         </div>
-        <div className="studio-language">
-          <label>
-            <span>Content language</span>
-            <select
-              disabled={localizing}
-              onChange={(event) =>
-                changeContentLanguage(
-                  event.target.value as LessonLanguage,
-                )
-              }
-              value={lesson.language}
-            >
-              {lessonLanguages.map((item) => (
-                <option key={item.code} value={item.code}>
-                  {item.label} · {item.englishName}
-                </option>
-              ))}
-            </select>
-          </label>
-          <small>
-            {localizing ? "Localizing all nine scenes…" : "Changes captions, script and quiz"}
-          </small>
+        <div className="studio-heading-actions">
+          <Link className="text-button back-to-adventure" href="/adventure">
+            Back to lesson chapters
+          </Link>
+          <div className="studio-language">
+            <label>
+              <span>Content language</span>
+              <select
+                disabled={localizing}
+                onChange={(event) =>
+                  changeContentLanguage(
+                    event.target.value as LessonLanguage,
+                  )
+                }
+                value={lesson.language}
+              >
+                {lessonLanguages.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.label} · {item.englishName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <small aria-live="polite">
+              {localizing ? "Localizing all nine scenes…" : "Changes captions, script and quiz"}
+            </small>
+          </div>
         </div>
       </section>
 
@@ -228,9 +269,11 @@ export function LessonExperience() {
               <span>Film audio</span>
               <select
                 aria-label="Lesson film audio language"
+                disabled={narrating}
                 onChange={(event) => {
-                  setAudioLanguage(event.target.value as LessonLanguage);
-                  resetVoice();
+                  void changeFilmAudioLanguage(
+                    event.target.value as LessonLanguage,
+                  );
                 }}
                 value={audioLanguage}
               >
@@ -245,14 +288,14 @@ export function LessonExperience() {
               <span>Voice engine</span>
               <select
                 aria-label="Lesson film voice engine"
+                disabled={narrating}
                 onChange={(event) => {
-                  setProviderPreference(
+                  void changeFilmVoiceEngine(
                     event.target.value as
                       | "auto"
                       | "sarvam"
                       | "elevenlabs",
                   );
-                  resetVoice();
                 }}
                 value={providerPreference}
               >
@@ -264,7 +307,8 @@ export function LessonExperience() {
             <button
               className="listen-button"
               disabled={narrating}
-              onClick={createNarratedFilm}
+              onClick={() => void createNarratedFilm()}
+              aria-busy={narrating}
               type="button"
             >
               {narrating
@@ -279,6 +323,21 @@ export function LessonExperience() {
               </span>
             ) : null}
           </div>
+          {narrating ? (
+            <div
+              aria-live="assertive"
+              className="language-change-status"
+              role="status"
+            >
+              <span className="loading-spinner" aria-hidden="true" />
+              <span>
+                <strong>
+                  Creating {getLessonLanguage(audioLanguage).label} film audio…
+                </strong>
+                Translating the script and preparing a child-friendly voice.
+              </span>
+            </div>
+          ) : null}
           {voiceFallbackUsed ? (
             <p className="provider-message" role="status">
               The selected voice engine was unavailable, so the backup voice

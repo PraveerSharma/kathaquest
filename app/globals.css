@@ -1139,6 +1139,49 @@ textarea:focus-visible {
   line-height: 1.35;
 }
 
+.language-progress-banner {
+  align-items: center;
+  background: #fff3d1;
+  border: 1px solid #e3bd54;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(69, 50, 12, 0.14);
+  color: #664708;
+  display: flex;
+  gap: 13px;
+  margin: 0 auto 24px;
+  max-width: 1120px;
+  padding: 13px 17px;
+  position: sticky;
+  top: 12px;
+  width: calc(100% - 32px);
+  z-index: 60;
+}
+
+.language-progress-banner span:last-child,
+.language-change-status span:last-child {
+  display: grid;
+  font-size: 13px;
+  gap: 2px;
+  line-height: 1.4;
+}
+
+.loading-spinner,
+.loading-orbit {
+  animation: rotate 0.9s linear infinite;
+  border: 3px solid rgba(65, 54, 111, 0.18);
+  border-radius: 50%;
+  border-top-color: #55469a;
+  flex: 0 0 auto;
+  height: 22px;
+  width: 22px;
+}
+
+.loading-orbit {
+  height: 48px;
+  margin: 0 auto 24px;
+  width: 48px;
+}
+
 .lesson-error {
   margin: -18px 0 28px;
 }
@@ -1317,6 +1360,18 @@ textarea:focus-visible {
   padding: 10px 12px;
   font-size: 12px;
   font-weight: 800;
+}
+
+.language-change-status {
+  align-items: center;
+  background: #f3efff;
+  border: 1px solid #d8cff8;
+  border-radius: 14px;
+  color: #41366f;
+  display: flex;
+  gap: 11px;
+  margin-top: 12px;
+  padding: 11px 13px;
 }
 
 .why-box {
@@ -1955,6 +2010,16 @@ textarea:focus-visible {
 
 .lesson-studio-heading > div:first-child {
   max-width: 840px;
+}
+
+.studio-heading-actions {
+  align-items: stretch;
+  display: grid;
+  gap: 8px;
+}
+
+.back-to-adventure {
+  justify-self: end;
 }
 
 .studio-language {

@@ -280,6 +280,7 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
   await openReadyApp(page);
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
+  await expect(page).toHaveURL(/\/adventure$/);
   await expect(page.getByRole("heading", { name: "Volcano Adventure" })).toBeVisible();
   await expect(page.locator(".episode-card")).toHaveCount(3);
   await expect(page.getByText("1m 15s").first()).toBeVisible();
@@ -316,6 +317,7 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
   await expect(
     page.getByRole("heading", { name: /Where should we explore/i }),
   ).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
 });
 
 test("content navigation and the continuous lesson studio are usable", async ({
@@ -349,6 +351,7 @@ test("content navigation and the continuous lesson studio are usable", async ({
   await expect(page.locator('.app-shell[data-ready="true"]')).toBeVisible();
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
+  await expect(page).toHaveURL(/\/adventure$/);
   const lessonLink = page.getByRole("link", {
     name: /Watch complete lesson film/i,
   });
@@ -371,10 +374,8 @@ test("content navigation and the continuous lesson studio are usable", async ({
   );
 
   await page.getByLabel("Lesson film audio language").selectOption("mr-IN");
+  await expect(page.getByText("Voice: Sarvam AI")).toBeVisible();
   await page.getByLabel("Lesson film voice engine").selectOption("elevenlabs");
-  await page
-    .getByRole("button", { name: /Add narration to the whole film/i })
-    .click();
   await expect(page.getByText("Voice: Sarvam AI")).toBeVisible();
   await expect(
     page.getByText(/backup voice kept your lesson film ready/i),
@@ -433,6 +434,7 @@ test("microphone-unavailable feedback is explicit", async ({ page }) => {
   await openReadyApp(page);
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
+  await expect(page).toHaveURL(/\/adventure$/);
   await page.getByRole("button", { name: "Record a question" }).click();
   await expect(
     page.getByRole("alert").filter({

@@ -3,7 +3,7 @@ import Link from "next/link";
 export function SiteHeader({
   active,
 }: {
-  active?: "home" | "content" | "lesson" | "blog";
+  active?: "home" | "content" | "adventure" | "lesson" | "blog";
 }) {
   return (
     <header className="site-header container">
@@ -22,10 +22,10 @@ export function SiteHeader({
           Explore chapters
         </Link>
         <Link
-          aria-current={active === "lesson" ? "page" : undefined}
-          href="/lesson"
+          aria-current={active === "adventure" ? "page" : undefined}
+          href="/adventure"
         >
-          My lesson
+          My adventure
         </Link>
         <Link
           aria-current={active === "blog" ? "page" : undefined}
