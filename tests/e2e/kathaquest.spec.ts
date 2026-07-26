@@ -2,12 +2,115 @@ import path from "node:path";
 
 import { expect, test, type Page } from "@playwright/test";
 
+import type { Episode, PublicLearningConcept } from "../../lib/types";
+
 const lessonId = "11111111-1111-4111-8111-111111111111";
 const episodeIds = [
   "21111111-1111-4111-8111-111111111111",
   "21111111-1111-4111-8111-111111111112",
   "21111111-1111-4111-8111-111111111113",
 ];
+
+function presentation(
+  concepts: PublicLearningConcept[],
+  episodes: Episode[],
+  localized: boolean,
+) {
+  const types = [
+    "guide",
+    "diagram",
+    "real_video",
+    "animation",
+    "real_video",
+    "diagram",
+    "keyword",
+    "checkpoint",
+    "recap",
+  ] as const;
+  const scenes = types.map((type, index) => {
+    const concept = concepts[Math.min(2, Math.floor(Math.max(0, index - 1) / 2))];
+    const episode = episodes[Math.min(2, Math.floor(Math.max(0, index - 1) / 2))];
+    const realVideo = type === "real_video";
+    return {
+      id: `scene-${index + 1}`,
+      type,
+      conceptId:
+        type === "guide" || type === "recap" || type === "checkpoint"
+          ? undefined
+          : concept.id,
+      title: localized ? `দৃশ্য ${index + 1}` : `Scene ${index + 1}`,
+      narration: localized
+        ? "মায়া প্রমাণ, ছবি এবং সহজ ধাপে এই বিজ্ঞান ধারণাটি ব্যাখ্যা করছে।"
+        : "Maya connects the chapter evidence, a clear visual model, and one simple step so the scientific idea becomes easier to remember.",
+      subtitle: localized
+        ? "প্রমাণ দেখে ধারণাটি বোঝো।"
+        : "Follow the evidence and visual model.",
+      durationSeconds: 20,
+      keywords: localized
+        ? ["প্রমাণ", "ধারণা"]
+        : ["evidence", "idea"],
+      transition: "fade" as const,
+      visual: {
+        diagramTemplate: "process" as const,
+        labels: localized
+          ? ["শুরু", "পরিবর্তন", "ফল"]
+          : ["Start", "Change", "Result"],
+        motion: realVideo ? ("pan_zoom" as const) : ("flow" as const),
+        footageEpisodeId: realVideo ? episode.id : undefined,
+        footageMediaUrl: realVideo
+          ? "https://media.w3.org/2010/05/sintel/trailer.mp4"
+          : undefined,
+        footageStartSeconds: realVideo ? 0 : undefined,
+        footageEndSeconds: realVideo ? 20 : undefined,
+      },
+      evidenceRefs: realVideo ? ["m-1:0-20"] : [`chapter:${concept.id}`],
+      interactionPrompt:
+        type === "checkpoint"
+          ? localized
+            ? "এরপর কী ঘটবে?"
+            : "What happens next?"
+          : undefined,
+    };
+  });
+  const fullNarration = scenes.map((scene) => scene.narration).join(" ");
+  return {
+    schemaVersion: "presentation-v1" as const,
+    promptVersion: "lesson-presentation-v1.0.0",
+    guide: { name: "Maya" as const, role: "curious explorer" as const },
+    plan: {
+      version: "lesson-plan-v1" as const,
+      title: localized ? "আগ্নেয়গিরির অভিযান" : "Volcano Adventure",
+      bigQuestion: localized
+        ? "আগ্নেয়গিরি কীভাবে বদলে যায়?"
+        : "How does a volcano change?",
+      audience: "8-10",
+      targetDurationSeconds: 180,
+      learningObjectives: concepts.map((concept) => ({
+        conceptId: concept.id,
+        objective: concept.learningObjective,
+        sourceQuote: concept.sourceQuote,
+      })),
+      teachingArc: localized
+        ? ["কৌতূহল", "মডেল", "প্রমাণ", "অনুমান"]
+        : ["Wonder", "Model", "Evidence", "Predict"],
+    },
+    script: {
+      version: "video-script-v1" as const,
+      hook: scenes[0].narration,
+      fullNarration,
+      narrationWordCount: fullNarration.split(/\s+/).length,
+      closingLine: scenes[8].narration,
+    },
+    storyboard: {
+      version: "storyboard-v1" as const,
+      fps: 30 as const,
+      width: 1280 as const,
+      height: 720 as const,
+      totalDurationSeconds: 180,
+      scenes,
+    },
+  };
+}
 
 function lesson(language = "en-IN", localized = false) {
   const titles = localized
@@ -35,6 +138,36 @@ function lesson(language = "en-IN", localized = false) {
         : ["First", "Second", "Third", "Fourth"],
     },
   }));
+  const episodes = concepts.map((concept, index) => ({
+    id: episodeIds[index],
+    conceptId: concept.id,
+    title: concept.title,
+    explanation: concept.explanation,
+    sourceQuote: concept.sourceQuote,
+    sourcePage: 1,
+    whyThisClip: localized
+      ? "এই দৃশ্যগুলি ধারণাটির প্রত্যক্ষ প্রমাণ দেখায়।"
+      : "These moments directly demonstrate the learning objective.",
+    streamUrl: `https://media.example.invalid/episode-${index + 1}.m3u8`,
+    durationSeconds: 75,
+    evidence: [
+      {
+        videoId: `m-${index + 1}`,
+        videoTitle: "Reviewed science source",
+        mediaUrl: "https://media.w3.org/2010/05/sintel/trailer.mp4",
+        startSeconds: 10,
+        endSeconds: 85,
+        relevanceScore: 0.72,
+        reviewConfidence: 0.91,
+        sourceUrl: "https://science.nasa.gov",
+        licence: "Public educational source",
+        kidSafe: true,
+        selectionReason: "Directly shows the process being explained.",
+      },
+    ],
+    coverageScore: 0.81,
+    kidSafe: true,
+  }));
   return {
     id: lessonId,
     title: chapterTitle,
@@ -42,35 +175,8 @@ function lesson(language = "en-IN", localized = false) {
     language,
     status: "ready",
     concepts,
-    episodes: concepts.map((concept, index) => ({
-      id: episodeIds[index],
-      conceptId: concept.id,
-      title: concept.title,
-      explanation: concept.explanation,
-      sourceQuote: concept.sourceQuote,
-      sourcePage: 1,
-      whyThisClip: localized
-        ? "এই দৃশ্যগুলি ধারণাটির প্রত্যক্ষ প্রমাণ দেখায়।"
-        : "These moments directly demonstrate the learning objective.",
-      streamUrl: `https://media.example.invalid/episode-${index + 1}.m3u8`,
-      durationSeconds: 75,
-      evidence: [
-        {
-          videoId: `m-${index + 1}`,
-          videoTitle: "Reviewed science source",
-          startSeconds: 10,
-          endSeconds: 85,
-          relevanceScore: 0.72,
-          reviewConfidence: 0.91,
-          sourceUrl: "https://science.nasa.gov",
-          licence: "Public educational source",
-          kidSafe: true,
-          selectionReason: "Directly shows the process being explained.",
-        },
-      ],
-      coverageScore: 0.81,
-      kidSafe: true,
-    })),
+    episodes,
+    presentation: presentation(concepts, episodes, localized),
     traceId: "trace-test",
     generationTimeMs: 24000,
     overallCoverage: 0.81,
@@ -209,6 +315,62 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
   ).toBeVisible();
 });
 
+test("content navigation and the continuous lesson studio are usable", async ({
+  page,
+}) => {
+  await mockGeneratedLesson(page);
+  await page.route("**/api/presentations/narrate", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        audioUrl: "data:audio/mpeg;base64,SUQz",
+        provider: "elevenlabs",
+        fallbackUsed: false,
+        language: "mr-IN",
+        durationSeconds: 180,
+      }),
+    });
+  });
+
+  await openReadyApp(page);
+  await page.getByRole("link", { name: "Explore chapters" }).click();
+  await expect(page).toHaveURL(/\/content$/);
+  await expect(
+    page.getByRole("heading", { name: /Choose the next world/i }),
+  ).toBeVisible();
+  await expect(page.locator(".content-library-card")).toHaveCount(5);
+
+  await page.goto("/");
+  await expect(page.locator('.app-shell[data-ready="true"]')).toBeVisible();
+  await page.locator(".chapter-card").first().click();
+  await page.getByRole("button", { name: /Create my video adventure/i }).click();
+  await page
+    .getByRole("link", { name: /Watch complete lesson film/i })
+    .click();
+
+  await expect(page).toHaveURL(/\/lesson$/);
+  await expect(
+    page.getByRole("heading", { name: "Volcano Adventure" }),
+  ).toBeVisible();
+  await expect(page.locator(".presentation-player-shell")).toBeVisible();
+  await expect(page.locator(".scene-rail button")).toHaveCount(9);
+  await expect(page.getByText(/Layer 1/)).toBeHidden();
+  const studioDimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(studioDimensions.content).toBeLessThanOrEqual(
+    studioDimensions.viewport + 1,
+  );
+
+  await page.getByLabel("Lesson film audio language").selectOption("mr-IN");
+  await page.getByLabel("Lesson film voice engine").selectOption("elevenlabs");
+  await page
+    .getByRole("button", { name: /Add narration to the whole film/i })
+    .click();
+  await expect(page.getByText("Voice: ElevenLabs")).toBeVisible();
+});
+
 test("generation failures recover without trapping the child", async ({ page }) => {
   await page.route("**/api/lessons/generate", async (route) => {
     await route.fulfill({
@@ -252,10 +414,16 @@ test("mobile layout has no horizontal overflow and keeps primary actions reachab
 
 test("microphone-unavailable feedback is explicit", async ({ page }) => {
   await page.addInitScript(() => {
-    Object.defineProperty(navigator, "mediaDevices", {
-      configurable: true,
-      value: undefined,
-    });
+    if (navigator.mediaDevices) {
+      Object.defineProperty(
+        Object.getPrototypeOf(navigator.mediaDevices),
+        "getUserMedia",
+        {
+          configurable: true,
+          value: undefined,
+        },
+      );
+    }
   });
   await mockGeneratedLesson(page);
   await openReadyApp(page);
@@ -263,6 +431,8 @@ test("microphone-unavailable feedback is explicit", async ({ page }) => {
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
   await page.getByRole("button", { name: "Record a question" }).click();
   await expect(
-    page.getByText("Microphone recording is not supported in this browser."),
+    page.getByRole("alert").filter({
+      hasText: "Microphone recording is not supported in this browser.",
+    }),
   ).toBeVisible();
 });

@@ -26,6 +26,14 @@ Last updated: 2026-07-26
 - [x] Add chapter-pack grounding and safety evaluations
 - [x] Add cross-browser desktop/mobile workflow coverage
 - [x] Exercise the real PDF → video → language → Q&A → quiz path in Chromium
+- [x] Generate a validated AI lesson plan and complete educational script
+- [x] Generate a nine-scene executable storyboard
+- [x] Render one continuous hybrid lesson with Remotion
+- [x] Mix reviewed footage with reusable SVG diagrams and animations
+- [x] Add Maya the Explorer as the recurring lesson guide
+- [x] Add `/content` and `/lesson` routes with persistent navigation
+- [x] Separate content language from video-audio language
+- [x] Support explicit Sarvam, ElevenLabs and automatic voice routing
 
 ## Observability
 
@@ -34,6 +42,8 @@ Last updated: 2026-07-26
 - [x] Start SigNoz via Foundry and Docker
 - [x] Export OpenTelemetry traces and metrics
 - [x] Verify KathaQuest telemetry in the SigNoz ClickHouse store
+- [x] Add production `@vercel/otel` export with SigNoz authentication support
+- [x] Instrument planning, storyboard and full-film narration
 - [ ] Create two dashboards
 - [ ] Create three alerts
 - [ ] Capture dashboard screenshots
@@ -56,5 +66,7 @@ Last updated: 2026-07-26
 
 ## Current blockers
 
-- SigNoz is healthy locally. First-user setup and dashboard/alert creation still require completing the SigNoz UI onboarding at `http://localhost:8080`.
+- SigNoz is healthy locally. Real-time Vercel export still requires a SigNoz
+  Cloud ingestion URL/key or a stable authenticated public OTLP endpoint; the
+  application cannot send to `localhost` from Vercel.
 - VideoDB’s optional enhanced audio-index endpoint currently returns HTTP 500. Spoken-word and detailed scene indexes, retrieval, stitching and Timeline narration composition remain healthy.

@@ -1,8 +1,14 @@
 # KathaQuest
 
-> Turn textbook chapters into multilingual video adventures using real educational footage.
+> Turn any chapter into one multilingual, interactive lesson film.
 
-KathaQuest reads a science chapter, extracts three age-appropriate concepts, searches a trusted archive for exact moments that explain them, and compiles complementary moments into substantial video lessons. Children can switch the complete lesson and its synchronized narration among 11 Indian languages, ask a typed or spoken question, and get an answer backed by another real video clip when the archive has direct evidence.
+KathaQuest is an AI lesson studio. It reads a science chapter, creates a
+source-grounded lesson plan, writes an educational script, builds a nine-scene
+storyboard, and renders one continuous Remotion film from real footage,
+animated diagrams, highlighted keywords, subtitles and Maya the Explorer.
+Children can change content and audio independently among 11 Indian languages,
+ask a typed or spoken question, and get a grounded answer with video only when
+the archive contains direct evidence.
 
 The reviewed archive contains 12 all-ages videos from USGS, NASA, NOAA and the U.S. National Park Service. VideoDB—not a mock—provides ingestion, spoken-word indexing, scene understanding, semantic retrieval, timestamp evidence, HLS compilation and narration/video composition.
 
@@ -18,12 +24,15 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
 
 1. Select one of five original chapter stories or upload a text-based PDF.
 2. Choose an age group and one of 11 Indian languages.
-3. Generate exactly three concepts and three precision-reviewed VideoDB episodes of at least 50 seconds each.
-4. Change the learning language at any point and create a warm, synchronized narrated version of any reel.
-5. Ask a typed question or record a question in the learning language.
-6. Complete the quiz; missed concepts create a VideoDB revision reel.
-7. Arm the developer failure control and confirm that narration failure is explained without breaking the lesson.
-8. Inspect the matching trace, metrics and structured logs in SigNoz.
+3. Generate three concepts, three deep VideoDB evidence chapters, a structured
+   lesson plan, complete script and executable storyboard.
+4. Open the Lesson Studio and play one 3–4 minute hybrid film containing Maya,
+   diagrams, animations, real footage, captions, keywords and a checkpoint.
+5. Change content language or choose a different film-audio language and voice
+   engine independently.
+6. Ask a typed or spoken question and complete the quiz; missed concepts create
+   a VideoDB revision reel.
+7. Inspect the matching trace, metrics and structured logs in SigNoz.
 
 ## Architecture
 
@@ -35,9 +44,13 @@ flowchart LR
     D --> E[VideoDB spoken + scene search]
     E --> F[LLM precision review + reranking]
     F --> G[Context expansion + VideoDB HLS stitching]
-    G --> H[Three 50–136 second episodes]
-    H --> I[Sarvam language-specific narration]
-    I --> O[VideoDB Editor Timeline composition]
+    G --> H[Three 50–136 second evidence chapters]
+    H --> P[Structured lesson plan + script]
+    P --> Q[Nine-scene storyboard]
+    Q --> R[Visual router: footage or SVG]
+    R --> S[Remotion continuous lesson film]
+    P --> I[Sarvam or ElevenLabs narration]
+    I --> S
     H --> J[Question + quiz routes]
     J --> E
     B --> M[OpenAI moderation]
@@ -46,10 +59,11 @@ flowchart LR
     C -.-> K
     E -.-> K
     I -.-> K
-    K --> L[SigNoz via Foundry]
+    K --> L[SigNoz]
 ```
 
-The app is one strict-TypeScript Next.js repository. External credentials remain in server-only environment variables. Quiz answers stay inside a 24-hour AES-256-GCM lesson token and are never returned as readable browser data.
+The executable presentation design and layer-by-layer implementation are in
+[`HYBRID_LESSON_ARCHITECTURE.md`](HYBRID_LESSON_ARCHITECTURE.md).
 
 ## VideoDB depth
 
@@ -74,7 +88,11 @@ Source and licence records live in [`data/demo-videos.json`](data/demo-videos.js
 
 English, Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Punjabi and Odia are supported. Changing the learning language localizes the title, objectives, explanations and quiz into the language’s native script while preserving the original verified chapter quote internally.
 
-Sarvam Bulbul v3 is the primary narrator for all languages. Each language uses a recommended speaker with a slightly slower storytelling pace and warm delivery suitable for children. This is a friendly educational voice—not an imitation of a child. VideoDB’s Editor Timeline combines the new narration with the retrieved video; the player falls back to browser synchronization if remote composition is temporarily unavailable.
+Sarvam Bulbul v3 and ElevenLabs multilingual TTS are both supported. Children
+can change the language of a single evidence reel or the complete lesson film
+without changing the written lesson. Auto mode prefers Sarvam for Indian
+languages and falls back to ElevenLabs. Voices use a warm, slightly slower
+educational delivery rather than imitating a child.
 
 ## SigNoz observability
 
@@ -82,6 +100,7 @@ The root `lesson.generate` trace includes:
 
 - `document.extract`
 - `llm.extract_concepts`
+- `llm.create_lesson_presentation`
 - `videodb.search_concept`
 - `videodb.rewrite_query`
 - `videodb.compile_episode`
@@ -89,6 +108,7 @@ The root `lesson.generate` trace includes:
 - `llm.answer_question`
 - `tts.generate`
 - `tts.fallback`
+- `presentation.generate_narration`
 - `quiz.evaluate`
 - `revision.compile`
 - `lesson.persist`
@@ -104,7 +124,8 @@ The controlled failure is intentionally visible: `tts.generate` fails, `kathaque
 - VideoDB Node.js SDK and HLS.js
 - Sarvam AI Bulbul v3 multilingual TTS and Saarika STT
 - OpenTelemetry traces/metrics and Pino structured logs
-- SigNoz installed reproducibly with Foundry
+- Remotion Player for deterministic scene composition
+- SigNoz installed reproducibly with Foundry/Docker
 - Tailwind CSS 4 plus purpose-built accessible components
 
 ## Local setup
@@ -140,9 +161,11 @@ The seed script is resumable. It reuses cached VideoDB IDs and does not upload a
 | `OPENAI_MODEL` | Defaults to `gpt-5.6` |
 | `LESSON_SIGNING_SECRET` | 32+ character key for encrypted stateless lesson sessions |
 | `SARVAM_API_KEY` | Eleven-language narration and speech-to-text |
-| `ELEVENLABS_API_KEY` | Optional legacy fallback |
-| `ELEVENLABS_VOICE_ID` | Optional legacy fallback voice |
-| `OTEL_*` | Service name and OTLP HTTP endpoints |
+| `ELEVENLABS_API_KEY` | Multilingual TTS provider and fallback |
+| `ELEVENLABS_VOICE_ID` | Warm production narration voice |
+| `OTEL_*` | Service name, OTLP HTTP endpoints and optional headers |
+| `SIGNOZ_INGESTION_KEY` | SigNoz Cloud ingestion key when used |
+| `NEXT_PUBLIC_SIGNOZ_URL` | Optional production dashboard link |
 | `SIGNOZ_URL` | Local SigNoz UI |
 | `SIGNOZ_MCP_URL` | Local SigNoz MCP endpoint |
 | `DEMO_MODE` | Enables the controlled failure route |
@@ -183,7 +206,12 @@ npm run smoke-test
 npm run evals
 ```
 
-The 20-test browser suite covers Chromium, Firefox, WebKit and Pixel 7 layouts, including real PDF extraction, every language option, lesson localization, narration controls, questions, quiz, reset, error recovery and microphone feedback. Set `RUN_LIVE_E2E=1` to exercise the real OpenAI, VideoDB and Sarvam path in Chromium.
+The 24-test browser suite covers Chromium, Firefox, WebKit and Pixel 7 layouts,
+including real PDF extraction, navigation, the continuous lesson studio, nine
+storyboard scenes, independent film narration, every language option,
+localization, questions, quiz, reset, error recovery and microphone feedback.
+Set `RUN_LIVE_E2E=1` to exercise the paid OpenAI, VideoDB and voice path in
+Chromium.
 
 The smoke test performs real lesson generation and verifies exactly three concepts and episodes, 50-second-or-longer playable streams, Bengali localization and synchronized narration, evidence, Q&A, quiz scoring, an encrypted lesson token, and no readable answer leak. The evaluation suite runs all five bundled chapters against grounding, child safety, coverage, duration and evidence-review contracts. Use `EVAL_CHAPTERS=water-cycle,photosynthesis npm run evals` for a targeted run.
 
@@ -193,14 +221,21 @@ The catalog uses reviewed educational media from USGS, NASA, NOAA and NPS. Every
 
 ## Production posture and limitations
 
-- Lesson interactions are stateless and serverless-safe through encrypted, expiring tokens; persistent multi-device history still needs a database and authentication.
+- Lesson interactions are stateless and serverless-safe through encrypted,
+  expiring tokens. The browser stores the current lesson for navigation;
+  persistent multi-device history still needs a database and authentication.
 - Rate limiting is best-effort per runtime instance. A distributed limiter should replace it before large public traffic.
 - Uploaded PDFs are text-based and capped at 10 MB; OCR is not included.
 - Retrieval is safe by construction but limited to the reviewed 12-video corpus. Unsupported topics fail instead of showing an unreviewed or irrelevant clip.
 - Regional-language localization and composed narration are generated on demand and can take roughly 30–45 seconds each.
 - VideoDB SDK `indexAudio` upgrades currently return an HTTP 500 for this collection; the production path uses the working spoken-word and visual-scene indexes and remains functional.
 - The revision reel currently targets the first missed concept.
-- Self-hosted SigNoz is local; Vercel telemetry needs a reachable hosted or tunneled OTLP endpoint.
+- Self-hosted SigNoz is healthy in local Docker. Vercel telemetry uses
+  `@vercel/otel` and is ready for a SigNoz Cloud endpoint or authenticated
+  public collector; a localhost collector cannot receive production traffic.
+- The current release plays a continuous Remotion film in the browser.
+  Downloadable MP4 rendering should run asynchronously on Remotion Lambda or a
+  dedicated worker.
 
 ## Bundled chapter pack
 

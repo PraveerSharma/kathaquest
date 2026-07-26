@@ -127,7 +127,11 @@ export function VoiceQuestion({
           {loading ? "Searching…" : "Ask"}
         </button>
       </form>
-      {error ? <div className="form-error">{error}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert">
+          {error}
+        </div>
+      ) : null}
       {answer ? (
         <div className="answer-box">
           {answer.transcript ? (

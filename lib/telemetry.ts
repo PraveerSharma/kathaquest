@@ -34,6 +34,15 @@ export const telemetry = {
   ttsFallbacks: meter.createCounter("kathaquest.tts.fallbacks"),
   questionsAsked: meter.createCounter("kathaquest.questions.asked"),
   revisionsGenerated: meter.createCounter("kathaquest.revision.generated"),
+  presentationsGenerated: meter.createCounter(
+    "kathaquest.presentation.generated",
+  ),
+  presentationFallbacks: meter.createCounter(
+    "kathaquest.presentation.fallbacks",
+  ),
+  presentationNarrations: meter.createCounter(
+    "kathaquest.presentation.narrations",
+  ),
 };
 
 export async function withSpan<T>(

@@ -6,7 +6,14 @@ import { EpisodeCard } from "@/components/episode-card";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ObservabilityPanel } from "@/components/observability-panel";
 import { Quiz } from "@/components/quiz";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { VoiceQuestion } from "@/components/voice-question";
+import {
+  clearLessonSession,
+  readSavedLesson,
+  saveLessonSession,
+} from "@/lib/client-lesson";
 import { getLessonLanguage, lessonLanguages } from "@/lib/languages";
 import type {
   ChapterPackItem,
@@ -14,8 +21,6 @@ import type {
   LessonResponse,
   PublicLesson,
 } from "@/lib/types";
-
-const savedLessonKey = "kathaquest.lesson.v1";
 
 function BookIcon({ id }: { id: string }) {
   const paths: Record<string, React.ReactNode> = {
@@ -42,11 +47,24 @@ function CheckIcon() {
   );
 }
 
-export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
+export function KathaQuestApp({
+  chapters,
+  initialChapterId,
+}: {
+  chapters: ChapterPackItem[];
+  initialChapterId?: string;
+}) {
+  const initialChapter = chapters.find(
+    (chapter) => chapter.id === initialChapterId,
+  );
   const lessonRef = useRef<HTMLElement>(null);
   const personalizeRef = useRef<HTMLDivElement>(null);
-  const [chapterText, setChapterText] = useState("");
-  const [sourceLabel, setSourceLabel] = useState<string>();
+  const [chapterText, setChapterText] = useState(initialChapter?.text ?? "");
+  const [sourceLabel, setSourceLabel] = useState<string | undefined>(
+    initialChapter
+      ? `${initialChapter.title} • ${initialChapter.pages} pages`
+      : undefined,
+  );
   const [sourceKind, setSourceKind] =
     useState<"chapter-pack" | "uploaded-pdf">("chapter-pack");
   const [ageGroup, setAgeGroup] = useState("8-10");
@@ -63,12 +81,8 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
   useEffect(() => {
     const readyTimer = window.setTimeout(() => setHydrated(true), 0);
     try {
-      const saved = window.localStorage.getItem(savedLessonKey);
-      if (!saved) return () => window.clearTimeout(readyTimer);
-      const parsed = JSON.parse(saved) as {
-        lesson: PublicLesson;
-        lessonToken: string;
-      };
+      const parsed = readSavedLesson();
+      if (!parsed) return () => window.clearTimeout(readyTimer);
       if (parsed.lesson?.id && parsed.lessonToken) {
         window.setTimeout(() => {
           setLesson(parsed.lesson);
@@ -78,7 +92,7 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
         }, 0);
       }
     } catch {
-      window.localStorage.removeItem(savedLessonKey);
+      clearLessonSession();
     }
     return () => window.clearTimeout(readyTimer);
   }, []);
@@ -125,13 +139,10 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
       setLanguage(nextLanguage);
       setLesson(result.lesson);
       setLessonToken(result.lessonToken);
-      window.localStorage.setItem(
-        savedLessonKey,
-        JSON.stringify({
-          lesson: result.lesson,
-          lessonToken: result.lessonToken,
-        }),
-      );
+      saveLessonSession({
+        lesson: result.lesson,
+        lessonToken: result.lessonToken,
+      });
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -194,13 +205,10 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
       }
       setLesson(result.lesson);
       setLessonToken(result.lessonToken);
-      window.localStorage.setItem(
-        savedLessonKey,
-        JSON.stringify({
-          lesson: result.lesson,
-          lessonToken: result.lessonToken,
-        }),
-      );
+      saveLessonSession({
+        lesson: result.lesson,
+        lessonToken: result.lessonToken,
+      });
       setPhase("lesson");
       window.setTimeout(
         () => lessonRef.current?.scrollIntoView({ behavior: "smooth" }),
@@ -219,27 +227,14 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
     setLessonToken("");
     setPhase("input");
     setFallbackUsed(false);
-    window.localStorage.removeItem(savedLessonKey);
+    clearLessonSession();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
     <div className="app-shell" data-ready={hydrated}>
       <a className="skip-link" href="#main-content">Skip to the adventure</a>
-      <header className="site-header container">
-        <a aria-label="KathaQuest home" className="brand" href="#top">
-          <span className="brand-mark">K</span>
-          KathaQuest
-        </a>
-        <nav aria-label="Primary navigation" className="header-actions">
-          <span className="trust-pill">
-            <span className="dot" /> Reviewed all-ages sources
-          </span>
-          <a className="ghost-button" href="#observability">
-            Developer view
-          </a>
-        </nav>
-      </header>
+      <SiteHeader active="home" />
 
       {phase === "input" ? (
         <main className="container" id="main-content">
@@ -250,14 +245,15 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
                 Turn any chapter into a <span className="highlight">video quest.</span>
               </h1>
               <p className="hero-subtitle">
-                Pick a ready-to-explore story or bring your own PDF. KathaQuest
-                grounds every idea in the chapter and finds matching moments
-                from a reviewed educational archive.
+                Pick a story or bring your own PDF. KathaQuest plans the
+                lesson, writes the script, builds a storyboard, and combines
+                diagrams, animation, Maya and reviewed real footage into one
+                interactive film.
               </p>
               <div className="feature-row" aria-label="Product benefits">
                 <span><b>1</b> Source-grounded</span>
                 <span><b>2</b> 11 Indian languages</span>
-                <span><b>3</b> Kid-safe evidence</span>
+                <span><b>3</b> One complete lesson film</span>
               </div>
             </div>
 
@@ -370,7 +366,10 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
               <div>
                 <span className="eyebrow">Your video adventure is ready</span>
                 <h1>{lesson.title}</h1>
-                <p>Three in-depth, chapter-grounded reels made from reviewed educational footage.</p>
+                <p>
+                  One scripted lesson film plus three deep evidence chapters,
+                  all grounded in your source.
+                </p>
                 <div className="lesson-trust">
                   <span><CheckIcon /> {Math.round(lesson.overallCoverage * 100)}% evidence match</span>
                   <span><CheckIcon /> All clips kid-safe</span>
@@ -378,6 +377,9 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
                 </div>
               </div>
               <div className="lesson-heading-actions">
+                <a className="primary-button" href="/lesson">
+                  Watch complete lesson film
+                </a>
                 <label className="lesson-language-control" htmlFor="lesson-language">
                   <span>Learning language</span>
                   <select
@@ -429,11 +431,7 @@ export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
         </main>
       ) : null}
 
-      <footer className="footer">
-        <div className="container">
-          Reviewed public educational media · VideoDB retrieval · Sarvam AI voice · OpenTelemetry + SigNoz
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
 
-import type { PublicLesson } from "../lib/types";
+import type {
+  PublicLesson,
+  StoryboardSceneType,
+} from "../lib/types";
 
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 
@@ -53,6 +56,28 @@ if (
     "One or more episodes lacks a meaningful-length stream or evidence",
   );
 }
+if (
+  !lesson.presentation ||
+  lesson.presentation.storyboard.scenes.length !== 9 ||
+  lesson.presentation.storyboard.totalDurationSeconds < 150
+) {
+  throw new Error("Lesson did not include a complete presentation storyboard");
+}
+const presentationTypes = new Set(
+  lesson.presentation.storyboard.scenes.map((scene) => scene.type),
+);
+for (const requiredType of [
+  "guide",
+  "diagram",
+  "animation",
+  "real_video",
+  "checkpoint",
+  "recap",
+] satisfies StoryboardSceneType[]) {
+  if (!presentationTypes.has(requiredType)) {
+    throw new Error(`Presentation omitted required ${requiredType} scene`);
+  }
+}
 
 const questionResult = await request("/api/questions/ask", {
   method: "POST",
@@ -100,6 +125,24 @@ if (!narrationResult.audioUrl || !narrationResult.syncMode) {
   throw new Error("Localized child-friendly narration failed");
 }
 
+const presentationNarration = await request("/api/presentations/narrate", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    lessonId: localizedLesson.id,
+    lessonToken: localizedToken,
+    language: "mr-IN",
+    provider: "auto",
+  }),
+});
+if (
+  !presentationNarration.audioUrl ||
+  !presentationNarration.provider ||
+  presentationNarration.language !== "mr-IN"
+) {
+  throw new Error("Whole-film independent-language narration failed");
+}
+
 const wrongAnswers = Object.fromEntries(
   localizedLesson.concepts.map((concept) => [
     concept.id,
@@ -137,6 +180,13 @@ console.log(
       regionalLanguageSwitch: localizedLesson.language,
       narrationSyncMode: narrationResult.syncMode,
       localizedVideoCreated: Boolean(narrationResult.streamUrl),
+      presentationSceneCount:
+        lesson.presentation.storyboard.scenes.length,
+      presentationDurationSeconds:
+        lesson.presentation.storyboard.totalDurationSeconds,
+      presentationTypes: [...presentationTypes],
+      presentationAudioLanguage: presentationNarration.language,
+      presentationVoiceProvider: presentationNarration.provider,
       secureLessonToken: true,
       revisionReelCreated: Boolean(quizResult.revisionReelUrl),
       health,

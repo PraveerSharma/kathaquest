@@ -38,6 +38,7 @@ export type LearningConcept = {
 export type VideoEvidence = {
   videoId: string;
   videoTitle: string;
+  mediaUrl?: string;
   startSeconds: number;
   endSeconds: number;
   relevanceScore?: number;
@@ -50,6 +51,90 @@ export type VideoEvidence = {
   topics?: string[];
   reviewConfidence?: number;
   selectionReason?: string;
+};
+
+export type StoryboardSceneType =
+  | "guide"
+  | "real_video"
+  | "diagram"
+  | "animation"
+  | "keyword"
+  | "checkpoint"
+  | "recap";
+
+export type DiagramTemplate =
+  | "cycle"
+  | "process"
+  | "comparison"
+  | "layers"
+  | "orbit"
+  | "cause_effect"
+  | "concept_map";
+
+export type StoryboardScene = {
+  id: string;
+  type: StoryboardSceneType;
+  conceptId?: string;
+  title: string;
+  narration: string;
+  subtitle: string;
+  durationSeconds: number;
+  keywords: string[];
+  transition: "fade" | "slide" | "zoom" | "wipe";
+  visual: {
+    diagramTemplate: DiagramTemplate;
+    labels: string[];
+    motion: "reveal" | "flow" | "orbit" | "pulse" | "pan_zoom";
+    footageEpisodeId?: string;
+    footageMediaUrl?: string;
+    footageStartSeconds?: number;
+    footageEndSeconds?: number;
+  };
+  evidenceRefs: string[];
+  interactionPrompt?: string;
+};
+
+export type EducationalLessonPlan = {
+  version: "lesson-plan-v1";
+  title: string;
+  bigQuestion: string;
+  audience: string;
+  targetDurationSeconds: number;
+  learningObjectives: Array<{
+    conceptId: string;
+    objective: string;
+    sourceQuote: string;
+  }>;
+  teachingArc: string[];
+};
+
+export type EducationalVideoScript = {
+  version: "video-script-v1";
+  hook: string;
+  fullNarration: string;
+  narrationWordCount: number;
+  closingLine: string;
+};
+
+export type LessonStoryboard = {
+  version: "storyboard-v1";
+  fps: 30;
+  width: 1280;
+  height: 720;
+  totalDurationSeconds: number;
+  scenes: StoryboardScene[];
+};
+
+export type LessonPresentation = {
+  schemaVersion: "presentation-v1";
+  promptVersion: string;
+  guide: {
+    name: "Maya";
+    role: "curious explorer";
+  };
+  plan: EducationalLessonPlan;
+  script: EducationalVideoScript;
+  storyboard: LessonStoryboard;
 };
 
 export type Episode = {
@@ -78,6 +163,7 @@ export type Lesson = {
   status: LessonStatus;
   concepts: LearningConcept[];
   episodes: Episode[];
+  presentation?: LessonPresentation;
   traceId?: string;
   generationTimeMs?: number;
   fallbackUsed?: boolean;

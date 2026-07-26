@@ -21,6 +21,9 @@ const envSchema = z.object({
     .string()
     .url()
     .default("http://localhost:4318/v1/metrics"),
+  OTEL_EXPORTER_OTLP_HEADERS: z.string().optional(),
+  SIGNOZ_INGESTION_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_SIGNOZ_URL: z.string().url().optional(),
   SIGNOZ_URL: z.string().url().default("http://localhost:8080"),
   SIGNOZ_MCP_URL: z.string().url().default("http://localhost:8000/mcp"),
   DEMO_FORCE_ELEVENLABS_FAILURE: z.string().default("false"),

@@ -20,7 +20,21 @@ test("real child journey generates, plays, localizes, narrates, asks, and quizze
   await expect(page.locator(".episode-kicker").first()).not.toContainText(
     /^Episode 1\s+[0-4]\d?s$/,
   );
+  await page
+    .getByRole("link", { name: /Watch complete lesson film/i })
+    .click();
+  await expect(page).toHaveURL(/\/lesson$/);
+  await expect(page.locator(".presentation-player-shell")).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(page.locator(".scene-rail button")).toHaveCount(9);
+  await page.getByLabel("Lesson film audio language").selectOption("hi-IN");
+  await page
+    .getByRole("button", { name: /Add narration to the whole film/i })
+    .click();
+  await expect(page.getByText(/^Voice:/)).toBeVisible({ timeout: 120_000 });
 
+  await page.getByRole("link", { name: "Home", exact: true }).click();
   const firstVideo = page.locator(".episode-card video").first();
   await firstVideo.evaluate(async (video: HTMLVideoElement) => {
     video.muted = true;

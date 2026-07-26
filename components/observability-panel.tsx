@@ -11,6 +11,7 @@ export function ObservabilityPanel({
   lesson: PublicLesson;
   fallbackUsed: boolean;
 }) {
+  const signozUrl = process.env.NEXT_PUBLIC_SIGNOZ_URL;
   const [armed, setArmed] = useState(false);
   const [message, setMessage] = useState<string>();
 
@@ -67,9 +68,11 @@ export function ObservabilityPanel({
         <button className="danger" onClick={armFailure} type="button">
           {armed ? "Failure armed" : "Simulate voice-provider failure"}
         </button>
-        <a href="http://localhost:8080" rel="noreferrer" target="_blank">
-          Open SigNoz
-        </a>
+        {signozUrl ? (
+          <a href={signozUrl} rel="noreferrer" target="_blank">
+            Open SigNoz
+          </a>
+        ) : null}
         <a href="/api/health" rel="noreferrer" target="_blank">
           Service health
         </a>

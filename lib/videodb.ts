@@ -344,6 +344,7 @@ export async function searchEducationalArchive(
             return {
               videoId: shot.videoId,
               videoTitle: shot.videoTitle || source?.title || "Educational video",
+              mediaUrl: source?.url,
               startSeconds: shot.start,
               endSeconds: shot.end,
               relevanceScore: shot.searchScore,

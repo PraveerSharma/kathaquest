@@ -2,6 +2,7 @@ import chapterPackJson from "../data/chapter-pack.json";
 import type {
   ChapterPackItem,
   LessonResponse,
+  StoryboardSceneType,
 } from "../lib/types";
 
 const chapters = chapterPackJson as ChapterPackItem[];
@@ -31,6 +32,11 @@ type Evaluation = {
   evidenceCount: number;
   minimumEpisodeSeconds: number;
   precisionReviewed: boolean;
+  presentationSceneCount: number;
+  presentationDurationSeconds: number;
+  hybridSceneTypes: string[];
+  presentationGrounded: boolean;
+  completeNarration: boolean;
   issues: string[];
 };
 
@@ -63,6 +69,11 @@ for (const chapter of selectedChapters) {
       evidenceCount: 0,
       minimumEpisodeSeconds: 0,
       precisionReviewed: false,
+      presentationSceneCount: 0,
+      presentationDurationSeconds: 0,
+      hybridSceneTypes: [],
+      presentationGrounded: false,
+      completeNarration: false,
       issues: ["error" in payload ? payload.error : `HTTP ${response.status}`],
     });
     continue;
@@ -97,6 +108,47 @@ for (const chapter of selectedChapters) {
         Boolean(item.selectionReason),
     ),
   );
+  const presentation = lesson.presentation;
+  const hybridSceneTypes = presentation
+    ? [...new Set(presentation.storyboard.scenes.map((scene) => scene.type))]
+    : [];
+  const requiredSceneTypes: StoryboardSceneType[] = [
+    "guide",
+    "diagram",
+    "animation",
+    "real_video",
+    "checkpoint",
+    "recap",
+  ];
+  const presentationGrounded = Boolean(
+    presentation &&
+      presentation.plan.learningObjectives.every((objective) =>
+        normalizedSource.includes(
+          objective.sourceQuote.replace(/\s+/g, " ").toLowerCase(),
+        ),
+      ) &&
+      presentation.storyboard.scenes
+        .filter((scene) => scene.type === "real_video")
+        .every(
+          (scene) =>
+            Boolean(scene.visual.footageMediaUrl) &&
+            scene.evidenceRefs.some((reference) => !reference.startsWith("chapter:")),
+        ) &&
+      presentation.storyboard.scenes.filter(
+        (scene) => scene.type === "real_video",
+      ).length >= 2 &&
+      lesson.concepts.every((concept) =>
+        presentation.storyboard.scenes.some(
+          (scene) => scene.conceptId === concept.id,
+        ),
+      ),
+  );
+  const narrationWords =
+    presentation?.script.fullNarration.trim().split(/\s+/).length ?? 0;
+  const completeNarration =
+    narrationWords >= 180 &&
+    narrationWords <= 450 &&
+    presentation?.script.narrationWordCount === narrationWords;
   const issues = [
     lesson.concepts.length === 3 ? "" : "concept_count",
     lesson.episodes.length === 3 ? "" : "episode_count",
@@ -108,6 +160,18 @@ for (const chapter of selectedChapters) {
     minimumEpisodeSeconds >= 50 ? "" : "episode_too_short",
     precisionReviewed ? "" : "evidence_not_precision_reviewed",
     lessonToken ? "" : "missing_session_token",
+    presentation ? "" : "missing_presentation",
+    presentation?.storyboard.scenes.length === 9
+      ? ""
+      : "invalid_storyboard_scene_count",
+    (presentation?.storyboard.totalDurationSeconds ?? 0) >= 150
+      ? ""
+      : "presentation_too_short",
+    requiredSceneTypes.every((type) => hybridSceneTypes.includes(type))
+      ? ""
+      : "missing_hybrid_scene_type",
+    presentationGrounded ? "" : "ungrounded_presentation",
+    completeNarration ? "" : "incomplete_narration",
   ].filter(Boolean);
 
   results.push({
@@ -122,6 +186,13 @@ for (const chapter of selectedChapters) {
     evidenceCount,
     minimumEpisodeSeconds,
     precisionReviewed,
+    presentationSceneCount:
+      presentation?.storyboard.scenes.length ?? 0,
+    presentationDurationSeconds:
+      presentation?.storyboard.totalDurationSeconds ?? 0,
+    hybridSceneTypes,
+    presentationGrounded,
+    completeNarration,
     issues,
   });
 }

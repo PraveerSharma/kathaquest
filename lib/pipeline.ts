@@ -3,11 +3,13 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 
 import {
+  createLessonPresentation,
   createGroundedConcept,
   extractConcepts,
   rewriteSearchQuery,
 } from "@/lib/llm";
 import { logger } from "@/lib/logger";
+import { createFallbackPresentation } from "@/lib/presentation-fallback";
 import { assertKidSafeText } from "@/lib/safety";
 import { saveLesson } from "@/lib/storage";
 import { telemetry, withSpan } from "@/lib/telemetry";
@@ -181,6 +183,39 @@ export async function generateLesson({
             selectionSummary: search.selectionSummary,
           };
         });
+        let presentation;
+        try {
+          presentation = await createLessonPresentation({
+            title: chapter.chapterTitle,
+            ageGroup,
+            language,
+            concepts,
+            episodes,
+          });
+        } catch (presentationError) {
+          telemetry.presentationFallbacks.add(1);
+          logger.warn(
+            {
+              event: "presentation.fallback",
+              lessonId,
+              error:
+                presentationError instanceof Error
+                  ? presentationError.message
+                  : String(presentationError),
+            },
+            "AI storyboard validation failed; using the grounded deterministic presentation",
+          );
+          presentation = createFallbackPresentation({
+            title: chapter.chapterTitle,
+            ageGroup,
+            language,
+            concepts,
+            episodes,
+          });
+        }
+        telemetry.presentationsGenerated.add(1, {
+          prompt_version: presentation.promptVersion,
+        });
 
         const duration = performance.now() - started;
         const overallCoverage =
@@ -194,6 +229,7 @@ export async function generateLesson({
           status: "ready",
           concepts,
           episodes,
+          presentation,
           traceId: span.spanContext().traceId,
           generationTimeMs: Math.round(duration),
           overallCoverage,

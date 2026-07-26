@@ -27,6 +27,12 @@ KathaQuest consequently:
 6. expands accepted moments to include teaching context; and
 7. stitches as many as four complementary moments into a lesson of at least 50 seconds.
 
+The evidence chapters now also feed a visual router. The planner selects short,
+direct source ranges for `real_video` storyboard scenes while mechanisms that
+footage cannot show become deterministic SVG/Remotion diagrams. This makes
+VideoDB more valuable as the truth-bearing real-world layer without forcing it
+to act as the entire presentation engine.
+
 The UI exposes source, timestamp, retrieval type, review confidence and the reviewer’s selection reason.
 
 ### Programmable editing and stitching
@@ -39,6 +45,11 @@ VideoDB search results can be compiled directly into one HLS stream. Its Editor 
 - [Voiceovers with Editor Timeline](https://docs.videodb.io/examples-and-tutorials/content-factory/voiceovers)
 
 The production flow generates Sarvam audio, uploads it as a VideoDB audio asset, places original evidence clips sequentially at low source-audio volume, overlays narration from time zero, and generates a new synchronized HLS stream. A browser-synchronized audio fallback keeps the lesson usable if composition fails.
+
+For the complete nine-scene film, direct allowlisted source URLs and their
+VideoDB-selected timestamps are composed in the Remotion Player beside diagrams
+and animations. The original VideoDB HLS episodes remain available as deeper
+evidence chapters.
 
 ### Dubbing
 

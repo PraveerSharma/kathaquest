@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
-import { getLessonLanguage } from "@/lib/languages";
+import {
+  getLessonLanguage,
+  lessonLanguages,
+} from "@/lib/languages";
 import type { Episode, LessonLanguage } from "@/lib/types";
 
 function formatDuration(seconds: number) {
@@ -36,9 +39,35 @@ export function EpisodeCard({
   const [showLocalized, setShowLocalized] = useState(false);
   const [syncMode, setSyncMode] = useState<"videodb-timeline" | "browser">();
   const [provider, setProvider] = useState<"sarvam" | "elevenlabs">();
+  const [audioLanguage, setAudioLanguage] =
+    useState<LessonLanguage>(language);
+  const [providerPreference, setProviderPreference] =
+    useState<"auto" | "sarvam" | "elevenlabs">("auto");
   const [fallbackUsed, setFallbackUsed] = useState(false);
   const [error, setError] = useState<string>();
-  const languageName = getLessonLanguage(language).label;
+  const languageName = getLessonLanguage(audioLanguage).label;
+
+  function resetLocalizedMedia() {
+    setAudioUrl(undefined);
+    setLocalizedStream(undefined);
+    setShowLocalized(false);
+    setSyncMode(undefined);
+    setProvider(undefined);
+    setFallbackUsed(false);
+    setError(undefined);
+  }
+
+  function changeAudioLanguage(nextLanguage: LessonLanguage) {
+    setAudioLanguage(nextLanguage);
+    resetLocalizedMedia();
+  }
+
+  function changeProvider(
+    nextProvider: "auto" | "sarvam" | "elevenlabs",
+  ) {
+    setProviderPreference(nextProvider);
+    resetLocalizedMedia();
+  }
 
   useEffect(() => {
     const video = videoRef.current;
@@ -98,7 +127,8 @@ export function EpisodeCard({
           lessonId,
           lessonToken,
           episodeId: episode.id,
-          language,
+          language: audioLanguage,
+          provider: providerPreference,
         }),
       });
       const result = (await response.json()) as {
@@ -169,6 +199,43 @@ export function EpisodeCard({
             “{episode.sourceQuote}”
           </blockquote>
           <div className="video-language-actions">
+            <label className="compact-select">
+              <span>Audio language</span>
+              <select
+                aria-label={`Audio language for ${episode.title}`}
+                onChange={(event) =>
+                  changeAudioLanguage(
+                    event.target.value as LessonLanguage,
+                  )
+                }
+                value={audioLanguage}
+              >
+                {lessonLanguages.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="compact-select">
+              <span>Voice engine</span>
+              <select
+                aria-label={`Voice engine for ${episode.title}`}
+                onChange={(event) =>
+                  changeProvider(
+                    event.target.value as
+                      | "auto"
+                      | "sarvam"
+                      | "elevenlabs",
+                  )
+                }
+                value={providerPreference}
+              >
+                <option value="auto">Auto</option>
+                <option value="sarvam">Sarvam</option>
+                <option value="elevenlabs">ElevenLabs</option>
+              </select>
+            </label>
             <button
               className="listen-button"
               disabled={loading}

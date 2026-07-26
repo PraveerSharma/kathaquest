@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 
 const steps = [
   "Reading your chapter",
-  "Finding three key ideas",
+  "Designing the learning objectives",
   "Reviewing spoken and visual evidence",
-  "Stitching useful lesson reels",
-  "Preparing the lesson",
-  "Finishing your adventure",
+  "Writing the educational video script",
+  "Building the nine-scene storyboard",
+  "Planning diagrams, motion and captions",
+  "Composing your lesson studio",
 ];
 
 export function GenerationProgress() {
@@ -30,10 +31,10 @@ export function GenerationProgress() {
           </div>
           <div className="section-title">
             <span className="eyebrow">Adventure in progress</span>
-            <h2>Real footage, coming right up.</h2>
+            <h2>Your lesson film is taking shape.</h2>
             <p>
-              VideoDB is searching speech and scenes across the reviewed,
-              all-ages archive. This can take a minute.
+              KathaQuest is planning the pedagogy, reviewing VideoDB evidence,
+              and turning the script into a programmable visual story.
             </p>
           </div>
           <div className="progress-list">

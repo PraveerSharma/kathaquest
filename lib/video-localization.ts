@@ -32,10 +32,12 @@ export async function createLocalizedEpisodeVideo({
   episode,
   language,
   forceFailure = false,
+  preferredProvider = "auto",
 }: {
   episode: Episode;
   language: LessonLanguage;
   forceFailure?: boolean;
+  preferredProvider?: "auto" | "sarvam" | "elevenlabs";
 }) {
   return withSpan(
     "videodb.localize_episode",
@@ -49,6 +51,7 @@ export async function createLocalizedEpisodeVideo({
         text: episode.explanation,
         language,
         forceFailure,
+        preferredProvider,
       });
       const tempPath = path.join(
         tmpdir(),
