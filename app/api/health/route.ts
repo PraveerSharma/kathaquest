@@ -83,8 +83,14 @@ export async function GET() {
     } satisfies ServiceHealth,
   };
 
-  const degraded = Object.values(health).some(
-    (service) => service.status === "degraded",
+  const unavailable = [
+    health.application,
+    health.videodb,
+    health.openai,
+    health.sarvam,
+  ].some(
+    (service) =>
+      service.status === "degraded" || service.status === "missing",
   );
-  return NextResponse.json(health, { status: degraded ? 503 : 200 });
+  return NextResponse.json(health, { status: unavailable ? 503 : 200 });
 }
