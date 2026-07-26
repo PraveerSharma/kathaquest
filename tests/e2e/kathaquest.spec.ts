@@ -324,8 +324,8 @@ test("content navigation and the continuous lesson studio are usable", async ({
       contentType: "application/json",
       body: JSON.stringify({
         audioUrl: "data:audio/mpeg;base64,SUQz",
-        provider: "elevenlabs",
-        fallbackUsed: false,
+        provider: "sarvam",
+        fallbackUsed: true,
         language: "mr-IN",
         durationSeconds: 180,
       }),
@@ -368,7 +368,10 @@ test("content navigation and the continuous lesson studio are usable", async ({
   await page
     .getByRole("button", { name: /Add narration to the whole film/i })
     .click();
-  await expect(page.getByText("Voice: ElevenLabs")).toBeVisible();
+  await expect(page.getByText("Voice: Sarvam AI")).toBeVisible();
+  await expect(
+    page.getByText(/backup voice kept your lesson film ready/i),
+  ).toBeVisible();
 });
 
 test("generation failures recover without trapping the child", async ({ page }) => {

@@ -32,6 +32,7 @@ export function LessonExperience() {
     useState<"auto" | "sarvam" | "elevenlabs">("auto");
   const [actualProvider, setActualProvider] =
     useState<"sarvam" | "elevenlabs">();
+  const [voiceFallbackUsed, setVoiceFallbackUsed] = useState(false);
   const [narrating, setNarrating] = useState(false);
   const [localizing, setLocalizing] = useState(false);
   const [error, setError] = useState<string>();
@@ -49,6 +50,7 @@ export function LessonExperience() {
   function resetVoice() {
     setNarrationUrl(undefined);
     setActualProvider(undefined);
+    setVoiceFallbackUsed(false);
     setError(undefined);
   }
 
@@ -110,6 +112,7 @@ export function LessonExperience() {
       const result = (await response.json()) as {
         audioUrl?: string;
         provider?: "sarvam" | "elevenlabs";
+        fallbackUsed?: boolean;
         error?: string;
       };
       if (!response.ok || !result.audioUrl || !result.provider) {
@@ -117,6 +120,7 @@ export function LessonExperience() {
       }
       setNarrationUrl(result.audioUrl);
       setActualProvider(result.provider);
+      setVoiceFallbackUsed(Boolean(result.fallbackUsed));
       playerRef.current?.seekTo(0);
       playerRef.current?.play();
     } catch (caught) {
@@ -275,6 +279,12 @@ export function LessonExperience() {
               </span>
             ) : null}
           </div>
+          {voiceFallbackUsed ? (
+            <p className="provider-message" role="status">
+              The selected voice engine was unavailable, so the backup voice
+              kept your lesson film ready.
+            </p>
+          ) : null}
           {error ? <div className="form-error" role="alert">{error}</div> : null}
         </div>
 

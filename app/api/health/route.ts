@@ -20,6 +20,42 @@ async function checkVideoDb(): Promise<ServiceHealth> {
   }
 }
 
+async function checkElevenLabs(): Promise<ServiceHealth> {
+  if (!env.ELEVENLABS_API_KEY || !env.ELEVENLABS_VOICE_ID) {
+    return {
+      status: "missing",
+      detail: "Not configured; Sarvam remains available",
+    };
+  }
+  const started = performance.now();
+  try {
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/voices/${env.ELEVENLABS_VOICE_ID}`,
+      {
+        headers: { "xi-api-key": env.ELEVENLABS_API_KEY },
+        signal: AbortSignal.timeout(5_000),
+      },
+    );
+    return response.ok
+      ? {
+          status: "ok",
+          latencyMs: Math.round(performance.now() - started),
+          detail: "Authenticated voice ready",
+        }
+      : {
+          status: "degraded",
+          latencyMs: Math.round(performance.now() - started),
+          detail: `Authentication or voice access failed (HTTP ${response.status}); Sarvam fallback remains ready`,
+        };
+  } catch {
+    return {
+      status: "degraded",
+      latencyMs: Math.round(performance.now() - started),
+      detail: "Connection failed; Sarvam fallback remains ready",
+    };
+  }
+}
+
 export async function GET() {
   const health = {
     application: { status: "ok" } satisfies ServiceHealth,
@@ -32,14 +68,7 @@ export async function GET() {
       status: env.SARVAM_API_KEY ? "ok" : "missing",
       detail: env.SARVAM_API_KEY ? "Configured" : "Not configured",
     } satisfies ServiceHealth,
-    elevenlabs: {
-      status:
-        env.ELEVENLABS_API_KEY && env.ELEVENLABS_VOICE_ID ? "ok" : "missing",
-      detail:
-        env.ELEVENLABS_API_KEY && env.ELEVENLABS_VOICE_ID
-          ? "Configured"
-          : "Optional backup not configured; Sarvam is the primary Indian-language voice",
-    } satisfies ServiceHealth,
+    elevenlabs: await checkElevenLabs(),
     opentelemetry: {
       status:
         process.env.VERCEL &&
