@@ -251,8 +251,8 @@ export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
             </div>
 
             <div className="interactive-grid">
-              <VoiceQuestion lessonId={lesson.id} />
-              <Quiz concepts={lesson.concepts} lessonId={lesson.id} />
+              <VoiceQuestion lesson={lesson} />
+              <Quiz lesson={lesson} />
             </div>
 
             <ObservabilityPanel

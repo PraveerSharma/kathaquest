@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
+import type { Lesson } from "@/lib/types";
 
 type Answer = {
   transcript?: string;
@@ -10,7 +11,7 @@ type Answer = {
   streamUrl: string;
 };
 
-export function VoiceQuestion({ lessonId }: { lessonId: string }) {
+export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [question, setQuestion] = useState("");
@@ -19,7 +20,9 @@ export function VoiceQuestion({ lessonId }: { lessonId: string }) {
   const [answer, setAnswer] = useState<Answer>();
   const [error, setError] = useState<string>();
 
-  async function send(body: FormData | { lessonId: string; question: string }) {
+  async function send(
+    body: FormData | { lessonId: string; question: string; lesson: Lesson },
+  ) {
     setLoading(true);
     setError(undefined);
     try {
@@ -42,7 +45,7 @@ export function VoiceQuestion({ lessonId }: { lessonId: string }) {
   async function askTyped(event: React.FormEvent) {
     event.preventDefault();
     if (question.trim().length < 2) return;
-    await send({ lessonId, question });
+    await send({ lessonId: lesson.id, question, lesson });
   }
 
   async function toggleRecording() {
@@ -68,7 +71,8 @@ export function VoiceQuestion({ lessonId }: { lessonId: string }) {
           type: recorder.mimeType || "audio/webm",
         });
         const form = new FormData();
-        form.append("lessonId", lessonId);
+        form.append("lessonId", lesson.id);
+        form.append("lesson", JSON.stringify(lesson));
         form.append("audio", blob, "question.webm");
         await send(form);
       };

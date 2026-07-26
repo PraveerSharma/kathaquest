@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
-import type { LearningConcept } from "@/lib/types";
+import type { Lesson } from "@/lib/types";
 
 type QuizResult = {
   score: number;
@@ -12,13 +12,8 @@ type QuizResult = {
   revisionReelUrl?: string;
 };
 
-export function Quiz({
-  lessonId,
-  concepts,
-}: {
-  lessonId: string;
-  concepts: LearningConcept[];
-}) {
+export function Quiz({ lesson }: { lesson: Lesson }) {
+  const concepts = lesson.concepts;
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<QuizResult>();
   const [loading, setLoading] = useState(false);
@@ -32,7 +27,7 @@ export function Quiz({
       const response = await fetch("/api/quiz/submit", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ lessonId, answers }),
+        body: JSON.stringify({ lessonId: lesson.id, lesson, answers }),
       });
       const payload = (await response.json()) as QuizResult & {
         error?: string;

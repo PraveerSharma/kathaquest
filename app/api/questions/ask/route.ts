@@ -4,6 +4,7 @@ import { answerQuestion } from "@/lib/llm";
 import { getLesson } from "@/lib/storage";
 import { transcribeWithSarvam } from "@/lib/sarvam";
 import { telemetry } from "@/lib/telemetry";
+import type { Lesson } from "@/lib/types";
 import { searchEducationalArchive } from "@/lib/videodb";
 
 export const runtime = "nodejs";
@@ -14,11 +15,16 @@ export async function POST(request: Request) {
     let lessonId = "";
     let question = "";
     let transcript: string | undefined;
+    let suppliedLesson: Lesson | undefined;
 
     if (request.headers.get("content-type")?.includes("multipart/form-data")) {
       const form = await request.formData();
       lessonId = String(form.get("lessonId") ?? "");
       question = String(form.get("question") ?? "");
+      const serializedLesson = form.get("lesson");
+      if (typeof serializedLesson === "string") {
+        suppliedLesson = JSON.parse(serializedLesson) as Lesson;
+      }
       const audio = form.get("audio");
       if (audio instanceof File && audio.size > 0) {
         const result = await transcribeWithSarvam(audio);
@@ -29,9 +35,11 @@ export async function POST(request: Request) {
       const body = (await request.json()) as {
         lessonId?: string;
         question?: string;
+        lesson?: Lesson;
       };
       lessonId = body.lessonId ?? "";
       question = body.question ?? "";
+      suppliedLesson = body.lesson;
     }
 
     if (!lessonId || question.trim().length < 2) {
@@ -41,7 +49,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const lesson = await getLesson(lessonId);
+    const lesson =
+      suppliedLesson?.id === lessonId ? suppliedLesson : await getLesson(lessonId);
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
     }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getLesson } from "@/lib/storage";
 import { telemetry, withSpan } from "@/lib/telemetry";
+import type { Lesson } from "@/lib/types";
 import { searchEducationalArchive } from "@/lib/videodb";
 
 export const runtime = "nodejs";
@@ -11,9 +12,15 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
       lessonId?: string;
+      lesson?: Lesson;
       answers?: Record<string, string>;
     };
-    const lesson = body.lessonId ? await getLesson(body.lessonId) : null;
+    const lesson =
+      body.lesson?.id === body.lessonId
+        ? body.lesson
+        : body.lessonId
+          ? await getLesson(body.lessonId)
+          : null;
     if (!lesson || !body.answers) {
       return NextResponse.json(
         { error: "Lesson and answers are required" },
