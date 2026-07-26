@@ -174,6 +174,15 @@ export function EpisodeCard({
       <div className="episode-layout">
         <div className="video-shell">
           <HlsPlayer
+            fallbackEndSeconds={episode.evidence[0]?.endSeconds}
+            fallbackSrc={episode.evidence[0]?.mediaUrl}
+            fallbackStartSeconds={episode.evidence[0]?.startSeconds}
+            onSourceFallback={() => {
+              if (!showLocalized || !audioUrl) return;
+              setLocalizedStream(undefined);
+              setShowLocalized(false);
+              setSyncMode("browser");
+            }}
             ref={videoRef}
             src={
               showLocalized && localizedStream

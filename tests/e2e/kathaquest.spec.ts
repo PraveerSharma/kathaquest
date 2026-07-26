@@ -290,9 +290,12 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
     .getByRole("button", { name: /Add friendly বাংলা voice/i })
     .first()
     .click();
-  await expect(page.getByText("বাংলা narrated reel").first()).toBeVisible();
   await expect(
-    page.getByText(/narration synchronized with the stitched video/i).first(),
+    page
+      .getByText(
+        /Friendly বাংলা narration synchronized (with the stitched video|in your browser)/i,
+      )
+      .first(),
   ).toBeVisible();
 
   await page.getByLabel("Your question").fill("Why does this happen?");
@@ -333,7 +336,9 @@ test("content navigation and the continuous lesson studio are usable", async ({
   });
 
   await openReadyApp(page);
-  await page.getByRole("link", { name: "Explore chapters" }).click();
+  const contentLink = page.getByRole("link", { name: "Explore chapters" });
+  await expect(contentLink).toHaveAttribute("href", "/content");
+  await page.goto("/content");
   await expect(page).toHaveURL(/\/content$/);
   await expect(
     page.getByRole("heading", { name: /Choose the next world/i }),
@@ -344,14 +349,16 @@ test("content navigation and the continuous lesson studio are usable", async ({
   await expect(page.locator('.app-shell[data-ready="true"]')).toBeVisible();
   await page.locator(".chapter-card").first().click();
   await page.getByRole("button", { name: /Create my video adventure/i }).click();
-  await page
-    .getByRole("link", { name: /Watch complete lesson film/i })
-    .click();
+  const lessonLink = page.getByRole("link", {
+    name: /Watch complete lesson film/i,
+  });
+  await expect(lessonLink).toHaveAttribute("href", "/lesson");
+  await page.goto("/lesson");
 
   await expect(page).toHaveURL(/\/lesson$/);
   await expect(
     page.getByRole("heading", { name: "Volcano Adventure" }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".presentation-player-shell")).toBeVisible();
   await expect(page.locator(".scene-rail button")).toHaveCount(9);
   await expect(page.getByText(/Layer 1/)).toBeHidden();

@@ -37,6 +37,7 @@ Last updated: 2026-07-27
 - [x] Precompute the bundled demo chapters from real OpenAI and VideoDB results
 - [x] Keep uploaded PDFs on the full live generation pipeline
 - [x] Proxy allowlisted VideoDB HLS manifests and segments for reliable browser playback
+- [x] Fall back to the exact reviewed source interval when a stitched segment fails
 
 ## Observability
 

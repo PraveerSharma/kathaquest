@@ -10,6 +10,11 @@ type QuizResult = {
   total: number;
   incorrectConceptIds: string[];
   revisionReelUrl?: string;
+  revisionFallback?: {
+    mediaUrl?: string;
+    startSeconds: number;
+    endSeconds: number;
+  };
 };
 
 export function Quiz({
@@ -99,7 +104,12 @@ export function Quiz({
           You scored {result.score} out of {result.total}.
           {result.revisionReelUrl ? (
             <div className="answer-video" style={{ marginTop: 12 }}>
-              <HlsPlayer src={result.revisionReelUrl} />
+              <HlsPlayer
+                fallbackEndSeconds={result.revisionFallback?.endSeconds}
+                fallbackSrc={result.revisionFallback?.mediaUrl}
+                fallbackStartSeconds={result.revisionFallback?.startSeconds}
+                src={result.revisionReelUrl}
+              />
             </div>
           ) : (
             <span> Brilliant—no revision reel needed!</span>

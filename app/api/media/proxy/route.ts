@@ -6,7 +6,9 @@ export const maxDuration = 60;
 const allowedMediaHosts = new Set([
   "stream.videodb.io",
   "mmoug5tdn1.execute-api.us-west-2.amazonaws.com",
+  "d27qzqw9ehjjni.cloudfront.net",
 ]);
+const retryableStatuses = new Set([429, 500, 502, 503, 504]);
 
 function allowedUrl(value: string, base?: URL) {
   const url = new URL(value, base);
@@ -35,17 +37,36 @@ function rewriteManifest(manifest: string, source: URL) {
     .join("\n");
 }
 
+async function fetchMedia(source: URL, range: string | null) {
+  let lastResponse: Response | undefined;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(source, {
+        cache: "no-store",
+        headers: range ? { range } : undefined,
+        redirect: "error",
+        signal: AbortSignal.timeout(25_000),
+      });
+      lastResponse = response;
+      if (!retryableStatuses.has(response.status) || attempt === 2) {
+        return response;
+      }
+      await response.body?.cancel();
+    } catch (error) {
+      if (attempt === 2) throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+  }
+  if (!lastResponse) throw new Error("VideoDB media request failed");
+  return lastResponse;
+}
+
 export async function GET(request: Request) {
   try {
     const requestUrl = new URL(request.url);
     const source = allowedUrl(requestUrl.searchParams.get("url") ?? "");
     const range = request.headers.get("range");
-    const upstream = await fetch(source, {
-      cache: "no-store",
-      headers: range ? { range } : undefined,
-      redirect: "error",
-      signal: AbortSignal.timeout(25_000),
-    });
+    const upstream = await fetchMedia(source, range);
     if (!upstream.ok && upstream.status !== 206) {
       return NextResponse.json(
         { error: "VideoDB media is temporarily unavailable" },

@@ -17,7 +17,9 @@ same real OpenAI and VideoDB pipeline, so the judge-facing demo opens in
 seconds. General PDF uploads always run through the full live pipeline. A
 locked, same-origin media route rewrites only allowlisted VideoDB HLS manifests
 and segments, avoiding third-party CORS failures without becoming an open
-proxy.
+proxy. If VideoDB cannot render an individual stitched segment, playback
+automatically continues from the exact reviewed timestamp range in the original
+public source.
 
 ![KathaQuest home screen](public/demo/home.png)
 
@@ -247,7 +249,8 @@ The catalog uses reviewed educational media from USGS, NASA, NOAA and NPS. Every
 - VideoDB SDK `indexAudio` upgrades currently return an HTTP 500 for this collection; the production path uses the working spoken-word and visual-scene indexes and remains functional.
 - VideoDB’s CDN segments do not send browser CORS headers consistently. The
   production player therefore uses a host-allowlisted same-origin proxy for
-  manifests and segments.
+  manifests and segments, with exact-source timestamp fallback for upstream
+  segment failures.
 - The currently supplied ElevenLabs key is rejected with HTTP 401. Production
   remains usable because automatic routing falls back to the verified Sarvam
   voice service; replace the key to exercise ElevenLabs specifically.

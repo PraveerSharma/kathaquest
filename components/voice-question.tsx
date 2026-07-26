@@ -9,6 +9,11 @@ type Answer = {
   transcript?: string;
   answer: string;
   streamUrl?: string;
+  evidence?: Array<{
+    mediaUrl?: string;
+    startSeconds: number;
+    endSeconds: number;
+  }>;
   videoUnavailable?: boolean;
 };
 
@@ -140,7 +145,12 @@ export function VoiceQuestion({
           <p>{answer.answer}</p>
           {answer.streamUrl ? (
             <div className="answer-video">
-              <HlsPlayer src={answer.streamUrl} />
+              <HlsPlayer
+                fallbackEndSeconds={answer.evidence?.[0]?.endSeconds}
+                fallbackSrc={answer.evidence?.[0]?.mediaUrl}
+                fallbackStartSeconds={answer.evidence?.[0]?.startSeconds}
+                src={answer.streamUrl}
+              />
             </div>
           ) : (
             <p className="answer-note">

@@ -51,6 +51,13 @@ export async function POST(request: Request) {
           )
           .map((concept) => concept.id);
         let revisionReelUrl: string | undefined;
+        let revisionFallback:
+          | {
+              mediaUrl?: string;
+              startSeconds: number;
+              endSeconds: number;
+            }
+          | undefined;
 
         if (incorrectConceptIds.length > 0) {
           const concept = lesson.concepts.find(
@@ -71,6 +78,13 @@ export async function POST(request: Request) {
                 }),
             );
             revisionReelUrl = revision?.streamUrl;
+            revisionFallback = revision?.evidence[0]
+              ? {
+                  mediaUrl: revision.evidence[0].mediaUrl,
+                  startSeconds: revision.evidence[0].startSeconds,
+                  endSeconds: revision.evidence[0].endSeconds,
+                }
+              : undefined;
             if (revisionReelUrl) telemetry.revisionsGenerated.add(1);
           }
         }
@@ -80,6 +94,7 @@ export async function POST(request: Request) {
           total: lesson.concepts.length,
           incorrectConceptIds,
           revisionReelUrl,
+          revisionFallback,
         });
       },
     );
