@@ -3,7 +3,7 @@ import Link from "next/link";
 export function SiteHeader({
   active,
 }: {
-  active?: "home" | "content" | "lesson";
+  active?: "home" | "content" | "lesson" | "blog";
 }) {
   return (
     <header className="site-header container">
@@ -26,6 +26,12 @@ export function SiteHeader({
           href="/lesson"
         >
           My lesson
+        </Link>
+        <Link
+          aria-current={active === "blog" ? "page" : undefined}
+          href="/blog/kathaquest-signoz"
+        >
+          Build story
         </Link>
       </nav>
       <span className="trust-pill">

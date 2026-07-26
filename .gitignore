@@ -18,6 +18,7 @@
 /data/videodb-cache.json
 /public/generated
 /pours
+/artifacts
 
 # test and tooling output
 /coverage

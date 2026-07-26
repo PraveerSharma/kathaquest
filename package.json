@@ -14,6 +14,8 @@
     "verify-services": "node --env-file=.env.local --import tsx scripts/verify-services.ts",
     "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
     "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts",
+    "signoz:configure": "node --import tsx scripts/configure-signoz.ts",
+    "demo:render": "node scripts/render-hackathon-demo.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

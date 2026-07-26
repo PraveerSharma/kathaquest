@@ -14,6 +14,128 @@
   --line: rgba(24, 34, 29, 0.12);
 }
 
+.blog-article {
+  color: #20304a;
+  max-width: 900px;
+  padding-bottom: 96px;
+}
+
+.blog-hero {
+  padding: 72px 0 40px;
+}
+
+.blog-hero h1 {
+  color: #17233a;
+  font-size: clamp(42px, 7vw, 76px);
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  margin: 18px 0 26px;
+}
+
+.blog-deck {
+  font-size: clamp(19px, 2.4vw, 25px);
+  line-height: 1.55;
+  max-width: 760px;
+}
+
+.blog-byline {
+  border-top: 1px solid #d9d0bd;
+  display: flex;
+  font-size: 14px;
+  justify-content: space-between;
+  margin-top: 34px;
+  padding-top: 18px;
+}
+
+.blog-cover,
+.blog-article figure img {
+  border: 1px solid #d9d0bd;
+  border-radius: 22px;
+  box-shadow: 0 20px 60px rgb(32 48 74 / 12%);
+  height: auto;
+  width: 100%;
+}
+
+.blog-article section {
+  margin: 52px auto;
+  max-width: 760px;
+}
+
+.blog-article h2 {
+  color: #17233a;
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  margin: 0 0 22px;
+}
+
+.blog-article p,
+.blog-article li {
+  font-size: 18px;
+  line-height: 1.78;
+}
+
+.blog-article code {
+  background: #f0eadf;
+  border-radius: 6px;
+  font-size: 0.9em;
+  padding: 2px 6px;
+}
+
+.blog-article pre {
+  background: #17233a;
+  border-radius: 18px;
+  color: #f9f3e8;
+  line-height: 1.65;
+  overflow-x: auto;
+  padding: 26px;
+}
+
+.blog-article pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.blog-article figure {
+  margin: 36px 0;
+}
+
+.blog-article figcaption {
+  color: #5c6678;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.blog-cta {
+  align-items: center;
+  background: #f4d56f;
+  border: 1px solid #caa94b;
+  border-radius: 24px;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-top: 56px;
+  padding: 30px;
+}
+
+.blog-cta h2,
+.blog-cta p {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .blog-hero {
+    padding-top: 44px;
+  }
+
+  .blog-byline,
+  .blog-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
