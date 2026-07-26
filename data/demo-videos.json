@@ -1,0 +1,56 @@
+[
+  {
+    "id": "usgs-volcano-life-cycles",
+    "title": "From Millennia to Minutes: Life Cycles of Volcanoes and Eruptions",
+    "url": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
+    "sourcePage": "https://www.usgs.gov/media/videos/millennia-minutes-life-cycles-volcanoes-and-eruptions",
+    "licence": "Public Domain",
+    "creator": "U.S. Geological Survey",
+    "description": "A narrated USGS presentation about magma, eruption processes, and volcano life cycles."
+  },
+  {
+    "id": "usgs-kilauea-30-episodes",
+    "title": "30 Episodes of Lava Fountaining at Kīlauea",
+    "url": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
+    "sourcePage": "https://www.usgs.gov/media/videos/30-episodes-lava-fountaining-kilauea",
+    "licence": "Public Domain",
+    "creator": "U.S. Geological Survey",
+    "description": "Real footage explaining repeated lava fountains, lava flows, volcanic gases, and tephra."
+  },
+  {
+    "id": "usgs-kilauea-western-fissure",
+    "title": "Lava Fountains at Kīlauea’s Western Fissure",
+    "url": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/multimediaFile-3342.mp4",
+    "sourcePage": "https://www.usgs.gov/media/videos/lava-fountains-western-fissure-halemaumau-kilauea-oct-5-2021",
+    "licence": "Public Domain",
+    "creator": "U.S. Geological Survey",
+    "description": "Real footage of lava fountains emerging from a volcanic fissure vent."
+  },
+  {
+    "id": "usgs-kilauea-february-2025",
+    "title": "Kīlauea Summit Lava Fountaining — February 2025",
+    "url": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/multimediaFile-4266.mp4",
+    "sourcePage": "https://www.usgs.gov/media/videos/february-4-2025-video-fountaining-kilauea-summit",
+    "licence": "Public Domain",
+    "creator": "U.S. Geological Survey",
+    "description": "Real close-up footage of lava fountaining through a volcanic vent."
+  },
+  {
+    "id": "usgs-kilauea-january-2025",
+    "title": "Kīlauea Summit Fountains — January 2025",
+    "url": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/20250116_mike.mp4",
+    "sourcePage": "https://www.usgs.gov/media/videos/january-16-2025-kilauea-fountaining",
+    "licence": "Public Domain",
+    "creator": "U.S. Geological Survey",
+    "description": "Two real high-resolution views of active lava fountains inside Kīlauea’s summit crater."
+  },
+  {
+    "id": "usgs-lava-ocean-entry",
+    "title": "Lava Dropping into the Sea",
+    "url": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/20020809-Highcastledetail_DAS.mp4",
+    "sourcePage": "https://www.usgs.gov/media/videos/lava-dropping-sea",
+    "licence": "Public Domain",
+    "creator": "U.S. Geological Survey",
+    "description": "Real footage of hot lava reaching the ocean and rapidly changing its surroundings."
+  }
+]
