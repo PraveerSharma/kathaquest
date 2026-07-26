@@ -7,6 +7,7 @@ const envSchema = z.object({
   VIDEODB_COLLECTION_ID: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().default("gpt-5.6"),
+  LESSON_SIGNING_SECRET: z.string().min(32).optional(),
   SARVAM_API_KEY: z.string().min(1).optional(),
   ELEVENLABS_API_KEY: z.string().min(1).optional(),
   ELEVENLABS_VOICE_ID: z.string().min(1).optional(),

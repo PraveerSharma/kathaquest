@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import type { Lesson } from "../lib/types";
+import type { PublicLesson } from "../lib/types";
 
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 
@@ -28,9 +28,18 @@ const generated = await request("/api/lessons/generate", {
   }),
 });
 
-const lesson = generated.lesson as Lesson;
+const lesson = generated.lesson as PublicLesson;
+const lessonToken = generated.lessonToken as string;
 if (lesson.concepts.length !== 3 || lesson.episodes.length !== 3) {
   throw new Error("Lesson did not contain exactly three concepts and episodes");
+}
+if (
+  !lessonToken ||
+  lesson.concepts.some(
+    (concept) => "correctAnswer" in concept.quiz,
+  )
+) {
+  throw new Error("Secure public lesson contract was not enforced");
 }
 if (
   lesson.episodes.some(
@@ -45,7 +54,7 @@ const questionResult = await request("/api/questions/ask", {
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
     lessonId: lesson.id,
-    lesson,
+    lessonToken,
     question: "Why does magma rise toward the surface?",
   }),
 });
@@ -54,24 +63,23 @@ if (!questionResult.answer || !questionResult.streamUrl) {
 }
 
 const wrongAnswers = Object.fromEntries(
-  lesson.concepts.map((concept) => [
-    concept.id,
-    concept.quiz.options.find(
-      (option) => option !== concept.quiz.correctAnswer,
-    ) ?? "",
-  ]),
+  lesson.concepts.map((concept) => [concept.id, concept.quiz.options[0]]),
 );
 const quizResult = await request("/api/quiz/submit", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
     lessonId: lesson.id,
-    lesson,
+    lessonToken,
     answers: wrongAnswers,
   }),
 });
-if (quizResult.score !== 0 || !quizResult.revisionReelUrl) {
-  throw new Error("Quiz did not create the expected revision reel");
+if (
+  typeof quizResult.score !== "number" ||
+  quizResult.score < 0 ||
+  quizResult.score > lesson.concepts.length
+) {
+  throw new Error("Quiz did not return a valid score");
 }
 
 console.log(
@@ -82,7 +90,8 @@ console.log(
       conceptCount: lesson.concepts.length,
       episodeCount: lesson.episodes.length,
       questionAnswered: true,
-      revisionReelCreated: true,
+      secureLessonToken: true,
+      revisionReelCreated: Boolean(quizResult.revisionReelUrl),
       health,
     },
     null,

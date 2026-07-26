@@ -10,8 +10,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "seed": "node --env-file=.env.local --import tsx scripts/seed-videodb.ts",
+    "build:chapters": "node --import tsx scripts/build-chapter-pack.ts",
     "verify-services": "node --env-file=.env.local --import tsx scripts/verify-services.ts",
-    "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts"
+    "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
+    "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",

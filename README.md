@@ -4,7 +4,7 @@
 
 KathaQuest reads a science chapter, extracts three age-appropriate concepts, searches a trusted archive for exact moments that explain them, and compiles those moments into playable micro-lessons. Children can listen in English or Hindi, ask a typed or spoken question, and get an answer backed by another real video clip.
 
-The demo archive contains six public-domain U.S. Geological Survey videos. VideoDB—not a mock—provides ingestion, spoken-word indexing, scene understanding, semantic retrieval, timestamp evidence and HLS compilation.
+The reviewed archive contains ten all-ages videos from USGS, NASA, NOAA and the U.S. National Park Service. VideoDB—not a mock—provides ingestion, spoken-word indexing, scene understanding, semantic retrieval, timestamp evidence and HLS compilation.
 
 ![KathaQuest home screen](public/demo/home.png)
 
@@ -16,7 +16,7 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
 
 ## Demo flow
 
-1. Select the preloaded volcano chapter or upload a text-based PDF.
+1. Select one of five original chapter stories or upload a text-based PDF.
 2. Choose an age group and English or Hindi.
 3. Generate exactly three concepts and three real VideoDB episodes.
 4. Listen to a child-friendly explanation.
@@ -31,7 +31,7 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
 flowchart LR
     A[Chapter PDF or demo text] --> B[Next.js lesson route]
     B --> C[OpenAI structured extraction]
-    C --> D[Three learning concepts]
+    C --> D[Three source-quoted learning objectives]
     D --> E[VideoDB spoken + scene search]
     E --> F[Timestamped evidence]
     F --> G[VideoDB HLS compilation]
@@ -39,6 +39,8 @@ flowchart LR
     H --> I[Sarvam / ElevenLabs router]
     H --> J[Question + quiz routes]
     J --> E
+    B --> M[OpenAI moderation]
+    H --> N[Encrypted lesson token]
     B -. spans, metrics, logs .-> K[OpenTelemetry]
     C -.-> K
     E -.-> K
@@ -46,14 +48,15 @@ flowchart LR
     K --> L[SigNoz via Foundry]
 ```
 
-The app is one strict-TypeScript Next.js repository. External credentials remain in server-only environment variables; browser responses never include them.
+The app is one strict-TypeScript Next.js repository. External credentials remain in server-only environment variables. Quiz answers stay inside a 24-hour AES-256-GCM lesson token and are never returned as readable browser data.
 
 ## VideoDB depth
 
-- Six real public-domain USGS sources uploaded into one supplied collection
+- Ten real, reviewed sources from USGS, NASA, NOAA and NPS in one collection
 - Spoken-word indexes for narrated educational evidence
 - Scene indexes describing vents, craters, lava, ash, gas and eruption processes
-- Collection-wide semantic search across both index types
+- Collection-wide semantic search across both index types and up to three topic-neutral queries
+- Kid-safe allowlist filtering before any clip can be compiled
 - Deduplication of overlapping timestamp results
 - One automatic LLM query rewrite when a search is empty
 - Exact source title, start/end time, match type and confidence in the UI
@@ -125,6 +128,7 @@ The seed script is resumable. It reuses cached VideoDB IDs and does not upload a
 | `VIDEODB_COLLECTION_ID` | Trusted archive collection |
 | `OPENAI_API_KEY` | Structured chapter reasoning |
 | `OPENAI_MODEL` | Defaults to `gpt-5.6` |
+| `LESSON_SIGNING_SECRET` | 32+ character key for encrypted stateless lesson sessions |
 | `SARVAM_API_KEY` | Hindi/English TTS and Hindi STT |
 | `ELEVENLABS_API_KEY` | English primary TTS |
 | `ELEVENLABS_VOICE_ID` | English narration voice |
@@ -139,7 +143,11 @@ The seed script is resumable. It reuses cached VideoDB IDs and does not upload a
 curl -fsSL https://signoz.io/foundry.sh | bash
 foundryctl gauge -f casting.yaml
 foundryctl cast -f casting.yaml
-curl -fsS localhost:8000/livez
+docker compose \
+  -f pours/deployment/compose.yaml \
+  -f signoz/compose.telemetry.yaml \
+  up -d --force-recreate ingester
+curl -fsS localhost:8080/api/v1/health
 ```
 
 Expected endpoints:
@@ -151,6 +159,8 @@ Expected endpoints:
 
 Both [`casting.yaml`](casting.yaml) and [`casting.yaml.lock`](casting.yaml.lock) are committed for reproducibility. Dashboard panels, alerts and validation steps are in [`signoz/DASHBOARDS_AND_ALERTS.md`](signoz/DASHBOARDS_AND_ALERTS.md).
 
+The small Compose override keeps the local OTLP pipelines active before the first SigNoz owner finishes UI onboarding. Without it, the pre-onboarding OpAMP default can temporarily replace trace, metric, and log pipelines with no-op pipelines.
+
 ## Verification
 
 ```bash
@@ -159,13 +169,14 @@ npm run typecheck
 npm run build
 # With npm run dev active:
 npm run smoke-test
+npm run evals
 ```
 
-The smoke test performs a real lesson generation and fails if it does not receive exactly three concepts, three episodes, playable stream URLs and evidence.
+The smoke test performs a real lesson generation and verifies exactly three concepts and episodes, playable streams, evidence, Q&A, quiz scoring, an encrypted lesson token, and no readable answer leak. The evaluation suite runs the five bundled chapters against grounding, safety, coverage, and evidence contracts.
 
 ## Public media and licences
 
-All demo media is from the U.S. Geological Survey Multimedia Gallery and marked Public Domain on its source page. KathaQuest displays the source page and licence beside every retrieved clip. See [`data/demo-videos.json`](data/demo-videos.json) for the six exact media URLs, descriptions and source pages.
+The catalog uses reviewed educational media from USGS, NASA, NOAA and NPS. Every entry records its authority, audience, safety note, topics, source page, and licence/usage designation. KathaQuest displays source details beside every retrieved clip. See [`data/demo-videos.json`](data/demo-videos.json).
 
 ## Failure recovery demo
 
@@ -175,13 +186,19 @@ All demo media is from the U.S. Geological Survey Multimedia Gallery and marked 
 4. Confirm the UI says “Primary voice provider failed” and “Recovered using Sarvam AI.”
 5. In SigNoz, open the lesson trace and inspect `tts.generate` followed by `tts.fallback`.
 
-## Known limitations
+## Production posture and limitations
 
-- Lesson storage is in-memory on serverless deployments and local JSON in development.
+- Lesson interactions are stateless and serverless-safe through encrypted, expiring tokens; persistent multi-device history still needs a database and authentication.
+- Rate limiting is best-effort per runtime instance. A distributed limiter should replace it before large public traffic.
+- Uploaded PDFs are text-based and capped at 10 MB; OCR is not included.
+- Retrieval is safe by construction but limited to the reviewed ten-video corpus. Unsupported topics fail instead of showing an unreviewed or irrelevant clip.
 - The revision reel currently targets the first missed concept.
-- Visual and transcript indexing is prepared for the volcano archive only.
-- Self-hosted SigNoz must run locally; a hosted deployment needs a reachable OTLP endpoint.
-- ElevenLabs credentials are not included and must be supplied separately.
+- Self-hosted SigNoz is local; Vercel telemetry needs a reachable hosted or tunneled OTLP endpoint.
+- ElevenLabs credentials are optional; Sarvam remains the working fallback.
+
+## Bundled chapter pack
+
+The PDFs in [`Chapter_Pack`](Chapter_Pack) cover volcanoes, the water cycle, the solar system, butterfly metamorphosis, and photosynthesis. Run `npm run build:chapters` after editing them to regenerate the UI catalog in [`data/chapter-pack.json`](data/chapter-pack.json).
 
 ## Post-hackathon roadmap
 

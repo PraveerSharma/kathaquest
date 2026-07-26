@@ -6,7 +6,13 @@
     "sourcePage": "https://www.usgs.gov/media/videos/millennia-minutes-life-cycles-volcanoes-and-eruptions",
     "licence": "Public Domain",
     "creator": "U.S. Geological Survey",
-    "description": "A narrated USGS presentation about magma, eruption processes, and volcano life cycles."
+    "description": "A narrated USGS presentation about magma, eruption processes, and volcano life cycles.",
+    "topics": ["volcanoes", "magma", "eruptions", "Earth science"],
+    "ageRange": { "min": 8, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed educational geology with no graphic content.",
+    "sourceAuthority": "USGS",
+    "contentRating": "all-ages"
   },
   {
     "id": "usgs-kilauea-30-episodes",
@@ -15,7 +21,13 @@
     "sourcePage": "https://www.usgs.gov/media/videos/30-episodes-lava-fountaining-kilauea",
     "licence": "Public Domain",
     "creator": "U.S. Geological Survey",
-    "description": "Real footage explaining repeated lava fountains, lava flows, volcanic gases, and tephra."
+    "description": "Real footage explaining repeated lava fountains, lava flows, volcanic gases, and tephra.",
+    "topics": ["volcanoes", "lava", "eruptions"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed non-graphic natural-science footage.",
+    "sourceAuthority": "USGS",
+    "contentRating": "all-ages"
   },
   {
     "id": "usgs-kilauea-western-fissure",
@@ -24,7 +36,13 @@
     "sourcePage": "https://www.usgs.gov/media/videos/lava-fountains-western-fissure-halemaumau-kilauea-oct-5-2021",
     "licence": "Public Domain",
     "creator": "U.S. Geological Survey",
-    "description": "Real footage of lava fountains emerging from a volcanic fissure vent."
+    "description": "Real footage of lava fountains emerging from a volcanic fissure vent.",
+    "topics": ["volcanoes", "fissures", "lava"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed non-graphic natural-science footage.",
+    "sourceAuthority": "USGS",
+    "contentRating": "all-ages"
   },
   {
     "id": "usgs-kilauea-february-2025",
@@ -33,7 +51,13 @@
     "sourcePage": "https://www.usgs.gov/media/videos/february-4-2025-video-fountaining-kilauea-summit",
     "licence": "Public Domain",
     "creator": "U.S. Geological Survey",
-    "description": "Real close-up footage of lava fountaining through a volcanic vent."
+    "description": "Real close-up footage of lava fountaining through a volcanic vent.",
+    "topics": ["volcanoes", "lava", "vents"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed non-graphic natural-science footage.",
+    "sourceAuthority": "USGS",
+    "contentRating": "all-ages"
   },
   {
     "id": "usgs-kilauea-january-2025",
@@ -42,7 +66,13 @@
     "sourcePage": "https://www.usgs.gov/media/videos/january-16-2025-kilauea-fountaining",
     "licence": "Public Domain",
     "creator": "U.S. Geological Survey",
-    "description": "Two real high-resolution views of active lava fountains inside Kīlauea’s summit crater."
+    "description": "Two real high-resolution views of active lava fountains inside Kīlauea’s summit crater.",
+    "topics": ["volcanoes", "lava", "craters"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed non-graphic natural-science footage.",
+    "sourceAuthority": "USGS",
+    "contentRating": "all-ages"
   },
   {
     "id": "usgs-lava-ocean-entry",
@@ -51,6 +81,72 @@
     "sourcePage": "https://www.usgs.gov/media/videos/lava-dropping-sea",
     "licence": "Public Domain",
     "creator": "U.S. Geological Survey",
-    "description": "Real footage of hot lava reaching the ocean and rapidly changing its surroundings."
+    "description": "Real footage of hot lava reaching the ocean and rapidly changing its surroundings.",
+    "topics": ["volcanoes", "lava", "landforms"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed non-graphic natural-science footage.",
+    "sourceAuthority": "USGS",
+    "contentRating": "all-ages"
+  },
+  {
+    "id": "noaa-water-song",
+    "title": "Water Song Sing Along",
+    "url": "https://coast.noaa.gov/data/estuaries/vid/water-song-sing-along.mp4",
+    "sourcePage": "https://coast.noaa.gov/estuaries/videos/water-song-sing-along.html",
+    "licence": "U.S. Government educational media",
+    "creator": "NOAA National Estuarine Research Reserve System",
+    "description": "Second-grade learners sing about water traveling through evaporation, clouds, rain, rivers, and oceans.",
+    "topics": ["water cycle", "evaporation", "clouds", "rain"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Published for grades K–6 and performed by children.",
+    "sourceAuthority": "NOAA",
+    "contentRating": "all-ages"
+  },
+  {
+    "id": "nasa-our-solar-system",
+    "title": "Our World: What is a Solar System?",
+    "url": "https://assets.science.nasa.gov/content/dam/science/cds/eclips/assets/videos/our-world-what-is-a-solar-system/video.mp4",
+    "sourcePage": "https://science.nasa.gov/eclips/videos/what-is-a-solar-system/",
+    "licence": "NASA educational media",
+    "creator": "NASA eClips",
+    "description": "A NASA elementary-learning video about the Sun, planets, moons, and smaller objects in our solar system.",
+    "topics": ["solar system", "Sun", "planets", "moons", "orbits"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "NASA identifies this resource for grades K–5.",
+    "sourceAuthority": "NASA",
+    "contentRating": "all-ages"
+  },
+  {
+    "id": "nps-milkweed-monarchs",
+    "title": "Milkweed and Monarchs",
+    "url": "https://www.nps.gov/nps-audiovideo/audiovideo/50a95822-70f6-4766-8d2c-747ebdcbe7d9720p.mp4",
+    "sourcePage": "https://www.nps.gov/media/video/view.htm?id=478F27ED-15DE-428E-8503-5C99C47B6D8C",
+    "licence": "Public Domain",
+    "creator": "U.S. National Park Service",
+    "description": "Park scientists explain monarch caterpillars, adult butterflies, milkweed, nectar plants, and the monarch life cycle.",
+    "topics": ["butterflies", "metamorphosis", "caterpillars", "monarchs", "life cycle"],
+    "ageRange": { "min": 6, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed NPS nature education with no graphic content.",
+    "sourceAuthority": "NPS",
+    "contentRating": "all-ages"
+  },
+  {
+    "id": "nasa-watching-earth-breathe",
+    "title": "Watching Earth Breathe",
+    "url": "https://d2pn8kiwq2w21t.cloudfront.net/media/videosearth20121128airs20121128-1280.m4v",
+    "sourcePage": "https://www.jpl.nasa.gov/videos/watching-earth-breathe-the-seasonal-vegetation-cycle-and-carbon-dioxide/",
+    "licence": "NASA/JPL educational media",
+    "creator": "NASA Jet Propulsion Laboratory",
+    "description": "A narrated visualization explains how plants use sunlight and carbon dioxide during photosynthesis.",
+    "topics": ["photosynthesis", "plants", "sunlight", "carbon dioxide", "oxygen"],
+    "ageRange": { "min": 8, "max": 12 },
+    "kidSafe": true,
+    "safetyNotes": "Reviewed NASA science explanation with no unsafe content.",
+    "sourceAuthority": "NASA/JPL",
+    "contentRating": "all-ages"
   }
 ]

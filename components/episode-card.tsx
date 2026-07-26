@@ -81,13 +81,24 @@ export function EpisodeCard({
           </div>
           <h3>{episode.title}</h3>
           <p className="episode-explanation">{episode.explanation}</p>
+          <blockquote className="source-quote">
+            <span>From your chapter{episode.sourcePage ? ` · page ${episode.sourcePage}` : ""}</span>
+            “{episode.sourceQuote}”
+          </blockquote>
           <button
             className="listen-button"
             disabled={loading}
             onClick={listen}
             type="button"
           >
-            {loading ? "Preparing voice…" : audioUrl ? "↻ Listen again" : "▶ Listen to explanation"}
+            <svg aria-hidden="true" className="button-icon" fill="none" viewBox="0 0 24 24">
+              {audioUrl ? (
+                <path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" />
+              ) : (
+                <path d="m9 7 8 5-8 5V7Z" />
+              )}
+            </svg>
+            {loading ? "Preparing voice…" : audioUrl ? "Listen again" : "Listen to explanation"}
           </button>
           <audio ref={audioRef} src={audioUrl} />
           {provider ? (

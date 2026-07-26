@@ -26,10 +26,10 @@ export async function extractChapterFromPdf(file: File): Promise<{
 
       const bytes = new Uint8Array(await file.arrayBuffer());
       const pdf = await getDocumentProxy(bytes);
-      const extracted = await extractText(pdf, { mergePages: true });
-      const text = Array.isArray(extracted.text)
-        ? extracted.text.join("\n\n")
-        : extracted.text;
+      const extracted = await extractText(pdf, { mergePages: false });
+      const text = extracted.text
+        .map((page, index) => `[Page ${index + 1}]\n${page}`)
+        .join("\n\n");
       const normalized = text.replace(/\u0000/g, "").trim();
       if (normalized.length < 100) {
         throw new Error(

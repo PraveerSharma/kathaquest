@@ -1,6 +1,18 @@
 # SigNoz Dashboards and Alerts
 
-Use these definitions after `foundryctl cast -f casting.yaml` starts the local stack. Open `http://localhost:8080`, complete the first-user setup, generate one KathaQuest lesson, then create the panels below with the Metrics Query Builder.
+The Docker stack was installed and verified healthy on 2026-07-26 with:
+
+```bash
+foundryctl cast -f casting.yaml
+docker compose \
+  -f pours/deployment/compose.yaml \
+  -f signoz/compose.telemetry.yaml \
+  up -d --force-recreate ingester
+curl -fsS http://localhost:8080/api/v1/health
+docker ps
+```
+
+Open `http://localhost:8080`, complete the first-user setup, generate one KathaQuest lesson, then create the panels below with the Metrics Query Builder. The dashboard UI requires the owner account created during onboarding, so it is intentionally not automated with a shared credential.
 
 All panels filter on `service.name = 'kathaquest'` when that resource attribute is available.
 

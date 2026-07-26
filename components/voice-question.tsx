@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
-import type { Lesson } from "@/lib/types";
+import type { PublicLesson } from "@/lib/types";
 
 type Answer = {
   transcript?: string;
@@ -11,7 +11,13 @@ type Answer = {
   streamUrl: string;
 };
 
-export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
+export function VoiceQuestion({
+  lesson,
+  lessonToken,
+}: {
+  lesson: PublicLesson;
+  lessonToken: string;
+}) {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [question, setQuestion] = useState("");
@@ -21,7 +27,7 @@ export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
   const [error, setError] = useState<string>();
 
   async function send(
-    body: FormData | { lessonId: string; question: string; lesson: Lesson },
+    body: FormData | { lessonId: string; lessonToken: string; question: string },
   ) {
     setLoading(true);
     setError(undefined);
@@ -45,7 +51,7 @@ export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
   async function askTyped(event: React.FormEvent) {
     event.preventDefault();
     if (question.trim().length < 2) return;
-    await send({ lessonId: lesson.id, question, lesson });
+    await send({ lessonId: lesson.id, lessonToken, question });
   }
 
   async function toggleRecording() {
@@ -72,7 +78,7 @@ export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
         });
         const form = new FormData();
         form.append("lessonId", lesson.id);
-        form.append("lesson", JSON.stringify(lesson));
+        form.append("lessonToken", lessonToken);
         form.append("audio", blob, "question.webm");
         await send(form);
       };
@@ -96,7 +102,7 @@ export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
         <input
           aria-label="Your question"
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Why does lava come out?"
+          placeholder="What would you like to understand better?"
           value={question}
         />
         <button
@@ -105,7 +111,16 @@ export function VoiceQuestion({ lesson }: { lesson: Lesson }) {
           onClick={toggleRecording}
           type="button"
         >
-          {recording ? "■" : "●"}
+          <svg aria-hidden="true" className="button-icon" fill="none" viewBox="0 0 24 24">
+            {recording ? (
+              <rect fill="currentColor" height="10" rx="1" width="10" x="7" y="7" />
+            ) : (
+              <>
+                <rect height="11" rx="4" width="7" x="8.5" y="3" />
+                <path d="M6 11a6 6 0 0 0 12 0m-6 6v4m-3 0h6" />
+              </>
+            )}
+          </svg>
         </button>
         <button className="secondary-button" disabled={loading} type="submit">
           {loading ? "Searching…" : "Ask"}

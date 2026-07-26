@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-import type { Lesson } from "@/lib/types";
+import type { PublicLesson } from "@/lib/types";
 
 export function ObservabilityPanel({
   lesson,
   fallbackUsed,
 }: {
-  lesson: Lesson;
+  lesson: PublicLesson;
   fallbackUsed: boolean;
 }) {
   const [armed, setArmed] = useState(false);
@@ -65,13 +65,13 @@ export function ObservabilityPanel({
       </div>
       <div className="dev-actions">
         <button className="danger" onClick={armFailure} type="button">
-          {armed ? "Failure armed ✓" : "Simulate ElevenLabs failure"}
+          {armed ? "Failure armed" : "Simulate ElevenLabs failure"}
         </button>
         <a href="http://localhost:8080" rel="noreferrer" target="_blank">
-          Open SigNoz ↗
+          Open SigNoz
         </a>
         <a href="/api/health" rel="noreferrer" target="_blank">
-          Service health ↗
+          Service health
         </a>
       </div>
       {message ? <div className="provider-message">{message}</div> : null}

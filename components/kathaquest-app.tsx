@@ -1,31 +1,85 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { EpisodeCard } from "@/components/episode-card";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ObservabilityPanel } from "@/components/observability-panel";
 import { Quiz } from "@/components/quiz";
 import { VoiceQuestion } from "@/components/voice-question";
-import type { Lesson, LessonLanguage } from "@/lib/types";
+import type {
+  ChapterPackItem,
+  LessonLanguage,
+  LessonResponse,
+  PublicLesson,
+} from "@/lib/types";
 
-export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
+const savedLessonKey = "kathaquest.lesson.v1";
+
+function BookIcon({ id }: { id: string }) {
+  const paths: Record<string, React.ReactNode> = {
+    volcanoes: <path d="m5 18 4-9 3 4 2-7 5 12H5Zm7-12 1-3m2 4 2-3" />,
+    "water-cycle": <path d="M12 3s6 6 6 11a6 6 0 1 1-12 0c0-5 6-11 6-11Zm-3 12a3 3 0 0 0 3 3" />,
+    "solar-system": <path d="M12 5a7 7 0 1 0 7 7M4 9c4 3 11 6 16 3s-3-7-7-8m6 1h.01" />,
+    butterfly: <path d="M12 10c-2-5-8-6-8-1 0 3 4 5 8 5m0-4c2-5 8-6 8-1 0 3-4 5-8 5m0-4v9m-2-1h4" />,
+    photosynthesis: <path d="M12 21V10m0 4c-5 0-8-3-8-8 5 0 8 3 8 8Zm0 3c5 0 8-3 8-8-5 0-8 3-8 8Z" />,
+  };
+  return (
+    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+      <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8">
+        {paths[id]}
+      </g>
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg aria-hidden="true" className="check-icon" fill="none" viewBox="0 0 24 24">
+      <path d="m6 12 4 4 8-9" />
+    </svg>
+  );
+}
+
+export function KathaQuestApp({ chapters }: { chapters: ChapterPackItem[] }) {
   const lessonRef = useRef<HTMLElement>(null);
   const [chapterText, setChapterText] = useState("");
   const [sourceLabel, setSourceLabel] = useState<string>();
+  const [sourceKind, setSourceKind] =
+    useState<"chapter-pack" | "uploaded-pdf">("chapter-pack");
   const [ageGroup, setAgeGroup] = useState("8-10");
   const [language, setLanguage] = useState<LessonLanguage>("hi-IN");
-  const [phase, setPhase] = useState<"input" | "generating" | "lesson">(
-    "input",
-  );
-  const [lesson, setLesson] = useState<Lesson>();
+  const [phase, setPhase] = useState<"input" | "generating" | "lesson">("input");
+  const [lesson, setLesson] = useState<PublicLesson>();
+  const [lessonToken, setLessonToken] = useState("");
   const [error, setError] = useState<string>();
   const [extractingPdf, setExtractingPdf] = useState(false);
   const [fallbackUsed, setFallbackUsed] = useState(false);
 
-  function chooseSample() {
-    setChapterText(sampleChapter);
-    setSourceLabel("Volcanoes: Mountains That Can Erupt");
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(savedLessonKey);
+      if (!saved) return;
+      const parsed = JSON.parse(saved) as {
+        lesson: PublicLesson;
+        lessonToken: string;
+      };
+      if (parsed.lesson?.id && parsed.lessonToken) {
+        window.setTimeout(() => {
+          setLesson(parsed.lesson);
+          setLessonToken(parsed.lessonToken);
+          setPhase("lesson");
+        }, 0);
+      }
+    } catch {
+      window.localStorage.removeItem(savedLessonKey);
+    }
+  }, []);
+
+  function chooseChapter(chapter: ChapterPackItem) {
+    setChapterText(chapter.text);
+    setSourceLabel(`${chapter.title} • ${chapter.pages} pages`);
+    setSourceKind("chapter-pack");
     setError(undefined);
   }
 
@@ -50,6 +104,7 @@ export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
       }
       setChapterText(result.text);
       setSourceLabel(`${file.name} • ${result.totalPages} pages`);
+      setSourceKind("uploaded-pdf");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not read PDF");
     } finally {
@@ -59,7 +114,7 @@ export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
 
   async function generate() {
     if (chapterText.length < 100) {
-      setError("Choose the demo chapter or upload a text-based PDF first.");
+      setError("Choose a chapter or upload a text-based PDF first.");
       return;
     }
     setPhase("generating");
@@ -69,16 +124,23 @@ export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
       const response = await fetch("/api/lessons/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ chapterText, ageGroup, language }),
+        body: JSON.stringify({ chapterText, ageGroup, language, sourceKind }),
       });
-      const result = (await response.json()) as {
-        lesson?: Lesson;
+      const result = (await response.json()) as Partial<LessonResponse> & {
         error?: string;
       };
-      if (!response.ok || !result.lesson) {
+      if (!response.ok || !result.lesson || !result.lessonToken) {
         throw new Error(result.error ?? "Lesson generation failed");
       }
       setLesson(result.lesson);
+      setLessonToken(result.lessonToken);
+      window.localStorage.setItem(
+        savedLessonKey,
+        JSON.stringify({
+          lesson: result.lesson,
+          lessonToken: result.lessonToken,
+        }),
+      );
       setPhase("lesson");
       window.setTimeout(
         () => lessonRef.current?.scrollIntoView({ behavior: "smooth" }),
@@ -92,121 +154,144 @@ export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
     }
   }
 
+  function resetQuest() {
+    setLesson(undefined);
+    setLessonToken("");
+    setPhase("input");
+    setFallbackUsed(false);
+    window.localStorage.removeItem(savedLessonKey);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to the adventure</a>
       <header className="site-header container">
-        <a className="brand" href="#top">
+        <a aria-label="KathaQuest home" className="brand" href="#top">
           <span className="brand-mark">K</span>
           KathaQuest
         </a>
-        <div className="header-actions">
+        <nav aria-label="Primary navigation" className="header-actions">
           <span className="trust-pill">
-            <span className="dot" /> Real, trusted footage
+            <span className="dot" /> Reviewed all-ages sources
           </span>
           <a className="ghost-button" href="#observability">
-            Observe the agent
+            Developer view
           </a>
-        </div>
+        </nav>
       </header>
 
       {phase === "input" ? (
-        <main className="container" id="top">
-          <section className="hero">
+        <main className="container" id="main-content">
+          <section className="hero" id="top">
             <div className="hero-copy">
               <span className="eyebrow">Books become adventures</span>
               <h1>
-                Turn chapters into <span className="highlight">video quests.</span>
+                Turn any chapter into a <span className="highlight">video quest.</span>
               </h1>
               <p className="hero-subtitle">
-                KathaQuest finds the exact moments inside real educational
-                footage, then turns them into a playful lesson in English or
-                Hindi.
+                Pick a ready-to-explore story or bring your own PDF. KathaQuest
+                grounds every idea in the chapter and finds matching moments
+                from a reviewed educational archive.
               </p>
-              <div className="feature-row">
-                <span>
-                  <b>✓</b> Real USGS footage
-                </span>
-                <span>
-                  <b>✓</b> English + हिंदी
-                </span>
-                <span>
-                  <b>✓</b> Evidence with every answer
-                </span>
+              <div className="feature-row" aria-label="Product benefits">
+                <span><b>1</b> Source-grounded</span>
+                <span><b>2</b> English + हिंदी</span>
+                <span><b>3</b> Kid-safe evidence</span>
               </div>
             </div>
 
-            <div className="adventure-card">
-              <h2>Start your adventure</h2>
-              <p>Choose our demo chapter or bring a text-based PDF.</p>
-              <button
-                className="sample-button"
-                onClick={chooseSample}
-                type="button"
-              >
-                <span className="sample-icon">🌋</span>
-                <span>
-                  <strong>Use the volcano demo chapter</strong>
-                  <small>Perfect for the first quest • about 2 minutes</small>
-                </span>
-              </button>
-              <div className="divider">or upload a chapter</div>
+            <aside className="journey-card" aria-label="How KathaQuest works">
+              <span className="journey-label">Your three-step quest</span>
+              <ol className="journey-steps">
+                <li><span>1</span><div><strong>Choose</strong><small>A chapter or your PDF</small></div></li>
+                <li><span>2</span><div><strong>Personalize</strong><small>Age and language</small></div></li>
+                <li><span>3</span><div><strong>Explore</strong><small>Watch, ask, and play</small></div></li>
+              </ol>
+            </aside>
+          </section>
+
+          <section className="quest-builder" aria-labelledby="builder-title">
+            <div className="builder-heading">
+              <div>
+                <span className="eyebrow">Step 1 · Choose</span>
+                <h2 id="builder-title">Where should we explore?</h2>
+                <p>Five original chapter stories are ready, or upload any text-based PDF.</p>
+              </div>
+              <span className="safety-note">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="m7 11 3 3 7-7m4 5c0 5-3.4 8.5-9 10-5.6-1.5-9-5-9-10V5l9-3 9 3v7Z" /></svg>
+                Input and output safety checked
+              </span>
+            </div>
+
+            <div className="chapter-grid">
+              {chapters.map((chapter) => {
+                const selected =
+                  sourceKind === "chapter-pack" &&
+                  sourceLabel?.startsWith(chapter.title);
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={`chapter-card accent-${chapter.accent} ${selected ? "selected" : ""}`}
+                    key={chapter.id}
+                    onClick={() => chooseChapter(chapter)}
+                    type="button"
+                  >
+                    <span className="chapter-icon"><BookIcon id={chapter.id} /></span>
+                    <span className="chapter-subject">{chapter.subject}</span>
+                    <strong>{chapter.title}</strong>
+                    <small>{chapter.summary}</small>
+                    <span className="chapter-meta">{chapter.ageRange} · {chapter.pages} pages</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="builder-controls">
               <label className="upload-zone">
                 <input
                   accept="application/pdf"
                   onChange={(event) => uploadPdf(event.target.files?.[0])}
                   type="file"
                 />
-                <strong>
-                  {extractingPdf ? "Reading your PDF…" : "Drop in a PDF chapter"}
-                </strong>
-                <small>Text-based PDF • maximum 10 MB</small>
-                {sourceLabel ? (
-                  <span className="selected-file">✓ {sourceLabel}</span>
-                ) : null}
+                <span className="upload-icon" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
+                </span>
+                <span>
+                  <strong>{extractingPdf ? "Reading your PDF…" : "Upload your own chapter"}</strong>
+                  <small>Text-based PDF · up to 10 MB</small>
+                </span>
               </label>
-              <div className="field-grid">
-                <div className="field">
-                  <label htmlFor="age">Explorer age</label>
-                  <select
-                    id="age"
-                    onChange={(event) => setAgeGroup(event.target.value)}
-                    value={ageGroup}
-                  >
-                    <option value="6-8">6–8 years</option>
-                    <option value="8-10">8–10 years</option>
-                    <option value="10-12">10–12 years</option>
-                  </select>
+
+              <div className="personalize-card">
+                <span className="eyebrow">Step 2 · Personalize</span>
+                <div className="field-grid">
+                  <div className="field">
+                    <label htmlFor="age">Explorer age</label>
+                    <select id="age" onChange={(event) => setAgeGroup(event.target.value)} value={ageGroup}>
+                      <option value="6-8">6–8 years</option>
+                      <option value="8-10">8–10 years</option>
+                      <option value="10-12">10–12 years</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="language">Adventure language</label>
+                    <select id="language" onChange={(event) => setLanguage(event.target.value as LessonLanguage)} value={language}>
+                      <option value="hi-IN">हिंदी</option>
+                      <option value="en-IN">English</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="field">
-                  <label htmlFor="language">Adventure language</label>
-                  <select
-                    id="language"
-                    onChange={(event) =>
-                      setLanguage(event.target.value as LessonLanguage)
-                    }
-                    value={language}
-                  >
-                    <option value="hi-IN">हिंदी</option>
-                    <option value="en-IN">English</option>
-                  </select>
+                <div className="selection-summary" aria-live="polite">
+                  {sourceLabel ? <><span className="selection-check"><CheckIcon /></span><span><strong>Ready:</strong> {sourceLabel}</span></> : <span>Choose a chapter to continue.</span>}
                 </div>
+                <button className="primary-button full" disabled={extractingPdf || !chapterText} onClick={generate} type="button">
+                  Create my video adventure
+                  <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+                </button>
+                {error ? <div className="form-error" role="alert">{error}</div> : null}
               </div>
-              <button
-                className="primary-button full"
-                disabled={extractingPdf}
-                onClick={generate}
-                type="button"
-              >
-                Create my video adventure <span>→</span>
-              </button>
-              {error ? <div className="form-error">{error}</div> : null}
             </div>
-            <span className="scribble star" aria-hidden="true">
-              ✦
-            </span>
-            <span className="scribble spark" aria-hidden="true">
-              ≋
-            </span>
           </section>
         </main>
       ) : null}
@@ -214,59 +299,39 @@ export function KathaQuestApp({ sampleChapter }: { sampleChapter: string }) {
       {phase === "generating" ? <GenerationProgress /> : null}
 
       {phase === "lesson" && lesson ? (
-        <main className="lesson-wrap" ref={lessonRef}>
+        <main className="lesson-wrap" id="main-content" ref={lessonRef}>
           <div className="container">
             <div className="lesson-heading">
               <div>
                 <span className="eyebrow">Your video adventure is ready</span>
                 <h1>{lesson.title}</h1>
-                <p>
-                  Three big ideas, explained with moments retrieved from real
-                  educational footage.
-                </p>
+                <p>Three chapter-grounded ideas with reviewed, timestamped educational footage.</p>
+                <div className="lesson-trust">
+                  <span><CheckIcon /> {Math.round(lesson.overallCoverage * 100)}% evidence match</span>
+                  <span><CheckIcon /> All clips kid-safe</span>
+                  <span><CheckIcon /> Answers hidden securely</span>
+                </div>
               </div>
-              <button
-                className="ghost-button"
-                onClick={() => {
-                  setLesson(undefined);
-                  setPhase("input");
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                type="button"
-              >
-                Make another quest
-              </button>
+              <button className="ghost-button" onClick={resetQuest} type="button">Make another quest</button>
             </div>
 
             <div className="episode-grid">
               {lesson.episodes.map((episode, index) => (
-                <EpisodeCard
-                  episode={episode}
-                  index={index}
-                  key={episode.id}
-                  language={lesson.language}
-                  onFallback={() => setFallbackUsed(true)}
-                />
+                <EpisodeCard episode={episode} index={index} key={episode.id} language={lesson.language} onFallback={() => setFallbackUsed(true)} />
               ))}
             </div>
-
             <div className="interactive-grid">
-              <VoiceQuestion lesson={lesson} />
-              <Quiz lesson={lesson} />
+              <VoiceQuestion lesson={lesson} lessonToken={lessonToken} />
+              <Quiz lesson={lesson} lessonToken={lessonToken} />
             </div>
-
-            <ObservabilityPanel
-              fallbackUsed={fallbackUsed}
-              lesson={lesson}
-            />
+            <ObservabilityPanel fallbackUsed={fallbackUsed} lesson={lesson} />
           </div>
         </main>
       ) : null}
 
       <footer className="footer">
         <div className="container">
-          Real public-domain media • VideoDB retrieval • Sarvam AI voice •
-          OpenTelemetry + SigNoz observability
+          Reviewed public educational media · VideoDB retrieval · Sarvam AI voice · OpenTelemetry + SigNoz
         </div>
       </footer>
     </div>

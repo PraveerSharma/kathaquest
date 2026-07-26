@@ -15,21 +15,9 @@ type SearchOutcome = {
   evidence: VideoEvidence[];
   streamUrl: string;
   matchType: "spoken_word" | "scene";
+  queryUsed: string;
+  coverageScore: number;
 };
-
-function sourceFor(videoId: string, videoTitle: string) {
-  return async () => {
-    const cache = await getVideoCache();
-    const cached = cache.find((item) => item.videoDbId === videoId);
-    return (
-      cached ??
-      demoVideos.find(
-        (item) =>
-          item.title.toLocaleLowerCase() === videoTitle.toLocaleLowerCase(),
-      )
-    );
-  };
-}
 
 function uniqueShots(result: SearchResult) {
   const ordered = [...result.shots].sort(
@@ -47,8 +35,13 @@ function uniqueShots(result: SearchResult) {
 }
 
 export async function searchEducationalArchive(
-  query: string,
+  queryInput: string | string[],
 ): Promise<SearchOutcome | null> {
+  const queries = [...new Set(Array.isArray(queryInput) ? queryInput : [queryInput])]
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  const query = queries.join(" | ");
   const started = performance.now();
   return withSpan(
     "videodb.search_concept",
@@ -60,44 +53,80 @@ export async function searchEducationalArchive(
           requireEnv("VIDEODB_COLLECTION_ID"),
         );
 
-        const [spoken, scene] = await Promise.allSettled([
-          collection.search(
-            query,
-            "semantic",
-            IndexTypeValues.spoken,
-            3,
-          ),
-          collection.search(query, "semantic", IndexTypeValues.scene, 3),
-        ]);
+        const searches = await Promise.allSettled(
+          queries.flatMap((searchQuery) => [
+            collection
+              .search(searchQuery, "semantic", IndexTypeValues.spoken, 5)
+              .then((result) => ({
+                result,
+                type: "spoken_word" as const,
+                query: searchQuery,
+              })),
+            collection
+              .search(searchQuery, "semantic", IndexTypeValues.scene, 5)
+              .then((result) => ({
+                result,
+                type: "scene" as const,
+                query: searchQuery,
+              })),
+          ]),
+        );
 
         const candidates: Array<{
           result: SearchResult;
           type: "spoken_word" | "scene";
+          query: string;
         }> = [];
-        if (
-          spoken.status === "fulfilled" &&
-          spoken.value instanceof SearchResult
-        ) {
-          candidates.push({ result: spoken.value, type: "spoken_word" });
-        }
-        if (
-          scene.status === "fulfilled" &&
-          scene.value instanceof SearchResult
-        ) {
-          candidates.push({ result: scene.value, type: "scene" });
+        for (const search of searches) {
+          if (
+            search.status === "fulfilled" &&
+            search.value.result instanceof SearchResult
+          ) {
+            candidates.push({
+              result: search.value.result,
+              type: search.value.type,
+              query: search.value.query,
+            });
+          }
         }
 
+        const cache = await getVideoCache();
+        const sourceById = new Map(
+          cache
+            .filter((item) => item.kidSafe)
+            .map((item) => [item.videoDbId, item]),
+        );
         const selected = candidates
-          .map((candidate) => ({
-            ...candidate,
-            shots: uniqueShots(candidate.result).slice(0, 3),
-          }))
+          .map((candidate) => {
+            const shots = uniqueShots(candidate.result)
+              .filter((shot) => {
+                const cached = sourceById.get(shot.videoId);
+                return (
+                  cached?.kidSafe ||
+                  demoVideos.some(
+                    (item) =>
+                      item.kidSafe &&
+                      item.title.toLocaleLowerCase() ===
+                        shot.videoTitle?.toLocaleLowerCase(),
+                  )
+                );
+              })
+              .slice(0, 3);
+            return {
+              ...candidate,
+              shots,
+              blendedScore:
+                shots.reduce(
+                  (total, shot, index) =>
+                    total +
+                    Math.max(0, Math.min(1, shot.searchScore ?? 0)) /
+                      (index + 1),
+                  0,
+                ) + (candidate.type === "spoken_word" ? 0.05 : 0),
+            };
+          })
           .filter((candidate) => candidate.shots.length > 0)
-          .sort(
-            (a, b) =>
-              (b.shots[0]?.searchScore ?? 0) -
-              (a.shots[0]?.searchScore ?? 0),
-          )[0];
+          .sort((a, b) => b.blendedScore - a.blendedScore)[0];
 
         const duration = performance.now() - started;
         telemetry.videoSearchDuration.record(duration);
@@ -132,13 +161,16 @@ export async function searchEducationalArchive(
 
         const evidence = await Promise.all(
           selected.shots.map(async (shot): Promise<VideoEvidence> => {
-            const source = await sourceFor(
-              shot.videoId,
-              shot.videoTitle,
-            )();
+            const source =
+              sourceById.get(shot.videoId) ??
+              demoVideos.find(
+                (item) =>
+                  item.title.toLocaleLowerCase() ===
+                  shot.videoTitle?.toLocaleLowerCase(),
+              );
             return {
               videoId: shot.videoId,
-              videoTitle: shot.videoTitle,
+              videoTitle: shot.videoTitle || source?.title || "Educational video",
               startSeconds: shot.start,
               endSeconds: shot.end,
               relevanceScore: shot.searchScore,
@@ -146,9 +178,18 @@ export async function searchEducationalArchive(
               licence: source?.licence,
               matchType: selected.type,
               text: shot.text,
+              kidSafe: source?.kidSafe ?? false,
+              sourceAuthority: source?.sourceAuthority,
+              topics: source?.topics,
             };
           }),
         );
+        const coverageScore =
+          evidence.reduce(
+            (total, item) =>
+              total + Math.max(0, Math.min(1, item.relevanceScore ?? 0)),
+            0,
+          ) / evidence.length;
 
         span.setAttributes({
           "video.result_count": evidence.length,
@@ -163,6 +204,8 @@ export async function searchEducationalArchive(
             resultCount: evidence.length,
             durationMs: duration,
             matchType: selected.type,
+            queryUsed: selected.query,
+            coverageScore,
           },
           "VideoDB search and compilation complete",
         );
@@ -171,6 +214,8 @@ export async function searchEducationalArchive(
           evidence,
           streamUrl,
           matchType: selected.type,
+          queryUsed: selected.query,
+          coverageScore,
         };
       } catch (error) {
         const duration = performance.now() - started;

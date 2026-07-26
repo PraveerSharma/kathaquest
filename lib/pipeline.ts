@@ -2,8 +2,13 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { extractConcepts, rewriteSearchQuery } from "@/lib/llm";
+import {
+  createGroundedConcept,
+  extractConcepts,
+  rewriteSearchQuery,
+} from "@/lib/llm";
 import { logger } from "@/lib/logger";
+import { assertKidSafeText } from "@/lib/safety";
 import { saveLesson } from "@/lib/storage";
 import { telemetry, withSpan } from "@/lib/telemetry";
 import type {
@@ -14,17 +19,18 @@ import type {
 } from "@/lib/types";
 import { searchEducationalArchive } from "@/lib/videodb";
 
-async function buildEpisode(
-  concept: LearningConcept,
-): Promise<Episode> {
-  let query = concept.videoSearchQuery;
-  let search = await searchEducationalArchive(query);
+async function retrieveEpisodeEvidence(
+  concept: Omit<LearningConcept, "explanation" | "quiz">,
+) {
+  let queries = concept.videoSearchQueries;
+  let search = await searchEducationalArchive(queries);
   let rewriteUsed = false;
 
   if (!search) {
-    query = await rewriteSearchQuery(query, concept.title);
+    const rewritten = await rewriteSearchQuery(queries[0], concept.title);
+    queries = [rewritten];
     rewriteUsed = true;
-    search = await searchEducationalArchive(query);
+    search = await searchEducationalArchive(queries);
   }
 
   if (!search) {
@@ -33,31 +39,19 @@ async function buildEpisode(
     );
   }
 
-  const durationSeconds = search.evidence.reduce(
-    (total, item) => total + Math.max(0, item.endSeconds - item.startSeconds),
-    0,
-  );
-
-  return {
-    id: randomUUID(),
-    conceptId: concept.id,
-    title: concept.title,
-    explanation: concept.explanation,
-    whyThisClip: `VideoDB matched ${search.matchType === "scene" ? "visible eruption scenes" : "spoken educational evidence"} to “${query}”${rewriteUsed ? " after one automatic query rewrite" : ""}.`,
-    streamUrl: search.streamUrl,
-    durationSeconds,
-    evidence: search.evidence,
-  };
+  return { search, rewriteUsed };
 }
 
 export async function generateLesson({
   chapterText,
   ageGroup,
   language,
+  sourceKind = "uploaded-pdf",
 }: {
   chapterText: string;
   ageGroup: string;
   language: LessonLanguage;
+  sourceKind?: Lesson["sourceKind"];
 }): Promise<Lesson> {
   const lessonId = randomUUID();
   const started = performance.now();
@@ -73,6 +67,7 @@ export async function generateLesson({
     },
     async (span) => {
       try {
+        await assertKidSafeText(chapterText, "chapter");
         const chapter = await extractConcepts({
           chapterText,
           ageGroup,
@@ -83,22 +78,62 @@ export async function generateLesson({
           "pipeline.status": "searching",
         });
 
-        const episodes: Episode[] = [];
-        for (const concept of chapter.concepts) {
-          episodes.push(await buildEpisode(concept));
-        }
+        const retrievals = await Promise.all(
+          chapter.concepts.map((concept) => retrieveEpisodeEvidence(concept)),
+        );
+        const concepts = await Promise.all(
+          chapter.concepts.map((concept, index) =>
+            createGroundedConcept({
+              concept,
+              evidence: retrievals[index].search.evidence,
+              ageGroup,
+              language,
+            }),
+          ),
+        );
+        await assertKidSafeText(
+          concepts.map((item) => item.explanation).join("\n"),
+          "answer",
+        );
+        const episodes: Episode[] = concepts.map((concept, index) => {
+          const { search, rewriteUsed } = retrievals[index];
+          const durationSeconds = search.evidence.reduce(
+            (total, item) =>
+              total + Math.max(0, item.endSeconds - item.startSeconds),
+            0,
+          );
+          return {
+            id: randomUUID(),
+            conceptId: concept.id,
+            title: concept.title,
+            explanation: concept.explanation,
+            sourceQuote: concept.sourceQuote,
+            sourcePage: concept.sourcePage,
+            whyThisClip: `VideoDB matched ${search.matchType === "scene" ? "visible educational scenes" : "spoken educational evidence"} to “${search.queryUsed}”${rewriteUsed ? " after one automatic query rewrite" : ""}. Every source is from the reviewed all-ages catalog.`,
+            streamUrl: search.streamUrl,
+            durationSeconds,
+            evidence: search.evidence,
+            coverageScore: search.coverageScore,
+            kidSafe: search.evidence.every((item) => item.kidSafe),
+          };
+        });
 
         const duration = performance.now() - started;
+        const overallCoverage =
+          episodes.reduce((total, item) => total + item.coverageScore, 0) /
+          episodes.length;
         const lesson: Lesson = {
           id: lessonId,
           title: chapter.chapterTitle,
           ageGroup,
           language,
           status: "ready",
-          concepts: chapter.concepts,
+          concepts,
           episodes,
           traceId: span.spanContext().traceId,
           generationTimeMs: Math.round(duration),
+          overallCoverage,
+          sourceKind,
           createdAt: new Date().toISOString(),
         };
 

@@ -26,14 +26,14 @@ export function GenerationProgress() {
       <div className="container">
         <div className="progress-card">
           <div className="volcano-loader" aria-hidden="true">
-            🌋
+            <svg fill="none" viewBox="0 0 24 24"><path d="m5 18 4-9 3 4 2-7 5 12H5Zm7-12 1-3m2 4 2-3" /></svg>
           </div>
           <div className="section-title">
             <span className="eyebrow">Adventure in progress</span>
             <h2>Real footage, coming right up.</h2>
             <p>
-              VideoDB is searching speech and scenes across the trusted USGS
-              archive. This can take a minute.
+              VideoDB is searching speech and scenes across the reviewed,
+              all-ages archive. This can take a minute.
             </p>
           </div>
           <div className="progress-list">
@@ -45,7 +45,11 @@ export function GenerationProgress() {
                 key={step}
               >
                 <span className="step-icon">
-                  {index < active ? "✓" : index === active ? "●" : index + 1}
+                  {index < active ? (
+                    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="m6 12 4 4 8-9" /></svg>
+                  ) : index === active ? (
+                    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /></svg>
+                  ) : index + 1}
                 </span>
                 {step}
               </div>

@@ -83,12 +83,13 @@ async function seed() {
       video = uploaded;
     }
 
-    const entry: VideoDbCacheEntry = cached ?? {
+    const entry: VideoDbCacheEntry = {
+      ...cached,
       ...source,
       videoDbId: video.id,
-      spokenIndexed: false,
-      sceneIndexed: false,
-      updatedAt: new Date().toISOString(),
+      spokenIndexed: cached?.spokenIndexed ?? false,
+      sceneIndexed: cached?.sceneIndexed ?? false,
+      updatedAt: cached?.updatedAt ?? new Date().toISOString(),
     };
 
     if (!entry.spokenIndexed) {
@@ -124,11 +125,13 @@ async function seed() {
           frame_count: 1,
         },
         prompt:
-          "Describe visible educational evidence about volcano shape, vents, craters, magma, lava, ash, gas, eruption processes, hazards, and changes to the landscape. Be concrete and factual.",
+          `Describe visible, age-appropriate educational evidence related to these topics: ${source.topics.join(", ")}. Identify processes, objects, changes, and cause-and-effect relationships. Be concrete, factual, and do not infer anything that is not visible.`,
         metadata: {
-          archive: "kathaquest-demo",
-          licence: source.licence,
+          archive: "kathaquest-kid-safe",
+          licence: source.licence.slice(0, 30),
           source_id: source.id,
+          kid_safe: "true",
+          source_authority: source.sourceAuthority,
         },
         name: "kathaquest-educational-scenes",
       });

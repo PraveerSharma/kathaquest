@@ -1,29 +1,41 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getLesson } from "@/lib/storage";
+import { openLesson } from "@/lib/lesson-session";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { telemetry, withSpan } from "@/lib/telemetry";
-import type { Lesson } from "@/lib/types";
 import { searchEducationalArchive } from "@/lib/videodb";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
+const requestSchema = z.object({
+  lessonId: z.string().uuid(),
+  lessonToken: z.string().min(40).max(200_000),
+  answers: z.record(z.string(), z.string().min(1).max(100)),
+});
+
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(request, "quiz", 20, 10 * 60_000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Quiz limit reached. Please try again shortly." },
+      { status: 429 },
+    );
+  }
   try {
-    const body = (await request.json()) as {
-      lessonId?: string;
-      lesson?: Lesson;
-      answers?: Record<string, string>;
-    };
-    const lesson =
-      body.lesson?.id === body.lessonId
-        ? body.lesson
-        : body.lessonId
-          ? await getLesson(body.lessonId)
-          : null;
-    if (!lesson || !body.answers) {
+    const body = requestSchema.parse(await request.json());
+    const lesson = openLesson(body.lessonToken);
+    if (lesson.id !== body.lessonId) {
+      return NextResponse.json({ error: "Lesson session mismatch" }, { status: 401 });
+    }
+    const hasInvalidAnswer = lesson.concepts.some((concept) => {
+      const answer = body.answers[concept.id];
+      return !answer || !concept.quiz.options.includes(answer);
+    });
+    if (hasInvalidAnswer) {
       return NextResponse.json(
-        { error: "Lesson and answers are required" },
+        { error: "Choose one valid answer for every question." },
         { status: 400 },
       );
     }
@@ -52,7 +64,7 @@ export async function POST(request: Request) {
                 "revision.concept_count": incorrectConceptIds.length,
               },
               async () =>
-                searchEducationalArchive(concept.videoSearchQuery),
+                searchEducationalArchive(concept.videoSearchQueries),
             );
             revisionReelUrl = revision?.streamUrl;
             if (revisionReelUrl) telemetry.revisionsGenerated.add(1);
@@ -68,12 +80,18 @@ export async function POST(request: Request) {
       },
     );
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Quiz evaluation failed";
     return NextResponse.json(
+      { error: message },
       {
-        error:
-          error instanceof Error ? error.message : "Quiz evaluation failed",
+        status:
+          error instanceof z.ZodError
+            ? 400
+            : message.includes("session")
+              ? 401
+              : 500,
       },
-      { status: 500 },
     );
   }
 }

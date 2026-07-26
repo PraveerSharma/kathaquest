@@ -1,12 +1,9 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-
 import { KathaQuestApp } from "@/components/kathaquest-app";
+import chapterPackJson from "@/data/chapter-pack.json";
+import type { ChapterPackItem } from "@/lib/types";
 
 export default async function Home() {
-  const sampleChapter = await readFile(
-    path.join(process.cwd(), "data", "sample-volcano-chapter.txt"),
-    "utf8",
+  return (
+    <KathaQuestApp chapters={chapterPackJson as ChapterPackItem[]} />
   );
-  return <KathaQuestApp sampleChapter={sampleChapter} />;
 }

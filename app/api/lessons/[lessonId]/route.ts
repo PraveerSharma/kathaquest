@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getLesson } from "@/lib/storage";
+import { toPublicLesson } from "@/lib/lesson-session";
 
 export const runtime = "nodejs";
 
@@ -13,5 +14,5 @@ export async function GET(
   if (!lesson) {
     return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
   }
-  return NextResponse.json({ lesson });
+  return NextResponse.json({ lesson: toPublicLesson(lesson) });
 }
