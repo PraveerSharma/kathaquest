@@ -10,6 +10,8 @@ process or Mac restarts. For the judging window:
 
 - keep the Mac powered on and connected;
 - keep Docker Desktop running;
+- keep the lid open; the installed `com.kathaquest.keepawake` LaunchAgent
+  prevents idle sleep for 36 hours but cannot override closing the lid;
 - do not restart `com.kathaquest.signoz-tunnel`;
 - verify `https://<hostname>/api/v1/health` before sharing the demo.
 
