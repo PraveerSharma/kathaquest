@@ -424,16 +424,10 @@ test("mobile layout has no horizontal overflow and keeps primary actions reachab
 
 test("microphone-unavailable feedback is explicit", async ({ page }) => {
   await page.addInitScript(() => {
-    if (navigator.mediaDevices) {
-      Object.defineProperty(
-        Object.getPrototypeOf(navigator.mediaDevices),
-        "getUserMedia",
-        {
-          configurable: true,
-          value: undefined,
-        },
-      );
-    }
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: undefined,
+    });
   });
   await mockGeneratedLesson(page);
   await openReadyApp(page);

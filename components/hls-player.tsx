@@ -55,6 +55,7 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
       ) {
         return false;
       }
+      const shouldResume = !video.paused || video.currentTime > 0;
       fallbackActiveRef.current = true;
       hlsRef.current?.destroy();
       hlsRef.current = null;
@@ -64,6 +65,13 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
           ? `,${fallbackEndSeconds}`
           : "";
       video.src = `${fallbackSrc}#t=${start}${end}`;
+      if (shouldResume) {
+        video.addEventListener(
+          "canplay",
+          () => void video.play().catch(() => undefined),
+          { once: true },
+        );
+      }
       video.load();
       setUsingFallback(true);
       setFailed(false);
