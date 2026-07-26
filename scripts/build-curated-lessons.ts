@@ -42,6 +42,12 @@ const curated = chapters.flatMap((chapter) => {
           candidate.title.toLocaleLowerCase().includes(hint),
         ),
     );
+    if (lesson?.language === "hi-IN") {
+      lesson.episodes = lesson.episodes.map((episode) => ({
+        ...episode,
+        whyThisClip: `इन ${episode.evidence.length} समीक्षा किए गए वीडियो हिस्सों को इसलिए चुना गया है क्योंकि वे “${episode.title}” को सीधे दिखाते या समझाते हैं। हर स्रोत, समय-सीमा और समीक्षा स्कोर नीचे दिया गया है।`,
+      }));
+    }
     return lesson
       ? [
           {

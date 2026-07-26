@@ -607,7 +607,7 @@
     "ageGroup": "8-10",
     "language": "hi-IN",
     "lesson": {
-      "id": "81125808-314b-4db9-8e99-a3238c4e784b",
+      "id": "eeae4103-ac31-4c2a-a282-0c3477ef57d6",
       "title": "ज्वालामुखी: पृथ्वी के भीतर की आग",
       "ageGroup": "8-10",
       "language": "hi-IN",
@@ -682,13 +682,13 @@
       ],
       "episodes": [
         {
-          "id": "ccb8595d-8355-471b-aa97-4ed1991ba625",
+          "id": "d22f3cd1-19c5-4aaf-b7e9-54f5eef53b06",
           "conceptId": "concept-1",
           "title": "मैग्मा और लावा में अंतर",
           "explanation": "क्या एक ही पिघली चट्टान के दो नाम हो सकते हैं? हाँ—उसका नाम इस बात पर बदलता है कि वह कहाँ है। पृथ्वी की सतह के नीचे मौजूद पिघली चट्टान को मैग्मा कहते हैं। चित्रों में मैग्मा अलग-अलग गहराइयों पर जमा और आगे बढ़ता दिखाया गया है। जब यही मैग्मा किसी दरार या रास्ते से पृथ्वी की सतह तक पहुँच जाता है, तब उसे लावा कहा जाता है। इसे ऐसे याद करो: जैसे घर के अंदर तुम्हारा नाम वही रहता है, पर मैदान में पहुँचते ही तुम्हें “खिलाड़ी” कहा जा सकता है—चीज वही है, जगह बदलने पर नाम बदल गया। सतह पर लावा चमकीला लाल-नारंगी दिखाई दे सकता है, जबकि उसके आसपास की ठोस चट्टान गहरी होती है। इसलिए कारण है स्थान बदलना, और प्रभाव है नाम बदलना। संक्षेप में: सतह के नीचे मैग्मा और सतह पर पहुँचा वही पिघला पत्थर लावा कहलाता है।",
           "sourceQuote": "Magma is melted rock below Earth's surface; lava is magma that reaches the surface.",
           "sourcePage": 4,
-          "whyThisClip": "Together, the clips form a logical contrast: clip-2 shows magma stored below the surface, and clip-9 shows molten rock emerging at the surface as lava. Narration should explicitly state the naming change because neither clip directly verbal",
+          "whyThisClip": "इन 2 समीक्षा किए गए वीडियो हिस्सों को इसलिए चुना गया है क्योंकि वे “मैग्मा और लावा में अंतर” को सीधे दिखाते या समझाते हैं। हर स्रोत, समय-सीमा और समीक्षा स्कोर नीचे दिया गया है।",
           "streamUrl": "https://stream.videodb.io/v3/published/manifests/6274d1e7-63d7-46d6-8687-b317049f5fc9.m3u8",
           "durationSeconds": 60,
           "evidence": [
@@ -741,13 +741,13 @@
           "selectionSummary": "Together, the clips form a logical contrast: clip-2 shows magma stored below the surface, and clip-9 shows molten rock emerging at the surface as lava. Narration should explicitly state the naming change because neither clip directly verbal"
         },
         {
-          "id": "dab83a99-c8fc-465a-ad1c-9a4b721549f0",
+          "id": "4f33cc82-96d6-48b0-b48d-0b16e6877fa8",
           "conceptId": "concept-2",
           "title": "बहता हुआ लावा",
           "explanation": "क्या ज्वालामुखी के भीतर गैस भी बाहर निकलने का रास्ता खोजती है? जब मैग्मा पतला और आसानी से बहने वाला होता है, तो गैस उसमें से अधिक आसानी से निकल जाती है। इसे ऐसे सोचो जैसे पतले शरबत में बुलबुले जल्दी ऊपर आ जाते हैं। गैस के निकलने से पतला मैग्मा बहकर अक्सर चमकते लावा-प्रवाह बनाता है। ज्वालामुखी के पत्थरों में बने छिद्र को वेंट कहते हैं। इसी वेंट से चमकीला लाल-नारंगी लावा ऊपर उछल सकता है, बाहर आ सकता है और पास की जमीन पर फैल सकता है। हवाई के किलाउएआ ज्वालामुखी में दो वेंटों से लावा के फव्वारे निकले और उनसे लावा-प्रवाह बने। फैलने के बाद लावा ठंडा होकर गहरी, ठोस चट्टान जैसा दिखाई देता है। याद रखो: पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।",
           "sourceQuote": "Runny magma lets gas escape more easily. It often produces glowing lava flows.",
           "sourcePage": 3,
-          "whyThisClip": "ये दोनों क्षण मिलकर वेंट से गैस निकलने तथा चमकते लावा-प्रवाह बनने को दिखाते हैं। हालांकि कोई उम्मीदवार सीधे यह नहीं समझाता कि पतले मैग्मा की कम श्यानता ही गैस को आसानी से निकलने देती है; उस कारणात्मक संबंध को अध्याय-आधारित कथन में स्पष्ट बत",
+          "whyThisClip": "इन 2 समीक्षा किए गए वीडियो हिस्सों को इसलिए चुना गया है क्योंकि वे “बहता हुआ लावा” को सीधे दिखाते या समझाते हैं। हर स्रोत, समय-सीमा और समीक्षा स्कोर नीचे दिया गया है।",
           "streamUrl": "https://stream.videodb.io/v3/published/manifests/04f5e9e9-0589-4c75-a27f-4bde6662bb71.m3u8",
           "durationSeconds": 68,
           "evidence": [
@@ -799,13 +799,13 @@
           "selectionSummary": "ये दोनों क्षण मिलकर वेंट से गैस निकलने तथा चमकते लावा-प्रवाह बनने को दिखाते हैं। हालांकि कोई उम्मीदवार सीधे यह नहीं समझाता कि पतले मैग्मा की कम श्यानता ही गैस को आसानी से निकलने देती है; उस कारणात्मक संबंध को अध्याय-आधारित कथन में स्पष्ट बत"
         },
         {
-          "id": "9d7bf064-91c6-4e83-8d08-1c5b94462408",
+          "id": "8bedb1d5-992e-41b9-a7c6-1c74b2c6e4c3",
           "conceptId": "concept-3",
           "title": "ज्वालामुखी नई भूमि बनाते हैं",
           "explanation": "क्या तुमने सोचा है कि एक ज्वालामुखी ज़मीन कैसे बना सकता है? ज्वालामुखी की चट्टान में एक खुला रास्ता होता है, जिसे छिद्र कहते हैं। विस्फोट के समय इसी छिद्र से चमकीला लाल-नारंगी, पिघला हुआ लावा बाहर निकलता है। वह ऊपर उछल सकता है, फिर पास की सतह पर गिरकर फैल जाता है। गर्म लावा से धुआँ या भाप भी ऊपर उठ सकती है। कुछ लावा बहते-बहते पानी तक भी पहुँचता है। जब लावा ठंडा होता है, तो वह गहरे रंग की ठोस चट्टान बन जाता है। जैसे पिघली हुई चीज़ ठंडी होकर जम जाती है, वैसे ही लावा जमकर नई चट्टानी सतह जोड़ता है। एक देखे गए विस्फोट में लावा ने ज्वालामुखी के गड्ढे को लगभग 240 फीट नई चट्टान से भर दिया। इस तरह, ज्वालामुखी केवल विस्फोट नहीं करते—वे नई भूमि भी बनाते हैं। संक्षेप में, बाहर निकला लावा फैलकर ठंडा होता है और ठोस चट्टान बनाकर नई भूमि जोड़ सकता है।",
           "sourceQuote": "Volcanoes also create new land.",
           "sourcePage": 3,
-          "whyThisClip": "ये दृश्य मिलकर एक तार्किक क्रम बनाते हैं: तरल लावा के ऊपर ठोस पपड़ी बनना, लावा का समुद्र तक पहुँचना और ठंडा होना, तथा जमा हुई नई चट्टान से भू-भाग का निर्माण।",
+          "whyThisClip": "इन 3 समीक्षा किए गए वीडियो हिस्सों को इसलिए चुना गया है क्योंकि वे “ज्वालामुखी नई भूमि बनाते हैं” को सीधे दिखाते या समझाते हैं। हर स्रोत, समय-सीमा और समीक्षा स्कोर नीचे दिया गया है।",
           "streamUrl": "https://stream.videodb.io/v3/published/manifests/1d919a25-9514-4c2a-a433-0675e2f2217a.m3u8",
           "durationSeconds": 69,
           "evidence": [
@@ -999,7 +999,7 @@
                   "विद्यार्थी समझा सकेंगे कि पृथ्वी की सतह के नीचे पिघली चट्टान को मैग्मा और सतह पर पहुँचने पर उसे लावा कहा जाता है।"
                 ],
                 "motion": "pan_zoom",
-                "footageEpisodeId": "ccb8595d-8355-471b-aa97-4ed1991ba625",
+                "footageEpisodeId": "d22f3cd1-19c5-4aaf-b7e9-54f5eef53b06",
                 "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/atoms/video/Coombs%20et%20al%202020%20AGU.mp4",
                 "footageStartSeconds": 606.002,
                 "footageEndSeconds": 628.002
@@ -1053,7 +1053,7 @@
                   "विद्यार्थी पहचान सकेंगे कि पतला मैग्मा गैस को आसानी से निकलने देता है और अक्सर चमकते लावा-प्रवाह बनाता है।"
                 ],
                 "motion": "pan_zoom",
-                "footageEpisodeId": "dab83a99-c8fc-465a-ad1c-9a4b721549f0",
+                "footageEpisodeId": "4f33cc82-96d6-48b0-b48d-0b16e6877fa8",
                 "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/30episodes_new_music_small.mp4",
                 "footageStartSeconds": 0,
                 "footageEndSeconds": 22
@@ -1107,7 +1107,7 @@
                   "विद्यार्थी वर्णन कर सकेंगे कि ज्वालामुखी का लावा ठंडा होकर नई भूमि बना सकता है।"
                 ],
                 "motion": "pan_zoom",
-                "footageEpisodeId": "9d7bf064-91c6-4e83-8d08-1c5b94462408",
+                "footageEpisodeId": "8bedb1d5-992e-41b9-a7c6-1c74b2c6e4c3",
                 "footageMediaUrl": "https://usgs-ocapsv2-public-input-media.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/video/multimediaFile-4266.mp4",
                 "footageStartSeconds": 1,
                 "footageEndSeconds": 23
@@ -1176,11 +1176,11 @@
           ]
         }
       },
-      "traceId": "640646565465fd067c1040986315ba96",
-      "generationTimeMs": 148462,
+      "traceId": "3ce5ec840da4ad25c1a70be1efb88847",
+      "generationTimeMs": 1842,
       "overallCoverage": 0.7066690078611112,
       "sourceKind": "chapter-pack",
-      "createdAt": "2026-07-26T18:45:01.063Z"
+      "createdAt": "2026-07-26T18:45:50.085Z"
     }
   }
 ]

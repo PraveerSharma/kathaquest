@@ -1,6 +1,6 @@
 # KathaQuest Build Status
 
-Last updated: 2026-07-26
+Last updated: 2026-07-27
 
 ## Core product
 
@@ -34,6 +34,9 @@ Last updated: 2026-07-26
 - [x] Add `/content` and `/lesson` routes with persistent navigation
 - [x] Separate content language from video-audio language
 - [x] Support explicit Sarvam, ElevenLabs and automatic voice routing
+- [x] Precompute the bundled demo chapters from real OpenAI and VideoDB results
+- [x] Keep uploaded PDFs on the full live generation pipeline
+- [x] Proxy allowlisted VideoDB HLS manifests and segments for reliable browser playback
 
 ## Observability
 
@@ -44,9 +47,10 @@ Last updated: 2026-07-26
 - [x] Verify KathaQuest telemetry in the SigNoz ClickHouse store
 - [x] Add production `@vercel/otel` export with SigNoz authentication support
 - [x] Instrument planning, storyboard and full-film narration
-- [ ] Create two dashboards
-- [ ] Create three alerts
-- [ ] Capture dashboard screenshots
+- [x] Create two dashboards
+- [x] Create three alerts
+- [x] Capture dashboard screenshots
+- [x] Add an authenticated production alert webhook
 
 ## Quality and submission
 
@@ -59,14 +63,16 @@ Last updated: 2026-07-26
 - [x] README and architecture diagram complete
 - [x] Demo script and submission copy complete
 - [x] Production deployment complete
-- [ ] Demo recording complete
+- [x] Demo recording complete
 - [x] Tagged release complete
 - [ ] VideoDB submission sent
-- [ ] SigNoz submission sent
+- [x] SigNoz submission sent
 
 ## Current blockers
 
 - SigNoz is healthy locally. Real-time Vercel export still requires a SigNoz
   Cloud ingestion URL/key or a stable authenticated public OTLP endpoint; the
   application cannot send to `localhost` from Vercel.
+- The supplied ElevenLabs credential returns HTTP 401. Automatic voice routing
+  falls back to Sarvam, which is verified and working in production.
 - VideoDB’s optional enhanced audio-index endpoint currently returns HTTP 500. Spoken-word and detailed scene indexes, retrieval, stitching and Timeline narration composition remain healthy.

@@ -88,7 +88,10 @@ export async function generateLesson({
         if (curatedLesson) {
           const duration = performance.now() - started;
           curatedLesson.generationTimeMs = Math.round(duration);
-          curatedLesson.traceId = span.spanContext().traceId;
+          const currentTraceId = span.spanContext().traceId;
+          if (!/^0+$/.test(currentTraceId)) {
+            curatedLesson.traceId = currentTraceId;
+          }
           span.setAttributes({
             "chapter.title": curatedLesson.title,
             "lesson.cache_hit": true,

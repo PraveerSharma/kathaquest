@@ -12,6 +12,13 @@ the archive contains direct evidence.
 
 The reviewed archive contains 12 all-ages videos from USGS, NASA, NOAA and the U.S. National Park Service. VideoDB—not a mock—provides ingestion, spoken-word indexing, scene understanding, semantic retrieval, timestamp evidence, HLS compilation and narration/video composition.
 
+The bundled chapter pack is backed by prevalidated results created with the
+same real OpenAI and VideoDB pipeline, so the judge-facing demo opens in
+seconds. General PDF uploads always run through the full live pipeline. A
+locked, same-origin media route rewrites only allowlisted VideoDB HLS manifests
+and segments, avoiding third-party CORS failures without becoming an open
+proxy.
+
 ![KathaQuest home screen](public/demo/home.png)
 
 ## Why it exists
@@ -91,7 +98,7 @@ English, Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, P
 Sarvam Bulbul v3 and ElevenLabs multilingual TTS are both supported. Children
 can change the language of a single evidence reel or the complete lesson film
 without changing the written lesson. Auto mode prefers Sarvam for Indian
-languages and falls back to ElevenLabs. Voices use a warm, slightly slower
+languages and uses the configured provider fallback when necessary. Voices use a warm, slightly slower
 educational delivery rather than imitating a child.
 
 ## SigNoz observability
@@ -168,6 +175,10 @@ The seed script is resumable. It reuses cached VideoDB IDs and does not upload a
 | `NEXT_PUBLIC_SIGNOZ_URL` | Optional production dashboard link |
 | `SIGNOZ_URL` | Local SigNoz UI |
 | `SIGNOZ_MCP_URL` | Local SigNoz MCP endpoint |
+| `SIGNOZ_API_KEY` | Local SigNoz API automation key |
+| `KATHAQUEST_ALERT_WEBHOOK_URL` | Authenticated production alert receiver |
+| `SIGNOZ_WEBHOOK_USERNAME` | Alert webhook basic-auth username |
+| `SIGNOZ_WEBHOOK_PASSWORD` | Alert webhook basic-auth password |
 | `DEMO_MODE` | Enables the controlled failure route |
 
 ## SigNoz with Foundry
@@ -190,7 +201,11 @@ Expected endpoints:
 - OTLP gRPC: `http://localhost:4317`
 - SigNoz MCP: `http://localhost:8000/mcp`
 
-Both [`casting.yaml`](casting.yaml) and [`casting.yaml.lock`](casting.yaml.lock) are committed for reproducibility. Dashboard panels, alerts and validation steps are in [`signoz/DASHBOARDS_AND_ALERTS.md`](signoz/DASHBOARDS_AND_ALERTS.md).
+Both [`casting.yaml`](casting.yaml) and [`casting.yaml.lock`](casting.yaml.lock)
+are committed for reproducibility. The setup script creates two dashboards,
+three alerts and an authenticated notification channel idempotently. Dashboard
+panels, alert definitions and validation steps are in
+[`signoz/DASHBOARDS_AND_ALERTS.md`](signoz/DASHBOARDS_AND_ALERTS.md).
 
 The small Compose override keeps the local OTLP pipelines active before the first SigNoz owner finishes UI onboarding. Without it, the pre-onboarding OpAMP default can temporarily replace trace, metric, and log pipelines with no-op pipelines.
 
@@ -206,7 +221,8 @@ npm run smoke-test
 npm run evals
 ```
 
-The 24-test browser suite covers Chromium, Firefox, WebKit and Pixel 7 layouts,
+The browser suite runs 24 deterministic tests across Chromium, Firefox, WebKit
+and Pixel 7, plus four opt-in paid live-service tests. It covers
 including real PDF extraction, navigation, the continuous lesson studio, nine
 storyboard scenes, independent film narration, every language option,
 localization, questions, quiz, reset, error recovery and microphone feedback.
@@ -229,6 +245,12 @@ The catalog uses reviewed educational media from USGS, NASA, NOAA and NPS. Every
 - Retrieval is safe by construction but limited to the reviewed 12-video corpus. Unsupported topics fail instead of showing an unreviewed or irrelevant clip.
 - Regional-language localization and composed narration are generated on demand and can take roughly 30–45 seconds each.
 - VideoDB SDK `indexAudio` upgrades currently return an HTTP 500 for this collection; the production path uses the working spoken-word and visual-scene indexes and remains functional.
+- VideoDB’s CDN segments do not send browser CORS headers consistently. The
+  production player therefore uses a host-allowlisted same-origin proxy for
+  manifests and segments.
+- The currently supplied ElevenLabs key is rejected with HTTP 401. Production
+  remains usable because automatic routing falls back to the verified Sarvam
+  voice service; replace the key to exercise ElevenLabs specifically.
 - The revision reel currently targets the first missed concept.
 - Self-hosted SigNoz is healthy in local Docker. Vercel telemetry uses
   `@vercel/otel` and is ready for a SigNoz Cloud endpoint or authenticated

@@ -26,6 +26,9 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
       const video = ref.current;
       if (!video || !src) return;
       setFailed(false);
+      const playbackSrc = src.startsWith("https://stream.videodb.io/")
+        ? `/api/media/proxy?url=${encodeURIComponent(src)}`
+        : src;
 
       if (Hls.isSupported()) {
         const hls = new Hls({
@@ -33,7 +36,7 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
           lowLatencyMode: false,
           startFragPrefetch: true,
         });
-        hls.on(Hls.Events.MEDIA_ATTACHED, () => hls.loadSource(src));
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => hls.loadSource(playbackSrc));
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (!data.fatal) return;
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
@@ -53,7 +56,7 @@ export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(
       }
 
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = src;
+        video.src = playbackSrc;
       }
     }, [retryKey, src]);
 
