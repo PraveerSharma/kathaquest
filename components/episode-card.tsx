@@ -50,6 +50,9 @@ export function EpisodeCard({
   const [fallbackUsed, setFallbackUsed] = useState(false);
   const [error, setError] = useState<string>();
   const languageName = getLessonLanguage(language).label;
+  const hasVideo =
+    episode.mediaMode !== "visual_explainer" &&
+    Boolean(episode.streamUrl || episode.evidence[0]?.mediaUrl);
 
   function resetLocalizedMedia() {
     audioRef.current?.pause();
@@ -129,6 +132,10 @@ export function EpisodeCard({
     targetLanguage: LessonLanguage,
     targetProvider: VoiceProviderPreference,
   ) {
+    if (!hasVideo) {
+      onNarrationStatusChange?.(episode.id, "ready");
+      return;
+    }
     setError(undefined);
     setLoading(true);
     onNarrationStatusChange?.(episode.id, "loading");
@@ -187,12 +194,20 @@ export function EpisodeCard({
   useEffect(() => {
     const requestKey = `${lessonId}:${episode.id}:${language}:${providerPreference}`;
     if (preparedRequestRef.current === requestKey) return;
-    preparedRequestRef.current = requestKey;
-    resetLocalizedMedia();
-    void requestLocalizedVideo(language, providerPreference);
+    const timer = window.setTimeout(() => {
+      if (preparedRequestRef.current === requestKey) return;
+      preparedRequestRef.current = requestKey;
+      resetLocalizedMedia();
+      if (!hasVideo) {
+        onNarrationStatusChange?.(episode.id, "ready");
+        return;
+      }
+      void requestLocalizedVideo(language, providerPreference);
+    }, 0);
+    return () => window.clearTimeout(timer);
     // This request is intentionally keyed to the lesson-wide controls.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [episode.id, language, lessonId, providerPreference]);
+  }, [episode.id, hasVideo, language, lessonId, providerPreference]);
 
   async function prepareLocalizedVideo() {
     setError(undefined);
@@ -218,25 +233,50 @@ export function EpisodeCard({
     <article aria-busy={loading} className="episode-card">
       <div className="episode-layout">
         <div className="video-shell">
-          <HlsPlayer
-            fallbackEndSeconds={episode.evidence[0]?.endSeconds}
-            fallbackSrc={episode.evidence[0]?.mediaUrl}
-            fallbackStartSeconds={episode.evidence[0]?.startSeconds}
-            onSourceFallback={() => {
-              if (!showLocalized || !audioUrl) return;
-              setLocalizedStream(undefined);
-              setShowLocalized(true);
-              setSyncMode("browser");
-            }}
-            ref={videoRef}
-            src={
-              showLocalized && localizedStream
-                ? localizedStream
-                : episode.streamUrl
-            }
-          />
+          {hasVideo ? (
+            <HlsPlayer
+              fallbackEndSeconds={episode.evidence[0]?.endSeconds}
+              fallbackSrc={episode.evidence[0]?.mediaUrl}
+              fallbackStartSeconds={episode.evidence[0]?.startSeconds}
+              onSourceFallback={() => {
+                if (!showLocalized || !audioUrl) return;
+                setLocalizedStream(undefined);
+                setShowLocalized(true);
+                setSyncMode("browser");
+              }}
+              ref={videoRef}
+              src={
+                showLocalized && localizedStream
+                  ? localizedStream
+                  : episode.streamUrl
+              }
+            />
+          ) : (
+            <div
+              aria-label={`Visual explainer preview for ${episode.title}`}
+              className="visual-explainer-preview"
+            >
+              <span className="visual-preview-badge">
+                Chapter-grounded visual
+              </span>
+              <strong>{episode.title}</strong>
+              <div aria-hidden="true" className="visual-preview-flow">
+                <span>Source</span>
+                <i />
+                <span>Diagram</span>
+                <i />
+                <span>Idea</span>
+              </div>
+              <small>
+                The complete lesson animates this idea with labels, captions,
+                Maya, and narration.
+              </small>
+            </div>
+          )}
           <div className="video-frame-caption">
-            {showLocalized
+            {!hasVideo
+              ? `${languageName} narrated diagram in the complete film`
+              : showLocalized
               ? `${languageName} narrated video`
               : loading
                 ? `Preparing ${languageName} narration`
@@ -246,7 +286,11 @@ export function EpisodeCard({
         <div className="episode-content">
           <div className="episode-kicker">
             <span>Episode {index + 1}</span>
-            <span>{formatDuration(episode.durationSeconds)}</span>
+            <span>
+              {hasVideo
+                ? formatDuration(episode.durationSeconds)
+                : "Visual explainer"}
+            </span>
           </div>
           <h3>{episode.title}</h3>
           <p className="episode-explanation">{episode.explanation}</p>
@@ -254,30 +298,36 @@ export function EpisodeCard({
             <span>From your chapter{episode.sourcePage ? ` · page ${episode.sourcePage}` : ""}</span>
             “{episode.sourceQuote}”
           </blockquote>
-          <div className="video-language-actions">
-            <button
-              className="listen-button"
-              disabled={loading}
-              onClick={prepareLocalizedVideo}
-              aria-busy={loading}
-              type="button"
-            >
-              {loading
-                ? `Preparing ${languageName} voice...`
-                : audioUrl
-                  ? `Replay in ${languageName}`
-                  : `Try ${languageName} voice again`}
-            </button>
-            {showLocalized ? (
+          {hasVideo ? (
+            <div className="video-language-actions">
               <button
-                className="text-button"
-                onClick={hearOriginalAudio}
+                className="listen-button"
+                disabled={loading}
+                onClick={prepareLocalizedVideo}
+                aria-busy={loading}
                 type="button"
               >
-                Hear original audio
+                {loading
+                  ? `Preparing ${languageName} voice...`
+                  : audioUrl
+                    ? `Replay in ${languageName}`
+                    : `Try ${languageName} voice again`}
               </button>
-            ) : null}
-          </div>
+              {showLocalized ? (
+                <button
+                  className="text-button"
+                  onClick={hearOriginalAudio}
+                  type="button"
+                >
+                  Hear original audio
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <a className="listen-button visual-lesson-link" href={`/lesson/${lessonId}`}>
+              Watch the narrated visual
+            </a>
+          )}
           <audio ref={audioRef} src={audioUrl} />
           {loading ? (
             <div
@@ -303,11 +353,14 @@ export function EpisodeCard({
           ) : null}
           {error ? <div className="form-error">{error}</div> : null}
           <div className="why-box">
-            <strong>Why this clip?</strong>
+            <strong>
+              {hasVideo ? "Why this clip?" : "Why a visual explainer?"}
+            </strong>
             {episode.whyThisClip}
           </div>
-          <div className="evidence-list">
-            {episode.evidence.map((evidence) => (
+          {episode.evidence.length > 0 ? (
+            <div className="evidence-list">
+              {episode.evidence.map((evidence) => (
               <div
                 className="evidence-row"
                 key={`${evidence.videoId}-${evidence.startSeconds}`}
@@ -335,15 +388,24 @@ export function EpisodeCard({
                 ) : (
                   <span>{evidence.videoTitle}</span>
                 )}
-                <span>• {evidence.licence ?? "Licence documented"}</span>
+                <span>| {evidence.licence ?? "Licence documented"}</span>
                 {evidence.selectionReason ? (
                   <small className="evidence-reason">
                     {evidence.selectionReason}
                   </small>
                 ) : null}
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="coverage-fallback-note">
+              <strong>No unrelated footage was substituted.</strong>
+              <span>
+                The lesson stays useful with source-grounded visuals while the
+                VideoDB library grows.
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </article>

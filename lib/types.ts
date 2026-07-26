@@ -149,6 +149,7 @@ export type LessonPresentation = {
 export type Episode = {
   id: string;
   conceptId: string;
+  mediaMode?: "videodb" | "visual_explainer";
   title: string;
   explanation: string;
   sourceQuote: string;

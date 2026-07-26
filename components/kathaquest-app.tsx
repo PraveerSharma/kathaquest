@@ -14,6 +14,25 @@ import type {
   LessonResponse,
 } from "@/lib/types";
 
+const sampleChapters = [
+  {
+    id: "bees",
+    title: "How Bees Help Plants Grow",
+    description: "Pollination and plant life",
+    fileName: "How_Bees_Help_Plants_Grow.pdf",
+    href: "/sample-chapters/how-bees-help-plants-grow.pdf",
+    experience: "Real footage and diagrams",
+  },
+  {
+    id: "sound",
+    title: "How Sound Travels",
+    description: "Vibrations, waves, and hearing",
+    fileName: "How_Sound_Travels.pdf",
+    href: "/sample-chapters/how-sound-travels.pdf",
+    experience: "Diagram-first fallback ready",
+  },
+] as const;
+
 function BookIcon({ id }: { id: string }) {
   const paths: Record<string, React.ReactNode> = {
     volcanoes: <path d="m5 18 4-9 3 4 2-7 5 12H5Zm7-12 1-3m2 4 2-3" />,
@@ -64,6 +83,8 @@ export function KathaQuestApp({
   const [phase, setPhase] = useState<"input" | "generating">("input");
   const [error, setError] = useState<string>();
   const [extractingPdf, setExtractingPdf] = useState(false);
+  const [sampleLoading, setSampleLoading] = useState<string>();
+  const [dragActive, setDragActive] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -114,6 +135,33 @@ export function KathaQuestApp({
       setError(caught instanceof Error ? caught.message : "Could not read PDF");
     } finally {
       setExtractingPdf(false);
+    }
+  }
+
+  async function loadSamplePdf(sample: (typeof sampleChapters)[number]) {
+    setSampleLoading(sample.id);
+    setError(undefined);
+    try {
+      const response = await fetch(sample.href);
+      if (!response.ok) {
+        throw new Error("The sample PDF could not be loaded.");
+      }
+      const file = new File([await response.blob()], sample.fileName, {
+        type: "application/pdf",
+      });
+      await uploadPdf(file);
+      personalizeRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "The sample PDF could not be loaded.",
+      );
+    } finally {
+      setSampleLoading(undefined);
     }
   }
 
@@ -224,21 +272,99 @@ export function KathaQuestApp({
             </div>
 
             <div className="builder-controls" ref={personalizeRef}>
-              <label className="upload-zone">
-                <input
-                  accept="application/pdf"
-                  disabled={!hydrated}
-                  onChange={(event) => uploadPdf(event.target.files?.[0])}
-                  type="file"
-                />
-                <span className="upload-icon" aria-hidden="true">
-                  <svg fill="none" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
-                </span>
-                <span>
-                  <strong>{extractingPdf ? "Reading your PDF..." : "Upload your own chapter"}</strong>
-                  <small>Text-based PDF · up to 10 MB</small>
-                </span>
-              </label>
+              <div className="upload-workbench">
+                <div className="sample-heading">
+                  <div>
+                    <span className="eyebrow">Quick judge test</span>
+                    <h3>Try a ready PDF</h3>
+                  </div>
+                  <p>Use one now, or download it and test drag and drop below.</p>
+                </div>
+                <div className="sample-pdf-list">
+                  {sampleChapters.map((sample) => {
+                    const loading = sampleLoading === sample.id;
+                    return (
+                      <article className="sample-pdf-card" key={sample.id}>
+                        <span className="sample-pdf-mark" aria-hidden="true">
+                          PDF
+                        </span>
+                        <span className="sample-pdf-copy">
+                          <strong>{sample.title}</strong>
+                          <small>{sample.description} | 5 pages</small>
+                          <em>{sample.experience}</em>
+                        </span>
+                        <span className="sample-pdf-actions">
+                          <button
+                            aria-busy={loading}
+                            className="sample-use-button"
+                            disabled={extractingPdf || !hydrated}
+                            onClick={() => void loadSamplePdf(sample)}
+                            type="button"
+                          >
+                            {loading ? "Loading..." : "Use this PDF"}
+                          </button>
+                          <a
+                            className="sample-download-link"
+                            download={sample.fileName}
+                            href={sample.href}
+                          >
+                            Download
+                          </a>
+                        </span>
+                      </article>
+                    );
+                  })}
+                </div>
+                <label
+                  aria-busy={extractingPdf}
+                  className={`upload-zone ${dragActive ? "drag-active" : ""}`}
+                  onDragEnter={(event) => {
+                    event.preventDefault();
+                    setDragActive(true);
+                  }}
+                  onDragLeave={(event) => {
+                    event.preventDefault();
+                    const nextTarget = event.relatedTarget;
+                    if (
+                      !(nextTarget instanceof Node) ||
+                      !event.currentTarget.contains(nextTarget)
+                    ) {
+                      setDragActive(false);
+                    }
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragActive(true);
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    setDragActive(false);
+                    void uploadPdf(event.dataTransfer.files?.[0]);
+                  }}
+                >
+                  <input
+                    accept="application/pdf"
+                    disabled={!hydrated || extractingPdf}
+                    onChange={(event) =>
+                      void uploadPdf(event.target.files?.[0])
+                    }
+                    type="file"
+                  />
+                  <span className="upload-icon" aria-hidden="true">
+                    <svg fill="none" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
+                  </span>
+                  <span>
+                    <strong>
+                      {extractingPdf
+                        ? "Reading your PDF..."
+                        : dragActive
+                          ? "Drop it here"
+                          : "Drop your chapter PDF here"}
+                    </strong>
+                    <small>Or choose from your device | text-based | up to 10 MB</small>
+                  </span>
+                </label>
+              </div>
 
               <div className="personalize-card">
                 <span className="eyebrow">Step 2 · Personalize</span>

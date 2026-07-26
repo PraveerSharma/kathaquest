@@ -25,6 +25,9 @@ export const telemetry = {
   emptyVideoResults: meter.createCounter(
     "kathaquest.videodb.empty_results",
   ),
+  visualFallbacks: meter.createCounter(
+    "kathaquest.lesson.visual_fallbacks",
+  ),
   ttsRequestDuration: meter.createHistogram(
     "kathaquest.tts.request.duration",
     { unit: "ms" },

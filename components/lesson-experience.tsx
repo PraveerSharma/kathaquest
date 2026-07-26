@@ -224,6 +224,13 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
       </main>
     );
   }
+  const reviewedVideoCount = lesson.episodes.filter(
+    (episode) =>
+      episode.mediaMode !== "visual_explainer" &&
+      episode.evidence.length > 0,
+  ).length;
+  const visualFallbackCount =
+    lesson.episodes.length - reviewedVideoCount;
 
   return (
     <main
@@ -254,7 +261,12 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
             <span>
               ✓ {Math.round(presentation.storyboard.totalDurationSeconds / 60)} minute lesson
             </span>
-            <span>✓ {lesson.episodes.length} reviewed evidence chapters</span>
+            {reviewedVideoCount > 0 ? (
+              <span>✓ {reviewedVideoCount} reviewed video {reviewedVideoCount === 1 ? "chapter" : "chapters"}</span>
+            ) : null}
+            {visualFallbackCount > 0 ? (
+              <span>✓ {visualFallbackCount} chapter-grounded visual {visualFallbackCount === 1 ? "chapter" : "chapters"}</span>
+            ) : null}
           </div>
         </div>
         <div className="studio-heading-actions">

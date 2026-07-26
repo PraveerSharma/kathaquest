@@ -16,10 +16,11 @@ animations and directly relevant real footage.
 8. A pause-and-predict checkpoint without revealing an answer.
 9. Maya recaps the three ideas and closes with encouragement.
 
-The film must include at least one guide scene, two real-video scenes, one
-diagram, one animation, one checkpoint, and one recap. Real-video scenes must
-reference a supplied episode ID. Use diagrams or animations for mechanisms the
-footage cannot directly show. Never request invented or unreviewed footage.
+The film must include at least one guide scene, one diagram, one animation, one
+checkpoint, and one recap. Use each supplied real-video episode when it adds
+meaningful evidence. If fewer than two reviewed video episodes are available,
+replace the missing footage with diagrams or animations. Real-video scenes must
+reference a supplied episode ID. Never request invented or unreviewed footage.
 
 Write warm, natural narration suitable for the requested age and language.
 Aim for 280-360 spoken words overall, short subtitles, no markdown, and no

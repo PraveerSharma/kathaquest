@@ -206,6 +206,12 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
   const narrationPreparing = Object.values(narrationStatuses).some(
     (status) => status === "loading",
   );
+  const videoEpisodeCount = lesson.episodes.filter(
+    (episode) =>
+      episode.mediaMode !== "visual_explainer" &&
+      episode.evidence.length > 0,
+  ).length;
+  const visualEpisodeCount = lesson.episodes.length - videoEpisodeCount;
   const busy = localizing || narrationPreparing;
   return (
     <main
@@ -228,7 +234,7 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
             </strong>
             {localizing
               ? "Captions, explanations, questions and quiz are being translated."
-              : "Every lesson reel is receiving the same kid-friendly learning language."}
+              : "Every visual and video is receiving the same kid-friendly learning language."}
           </span>
         </div>
       ) : null}
@@ -238,12 +244,17 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
             <span className="eyebrow">Your video adventure is ready</span>
             <h1>{lesson.title}</h1>
             <p>
-              One scripted lesson film plus three deep evidence chapters,
-              all grounded in your source.
+              One scripted lesson film plus three source-grounded learning
+              chapters, using reviewed footage only when it truly fits.
             </p>
             <div className="lesson-trust">
-              <span><CheckIcon /> {Math.round(lesson.overallCoverage * 100)}% evidence match</span>
-              <span><CheckIcon /> All clips kid-safe</span>
+              {videoEpisodeCount > 0 ? (
+                <span><CheckIcon /> {videoEpisodeCount} reviewed video {videoEpisodeCount === 1 ? "chapter" : "chapters"}</span>
+              ) : null}
+              {visualEpisodeCount > 0 ? (
+                <span><CheckIcon /> {visualEpisodeCount} chapter-grounded visual {visualEpisodeCount === 1 ? "chapter" : "chapters"}</span>
+              ) : null}
+              <span><CheckIcon /> No weak footage substituted</span>
               <span><CheckIcon /> Answers hidden securely</span>
             </div>
           </div>

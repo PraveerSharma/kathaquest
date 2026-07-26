@@ -2,7 +2,12 @@ import path from "node:path";
 
 import { expect, test, type Page } from "@playwright/test";
 
-import type { Episode, PublicLearningConcept } from "../../lib/types";
+import type {
+  Episode,
+  LessonLanguage,
+  PublicLearningConcept,
+  PublicLesson,
+} from "../../lib/types";
 
 const lessonId = "11111111-1111-4111-8111-111111111111";
 const episodeIds = [
@@ -112,7 +117,10 @@ function presentation(
   };
 }
 
-function lesson(language = "en-IN", localized = false) {
+function lesson(
+  language: LessonLanguage = "en-IN",
+  localized = false,
+): PublicLesson {
   const titles = localized
     ? ["ম্যাগমা ও লাভা", "অগ্ন্যুৎপাত", "নিরাপদ পর্যবেক্ষণ"]
     : ["Magma and lava", "How eruptions happen", "Watching volcanoes safely"];
@@ -141,6 +149,7 @@ function lesson(language = "en-IN", localized = false) {
   const episodes = concepts.map((concept, index) => ({
     id: episodeIds[index],
     conceptId: concept.id,
+    mediaMode: "videodb" as const,
     title: concept.title,
     explanation: concept.explanation,
     sourceQuote: concept.sourceQuote,
@@ -185,6 +194,27 @@ function lesson(language = "en-IN", localized = false) {
   };
 }
 
+function lessonWithVisualFallback() {
+  const result = lesson();
+  result.episodes[0] = {
+    ...result.episodes[0],
+    mediaMode: "visual_explainer",
+    streamUrl: "",
+    durationSeconds: 0,
+    evidence: [],
+    coverageScore: 0,
+    whyThisClip:
+      "No reviewed VideoDB clip passed the relevance, duration, and kid-safety gates for this concept. KathaQuest kept the explanation grounded in the uploaded chapter and switched to diagrams and animation.",
+  };
+  result.fallbackUsed = true;
+  result.overallCoverage =
+    result.episodes.reduce(
+      (total, episode) => total + episode.coverageScore,
+      0,
+    ) / result.episodes.length;
+  return result;
+}
+
 async function mockGeneratedLesson(page: Page) {
   await page.route("**/api/lessons/generate", async (route) => {
     await route.fulfill({
@@ -219,6 +249,18 @@ test("chapter selection, all languages, and real PDF extraction are usable", asy
   await language.selectOption("ta-IN");
   await expect(language).toHaveValue("ta-IN");
 
+  await expect(page.locator(".sample-pdf-card")).toHaveCount(2);
+  await expect(
+    page.getByRole("link", { name: "Download" }).first(),
+  ).toHaveAttribute(
+    "href",
+    "/sample-chapters/how-bees-help-plants-grow.pdf",
+  );
+  await page.getByRole("button", { name: "Use this PDF" }).nth(1).click();
+  await expect(page.getByText(/How_Sound_Travels\.pdf/)).toBeVisible({
+    timeout: 20_000,
+  });
+
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(
     path.resolve("Chapter_Pack/02_the_water_cycle.pdf"),
@@ -229,6 +271,50 @@ test("chapter selection, all languages, and real PDF extraction are usable", asy
   await expect(
     page.getByRole("button", { name: /Create my video adventure/i }),
   ).toBeEnabled();
+});
+
+test("missing VideoDB coverage becomes an honest visual lesson instead of a dead end", async ({
+  page,
+}) => {
+  let narrationRequests = 0;
+  await page.route("**/api/lessons/generate", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        lessonId,
+        status: "ready",
+        lesson: lessonWithVisualFallback(),
+        lessonToken: "kq1.visual-fallback-token-that-is-long-enough",
+      }),
+    });
+  });
+  await page.route("**/api/narration", async (route) => {
+    narrationRequests += 1;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        audioUrl: "data:audio/mpeg;base64,SUQz",
+        provider: "sarvam",
+        fallbackUsed: false,
+        syncMode: "browser",
+      }),
+    });
+  });
+
+  await openReadyApp(page);
+  await page.locator(".chapter-card").first().click();
+  await page.getByRole("button", { name: /Create my video adventure/i }).click();
+  await expect(page).toHaveURL(new RegExp(`/adventure/${lessonId}$`), {
+    timeout: 15_000,
+  });
+  await expect(page.locator(".visual-explainer-preview")).toHaveCount(1);
+  await expect(
+    page.getByText("No unrelated footage was substituted.").first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Watch the narrated visual" }),
+  ).toHaveAttribute("href", `/lesson/${lessonId}`);
+  await expect.poll(() => narrationRequests).toBe(2);
 });
 
 test("complete lesson workflow stays clear through language, video, Q&A, quiz, and reset", async ({

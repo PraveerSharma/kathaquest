@@ -124,14 +124,18 @@ export async function generateLesson({
           );
           return curatedLesson;
         }
-        let chapter:
-          | Awaited<ReturnType<typeof extractConcepts>>
-          | undefined;
-        let retrievals:
-          | Array<Awaited<ReturnType<typeof retrieveEpisodeEvidence>>>
+        type ChapterPlan = Awaited<ReturnType<typeof extractConcepts>>;
+        type EpisodeRetrieval = Awaited<
+          ReturnType<typeof retrieveEpisodeEvidence>
+        >;
+        let bestAttempt:
+          | {
+              chapter: ChapterPlan;
+              retrievals: Array<EpisodeRetrieval | undefined>;
+              matchedCount: number;
+            }
           | undefined;
         const excludedConcepts: string[] = [];
-        let lastRetrievalError: unknown;
 
         for (let attempt = 1; attempt <= 3; attempt += 1) {
           const plan = await extractConcepts({
@@ -146,22 +150,22 @@ export async function generateLesson({
           const failedIndexes = attemptedRetrievals.flatMap((result, index) =>
             result.status === "rejected" ? [index] : [],
           );
+          const successfulRetrievals = attemptedRetrievals.map((result) =>
+            result.status === "fulfilled" ? result.value : undefined,
+          );
+          const matchedCount =
+            successfulRetrievals.filter(Boolean).length;
+          if (!bestAttempt || matchedCount > bestAttempt.matchedCount) {
+            bestAttempt = {
+              chapter: plan,
+              retrievals: successfulRetrievals,
+              matchedCount,
+            };
+          }
           if (failedIndexes.length === 0) {
-            chapter = plan;
-            retrievals = attemptedRetrievals.map((result) => {
-              if (result.status !== "fulfilled") {
-                throw new Error("Unexpected retrieval planning state");
-              }
-              return result.value;
-            });
             break;
           }
 
-          const firstFailure = attemptedRetrievals[failedIndexes[0]];
-          lastRetrievalError =
-            firstFailure.status === "rejected"
-              ? firstFailure.reason
-              : undefined;
           excludedConcepts.push(
             ...failedIndexes.map((index) => {
               const concept = plan.concepts[index];
@@ -172,6 +176,7 @@ export async function generateLesson({
             {
               event: "lesson.plan_retried",
               attempt,
+              matchedConcepts: matchedCount,
               rejectedConcepts: failedIndexes.map(
                 (index) => plan.concepts[index].title,
               ),
@@ -180,25 +185,48 @@ export async function generateLesson({
           );
         }
 
-        if (!chapter || !retrievals) {
-          throw lastRetrievalError instanceof Error
-            ? lastRetrievalError
-            : new Error(
-                "The reviewed video archive does not yet cover three chapter concepts",
-              );
+        if (!bestAttempt) {
+          throw new Error("KathaQuest could not build a chapter lesson plan");
         }
+        const { chapter, retrievals } = bestAttempt;
+        const visualFallbackCount = retrievals.filter(
+          (retrieval) => !retrieval,
+        ).length;
+        const videoMatchCount = retrievals.length - visualFallbackCount;
         span.setAttributes({
           "chapter.title": chapter.chapterTitle,
           "pipeline.status": "searching",
+          "video.matched_concept_count": videoMatchCount,
+          "video.visual_fallback_count": visualFallbackCount,
+          "pipeline.degraded_mode":
+            visualFallbackCount > 0 ? "visual_explainer" : "none",
         });
+        if (visualFallbackCount > 0) {
+          telemetry.visualFallbacks.add(visualFallbackCount, {
+            source: sourceKind,
+          });
+          logger.warn(
+            {
+              event: "lesson.visual_fallback",
+              lessonId,
+              videoMatchCount,
+              visualFallbackCount,
+              concepts: chapter.concepts
+                .filter((_, index) => !retrievals[index])
+                .map((concept) => concept.title),
+            },
+            "Reviewed archive coverage was incomplete; using chapter-grounded visual explainers",
+          );
+        }
 
         const concepts = await Promise.all(
           chapter.concepts.map((concept, index) =>
             createGroundedConcept({
               concept,
-              evidence: retrievals[index].search.evidence,
+              evidence: retrievals[index]?.search.evidence ?? [],
               ageGroup,
               language,
+              chapterContext: retrievals[index] ? undefined : chapterText,
             }),
           ),
         );
@@ -207,7 +235,28 @@ export async function generateLesson({
           "answer",
         );
         const episodes: Episode[] = concepts.map((concept, index) => {
-          const { search, rewriteUsed } = retrievals[index];
+          const retrieval = retrievals[index];
+          if (!retrieval) {
+            const selectionSummary =
+              "No reviewed VideoDB clip passed the relevance, duration, and kid-safety gates for this concept. KathaQuest kept the explanation grounded in the uploaded chapter and switched to diagrams and animation.";
+            return {
+              id: randomUUID(),
+              conceptId: concept.id,
+              mediaMode: "visual_explainer",
+              title: concept.title,
+              explanation: concept.explanation,
+              sourceQuote: concept.sourceQuote,
+              sourcePage: concept.sourcePage,
+              whyThisClip: selectionSummary,
+              streamUrl: "",
+              durationSeconds: 0,
+              evidence: [],
+              coverageScore: 0,
+              kidSafe: true,
+              selectionSummary,
+            };
+          }
+          const { search, rewriteUsed } = retrieval;
           const durationSeconds = search.evidence.reduce(
             (total, item) =>
               total + Math.max(0, item.endSeconds - item.startSeconds),
@@ -216,6 +265,7 @@ export async function generateLesson({
           return {
             id: randomUUID(),
             conceptId: concept.id,
+            mediaMode: "videodb",
             title: concept.title,
             explanation: concept.explanation,
             sourceQuote: concept.sourceQuote,
@@ -282,6 +332,7 @@ export async function generateLesson({
           presentation,
           traceId: span.spanContext().traceId,
           generationTimeMs: Math.round(duration),
+          fallbackUsed: visualFallbackCount > 0,
           overallCoverage,
           sourceKind,
           createdAt: new Date().toISOString(),
