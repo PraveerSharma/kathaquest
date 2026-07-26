@@ -1,0 +1,15 @@
+:8099 {
+  @otlp path /v1/traces /v1/metrics /v1/logs
+  handle @otlp {
+    reverse_proxy host.docker.internal:4318
+  }
+
+  @mcp path /mcp /mcp/*
+  handle @mcp {
+    reverse_proxy host.docker.internal:8000
+  }
+
+  handle {
+    reverse_proxy host.docker.internal:8080
+  }
+}

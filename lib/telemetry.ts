@@ -7,7 +7,6 @@ import {
   type Span,
 } from "@opentelemetry/api";
 
-const tracer = trace.getTracer("kathaquest.pipeline");
 const meter = metrics.getMeter("kathaquest.pipeline");
 
 export const telemetry = {
@@ -50,7 +49,7 @@ export async function withSpan<T>(
   attributes: Attributes,
   task: (span: Span) => Promise<T>,
 ): Promise<T> {
-  return tracer.startActiveSpan(
+  return trace.getTracer("kathaquest.pipeline").startActiveSpan(
     name,
     { kind: SpanKind.INTERNAL, attributes },
     async (span) => {

@@ -20,6 +20,9 @@ IMAGE_VIDEO_RENDERER_URL=http://localhost:8090
 IMAGE_VIDEO_RENDERER_API_KEY=replace-with-a-long-random-value
 ```
 
-For production, run this container behind HTTPS on ECS or EKS, use the same
-private API token on both sides, and put `/assets` behind persistent object
-storage or a shared CDN volume before using more than one replica.
+The production AWS stack does not keep this container running. Its HTTPS job
+API writes a request to S3, starts one Fargate task with `worker.py`, persists
+status in DynamoDB, uploads the MP4 to a private S3 bucket fronted by
+CloudFront, and then exits. The web application polls the returned `statusUrl`.
+This keeps Manim and FFmpeg outside Vercel without paying for an idle renderer,
+NAT Gateway, or load balancer.

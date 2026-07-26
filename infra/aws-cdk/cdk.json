@@ -1,0 +1,9 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/kathaquest-aws.ts",
+  "context": {
+    "@aws-cdk/core:bootstrapQualifier": "kathaquest",
+    "@aws-cdk/aws-ec2:restrictDefaultSecurityGroup": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true,
+    "@aws-cdk/aws-s3:createDefaultLoggingPolicy": true
+  }
+}

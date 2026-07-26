@@ -1,0 +1,22 @@
+{
+  "name": "kathaquest-aws",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit",
+    "synth": "cdk synth --strict",
+    "diff": "cdk diff --strict",
+    "deploy": "cdk deploy --strict --require-approval broadening"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.262.1",
+    "cdk-nag": "3.0.1",
+    "constructs": "10.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.13",
+    "aws-cdk": "2.1133.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
+  }
+}

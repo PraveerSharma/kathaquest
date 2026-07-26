@@ -14,5 +14,7 @@ export default defineConfig([
     "playwright-report/**",
     "test-results/**",
     ".playwright-cli/**",
+    "infra/aws-cdk/cdk.out/**",
+    "infra/aws-cdk/node_modules/**",
   ]),
 ]);

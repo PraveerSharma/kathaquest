@@ -12,7 +12,11 @@ import type {
 
 type RenderResponse = {
   videoUrl?: string;
+  jobId?: string;
+  status?: "queued" | "running" | "ready" | "failed";
+  statusUrl?: string;
   error?: string;
+  message?: string;
 };
 
 let imageClient: OpenAI | undefined;
@@ -48,22 +52,54 @@ async function callRenderer(
   apiKey: string | undefined,
   body: Record<string, unknown>,
 ): Promise<string> {
+  const headers = {
+    ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+    "content-type": "application/json",
+  };
   const response = await fetch(new URL("/render", baseUrl), {
     method: "POST",
-    headers: {
-      ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
-      "content-type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(110_000),
+    signal: AbortSignal.timeout(30_000),
   });
   const result = (await response.json()) as RenderResponse;
-  if (!response.ok || !result.videoUrl) {
+  if (!response.ok) {
     throw new Error(
-      result.error ?? `Visual renderer failed (HTTP ${response.status})`,
+      result.error ??
+        result.message ??
+        `Visual renderer failed (HTTP ${response.status})`,
     );
   }
-  return result.videoUrl;
+  if (result.videoUrl) return result.videoUrl;
+  if (!result.jobId && !result.statusUrl) {
+    throw new Error("Visual renderer returned neither a video nor a job");
+  }
+
+  const statusUrl = result.statusUrl
+    ? new URL(result.statusUrl, baseUrl)
+    : new URL(`/jobs/${result.jobId}`, baseUrl);
+  const deadline = Date.now() + 170_000;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 2_500));
+    const statusResponse = await fetch(statusUrl, {
+      headers,
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+    const status = (await statusResponse.json()) as RenderResponse;
+    if (!statusResponse.ok) {
+      throw new Error(
+        status.error ??
+          status.message ??
+          `Visual render status failed (HTTP ${statusResponse.status})`,
+      );
+    }
+    if (status.status === "ready" && status.videoUrl) return status.videoUrl;
+    if (status.status === "failed") {
+      throw new Error(status.error ?? "Visual render job failed");
+    }
+  }
+  throw new Error("Visual render job timed out");
 }
 
 async function renderManimScene(
