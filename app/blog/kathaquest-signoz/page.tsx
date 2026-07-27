@@ -12,7 +12,7 @@ export const metadata = {
 export default function KathaQuestSigNozBlog() {
   return (
     <main>
-      <SiteHeader active="blog" />
+      <SiteHeader active="signoz-blog" />
       <article className="blog-article container">
         <header className="blog-hero">
           <p className="eyebrow">BUILD STORY · SIGNOZ</p>

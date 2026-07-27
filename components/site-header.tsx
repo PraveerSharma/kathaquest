@@ -9,7 +9,8 @@ export function SiteHeader({
     | "adventure"
     | "lesson"
     | "observability"
-    | "blog";
+    | "signoz-blog"
+    | "videodb-blog";
 }) {
   return (
     <header className="site-header container">
@@ -58,15 +59,27 @@ export function SiteHeader({
           </span>
         </Link>
         <Link
-          aria-label="Build story"
-          aria-current={active === "blog" ? "page" : undefined}
+          aria-label="SigNoz engineering story"
+          aria-current={active === "signoz-blog" ? "page" : undefined}
           href="/blog/kathaquest-signoz"
         >
           <span aria-hidden="true" className="nav-long">
-            Build story
+            SigNoz story
           </span>
           <span aria-hidden="true" className="nav-short">
-            Story
+            SigNoz
+          </span>
+        </Link>
+        <Link
+          aria-label="VideoDB engineering story"
+          aria-current={active === "videodb-blog" ? "page" : undefined}
+          href="/blog/kathaquest-videodb"
+        >
+          <span aria-hidden="true" className="nav-long">
+            VideoDB story
+          </span>
+          <span aria-hidden="true" className="nav-short">
+            VideoDB
           </span>
         </Link>
       </nav>

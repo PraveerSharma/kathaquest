@@ -684,4 +684,24 @@ test("Mission Control makes live SigNoz signals understandable", async ({
     "BUILD STORY · SIGNOZ",
   );
   await expect(page.getByText(/SIGNOZ HACKATHON 2026/i)).toHaveCount(0);
+
+  await page.goto("/");
+  await expect(
+    page.getByRole("link", { name: "SigNoz engineering story" }),
+  ).toHaveAttribute("href", "/blog/kathaquest-signoz");
+  await expect(
+    page.getByRole("link", { name: "VideoDB engineering story" }),
+  ).toHaveAttribute("href", "/blog/kathaquest-videodb");
+
+  await page.goto("/blog/kathaquest-videodb");
+  await expect(page.locator(".blog-hero .eyebrow")).toHaveText(
+    "BUILD STORY | VIDEODB",
+  );
+  await expect(
+    page.getByRole("heading", {
+      name: /I stopped asking VideoDB for a clip/i,
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".blog-article figure img")).toHaveCount(3);
+  await expect(page.locator(".blog-wide-figure img")).toHaveCount(1);
 });

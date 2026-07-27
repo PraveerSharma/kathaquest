@@ -6,7 +6,7 @@ KathaQuest is an AI lesson studio. It reads a science chapter, creates a
 source-grounded lesson plan, writes an educational script, builds a nine-scene
 storyboard, and renders one continuous Remotion film from real footage,
 animated diagrams, highlighted keywords, subtitles and Maya the Explorer.
-Children can change content and audio independently among 11 Indian languages,
+Children can change the complete lesson and audio among 11 Indian languages,
 ask a typed or spoken question, and get a grounded answer with video only when
 the archive contains direct evidence.
 
@@ -22,6 +22,28 @@ automatically continues from the exact reviewed timestamp range in the original
 public source.
 
 ![KathaQuest home screen](public/demo/home.png)
+
+## VideoDB hackathon submission
+
+**One-line pitch, 114 characters:** KathaQuest turns any science chapter into a multilingual lesson grounded in timestamped, kid-safe VideoDB footage.
+
+**Short description, under 200 words:** KathaQuest is an AI lesson studio for
+children. A learner chooses a prepared science chapter or uploads a text-based
+PDF. The app plans three learning objectives, writes a complete explanation,
+and searches a collection of 12 real educational videos from NASA, NOAA, USGS,
+and NPS. VideoDB provides media ingest, spoken-word and scene indexes,
+collection search, timestamped retrieval, HLS compilation, and Editor Timeline
+composition for translated narration. KathaQuest pools several focused
+queries, keeps only reviewed all-ages sources, removes overlapping results, and
+uses a structured relevance gate before any clip reaches the child. Retrieved
+moments become evidence chapters, real-footage scenes in one Remotion lesson,
+follow-up answers, and quiz revision reels. When the collection lacks a strong
+match, KathaQuest uses a chapter-grounded diagram instead of unrelated footage.
+The lesson remains useful without weakening trust.
+
+- [Live product](https://kathaquest.vercel.app)
+- [VideoDB build story](https://kathaquest.vercel.app/blog/kathaquest-videodb)
+- Demo video: `public/demo/kathaquest-videodb-demo.mp4` after rendering
 
 ## Why it exists
 
@@ -244,7 +266,11 @@ The catalog uses reviewed educational media from USGS, NASA, NOAA and NPS. Every
   persistent multi-device history still needs a database and authentication.
 - Rate limiting is best-effort per runtime instance. A distributed limiter should replace it before large public traffic.
 - Uploaded PDFs are text-based and capped at 10 MB; OCR is not included.
-- Retrieval is safe by construction but limited to the reviewed 12-video corpus. Unsupported topics fail instead of showing an unreviewed or irrelevant clip.
+- Retrieval is safe by construction but limited to the reviewed 12-video
+  corpus, so not every chapter concept has matching footage.
+- When a reviewed VideoDB match remains unavailable after query rewriting and
+  lesson replanning, the concept becomes a source-grounded visual explainer.
+  The UI states that no unrelated footage was substituted.
 - Regional-language localization and composed narration are generated on demand and can take roughly 30–45 seconds each.
 - VideoDB SDK `indexAudio` upgrades currently return an HTTP 500 for this collection; the production path uses the working spoken-word and visual-scene indexes and remains functional.
 - VideoDB’s CDN segments do not send browser CORS headers consistently. The

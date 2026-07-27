@@ -107,6 +107,52 @@
   text-align: center;
 }
 
+.blog-wide-figure {
+  margin: 64px calc(50% - 50vw);
+  padding-inline: max(16px, calc((100vw - 1180px) / 2));
+}
+
+.blog-wide-figure img {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+.blog-fact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 30px 0;
+}
+
+.blog-fact-grid article {
+  border: 1px solid #d9d0bd;
+  border-radius: 20px;
+  background: #fffdf7;
+  padding: 22px;
+}
+
+.blog-fact-grid span {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.blog-fact-grid strong {
+  display: block;
+  margin: 8px 0 6px;
+  color: #17233a;
+  font-size: 20px;
+}
+
+.blog-fact-grid p {
+  margin: 0;
+  color: #5c6678;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .blog-cta {
   align-items: center;
   background: #f4d56f;
@@ -144,6 +190,10 @@
 
   .blog-cta-actions {
     justify-content: flex-start;
+  }
+
+  .blog-fact-grid {
+    grid-template-columns: 1fr;
   }
 }
 
