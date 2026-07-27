@@ -1,0 +1,199 @@
+{
+  "totalFrames": 3973,
+  "segments": [
+    {
+      "eyebrow": "01 · THE USE CASE",
+      "headline": "A chapter should become one lesson",
+      "visual": {
+        "kind": "video",
+        "src": "demo-video-work/01-home.mp4"
+      },
+      "audio": "demo-video-work/narration-3648c896598d.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 173,
+          "text": "A textbook chapter can explain a process, but children often need to see it move."
+        },
+        {
+          "startFrame": 173,
+          "endFrame": 431,
+          "text": "KathaQuest turns that chapter into one interactive lesson instead of sending a learner through a pile of short, loosely related clips."
+        }
+      ],
+      "durationInFrames": 431,
+      "startFrame": 0
+    },
+    {
+      "eyebrow": "02 · LESSON DESIGN",
+      "headline": "Plan first. Search second.",
+      "visual": {
+        "kind": "video",
+        "src": "demo-video-work/01-home.mp4"
+      },
+      "audio": "demo-video-work/narration-80aec34891b5.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 225,
+          "text": "The learner selects a chapter or uploads a PDF, chooses an age and language, then starts the build."
+        },
+        {
+          "startFrame": 225,
+          "endFrame": 478,
+          "text": "KathaQuest extracts three source-quoted objectives, writes the educational script, and plans a nine-scene storyboard before it asks for footage."
+        }
+      ],
+      "durationInFrames": 478,
+      "startFrame": 431
+    },
+    {
+      "eyebrow": "03 · VIDEODB ARCHIVE",
+      "headline": "Search speech and what the camera sees",
+      "visual": {
+        "kind": "image",
+        "src": "blog/videodb-architecture.svg"
+      },
+      "audio": "demo-video-work/narration-77d2544039dc.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 239,
+          "text": "VideoDB holds twelve real educational videos from NASA, NOAA, the US Geological Survey, and the National Park Service."
+        },
+        {
+          "startFrame": 239,
+          "endFrame": 548,
+          "text": "The ingestion job creates spoken-word and visual scene indexes, so narration and what the camera actually shows can both answer a search."
+        }
+      ],
+      "durationInFrames": 548,
+      "startFrame": 909
+    },
+    {
+      "eyebrow": "04 · EVIDENCE RETRIEVAL",
+      "headline": "Keep only the moments that teach",
+      "visual": {
+        "kind": "video",
+        "src": "demo-video-work/02-adventure.mp4"
+      },
+      "audio": "demo-video-work/narration-ef929ce4f664.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 354,
+          "text": "For each objective, KathaQuest runs focused queries across both indexes, pools the timestamps, removes overlaps, checks the reviewed-source allowlist, and uses a precision reviewer."
+        },
+        {
+          "startFrame": 354,
+          "endFrame": 413,
+          "text": "Only strong moments survive."
+        },
+        {
+          "startFrame": 413,
+          "endFrame": 709,
+          "text": "VideoDB then compiles complementary ranges into a playable evidence reel with the source, licence, and exact time beside it."
+        }
+      ],
+      "durationInFrames": 709,
+      "startFrame": 1457
+    },
+    {
+      "eyebrow": "05 · ONE LESSON FILM",
+      "headline": "Real footage meets a programmable story",
+      "visual": {
+        "kind": "video",
+        "src": "demo-video-work/03-lesson-studio.mp4"
+      },
+      "audio": "demo-video-work/narration-c760a17278fa.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 83,
+          "text": "The retrieved moments feed one Remotion lesson."
+        },
+        {
+          "startFrame": 83,
+          "endFrame": 249,
+          "text": "Maya guides the child through diagrams, captions, real footage, and a pause to predict."
+        },
+        {
+          "startFrame": 249,
+          "endFrame": 536,
+          "text": "The learner can change the whole lesson language, ask a spoken question, or revisit a missed idea with a shorter VideoDB revision reel."
+        }
+      ],
+      "durationInFrames": 536,
+      "startFrame": 2166
+    },
+    {
+      "eyebrow": "06 · HONEST FALLBACK",
+      "headline": "The archive is allowed to say no",
+      "visual": {
+        "kind": "image",
+        "src": "blog/videodb-lesson-studio.png"
+      },
+      "audio": "demo-video-work/narration-1f2ba0fcde69.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 283,
+          "text": "Our Sound chapter had no strong match, so KathaQuest kept the chapter-grounded explanation and rendered diagrams instead of lowering the threshold."
+        },
+        {
+          "startFrame": 283,
+          "endFrame": 434,
+          "text": "That makes every VideoDB clip meaningful when one does appear."
+        }
+      ],
+      "durationInFrames": 434,
+      "startFrame": 2702
+    },
+    {
+      "eyebrow": "07 · PRODUCTION PROOF",
+      "headline": "Every lesson is visible in SigNoz",
+      "visual": {
+        "kind": "video",
+        "src": "demo-video-work/04-observability.mp4"
+      },
+      "audio": "demo-video-work/narration-9fedd9121e44.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 176,
+          "text": "A live SigNoz dashboard traces planning, retrieval, composition, and narration, including latency and relevance."
+        },
+        {
+          "startFrame": 176,
+          "endFrame": 506,
+          "text": "The two engineering stories explain both sides of the build: how VideoDB turns footage into evidence, and how SigNoz shows whether that pipeline is healthy."
+        }
+      ],
+      "durationInFrames": 506,
+      "startFrame": 3136
+    },
+    {
+      "eyebrow": "08 · READY TO EXPLORE",
+      "headline": "An AI lesson studio grounded in real media",
+      "visual": {
+        "kind": "video",
+        "src": "demo-video-work/05-videodb-story.mp4"
+      },
+      "audio": "demo-video-work/narration-61b97279dce2.mp3",
+      "captions": [
+        {
+          "startFrame": 0,
+          "endFrame": 131,
+          "text": "KathaQuest is an AI lesson studio grounded in real media."
+        },
+        {
+          "startFrame": 131,
+          "endFrame": 331,
+          "text": "The app, public repository, build stories, and this working demo are ready to explore."
+        }
+      ],
+      "durationInFrames": 331,
+      "startFrame": 3642
+    }
+  ]
+}

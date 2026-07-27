@@ -43,7 +43,7 @@ The lesson remains useful without weakening trust.
 
 - [Live product](https://kathaquest.vercel.app)
 - [VideoDB build story](https://kathaquest.vercel.app/blog/kathaquest-videodb)
-- Demo video: `public/demo/kathaquest-videodb-demo.mp4` after rendering
+- [132-second captioned product demo](https://kathaquest.vercel.app/demo/kathaquest-videodb-hackathon-demo.mp4)
 
 ## Why it exists
 
@@ -59,8 +59,8 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
    lesson plan, complete script and executable storyboard.
 4. Open the Lesson Studio and play one 3–4 minute hybrid film containing Maya,
    diagrams, animations, real footage, captions, keywords and a checkpoint.
-5. Change content language or choose a different film-audio language and voice
-   engine independently.
+5. Change the learning language once to update the lesson, captions, quiz and
+   film narration together.
 6. Ask a typed or spoken question and complete the quiz; missed concepts create
    a VideoDB revision reel.
 7. Inspect the matching trace, metrics and structured logs in SigNoz.

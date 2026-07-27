@@ -16,7 +16,9 @@
     "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
     "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts",
     "signoz:configure": "node --import tsx scripts/configure-signoz.ts",
-    "demo:render": "node scripts/render-hackathon-demo.mjs",
+    "demo:capture": "node scripts/capture-videodb-demo.mjs",
+    "demo:render": "node scripts/render-videodb-demo.mjs",
+    "demo:render:signoz": "node scripts/render-hackathon-demo.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -43,6 +45,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@playwright/test": "^1.62.0",
+    "@remotion/cli": "^4.0.499",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^24.10.13",
     "@types/react": "^19.2.14",
