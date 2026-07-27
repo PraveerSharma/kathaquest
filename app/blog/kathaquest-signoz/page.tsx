@@ -201,7 +201,7 @@ await withSpan("lesson.generate", {
             who wants the story quickly.
           </p>
           <p>
-            I added a public Mission Control page inside KathaQuest. It reads
+            I added a public SigNoz Live Dashboard inside KathaQuest. It reads
             safe aggregates from the SigNoz ClickHouse store and refreshes every
             fifteen seconds. It shows lesson success, p95 generation time,
             relevance, dependency calls, trace traffic, and recent semantic
@@ -212,8 +212,8 @@ await withSpan("lesson.generate", {
           <p>
             The lesson detail page still shows its own trace ID and generation
             time. That gives me two useful levels: a learner can report one
-            problematic lesson, while Mission Control shows whether the problem
-            is part of a pattern.
+            problematic lesson, while the live dashboard shows whether the
+            problem is part of a pattern.
           </p>
         </section>
 
@@ -279,7 +279,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`}</code>
             </div>
             <div className="blog-cta-actions">
               <Link className="secondary-button" href="/observability">
-                Open Mission Control
+                Open SigNoz Live Dashboard
               </Link>
               <Link className="primary-button" href="/content">
                 Try KathaQuest

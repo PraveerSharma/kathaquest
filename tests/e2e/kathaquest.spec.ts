@@ -617,7 +617,7 @@ test("microphone-unavailable feedback is explicit", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Mission Control makes live SigNoz signals understandable", async ({
+test("SigNoz Live Dashboard makes telemetry understandable", async ({
   page,
 }) => {
   await page.route("**/api/observability/summary", async (route) => {
