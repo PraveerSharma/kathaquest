@@ -29,7 +29,7 @@ Every successful lesson contains:
 - `StoryboardScene`: timing, narration, subtitle, keywords, transition,
   diagram template, animation style, footage reference and evidence references.
 
-`lesson-presentation-v1.0.0` is the versioned structured-output prompt. Zod
+`lesson-presentation-v1.1.0` is the versioned structured-output prompt. Zod
 validates its result. If the AI output violates the contract, a deterministic
 chapter-grounded storyboard keeps the user journey usable.
 

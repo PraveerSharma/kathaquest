@@ -5,6 +5,10 @@ import { consumeElevenLabsFailure } from "@/lib/demo-state";
 import { lessonLanguageCodes } from "@/lib/languages";
 import { openLesson } from "@/lib/lesson-session";
 import { localizeNarrationText } from "@/lib/llm";
+import {
+  composeSceneNarration,
+  NARRATION_RENDER_VERSION,
+} from "@/lib/narration-style";
 import { generateNarration } from "@/lib/narration-router";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { assertKidSafeText } from "@/lib/safety";
@@ -62,11 +66,14 @@ export async function POST(request: Request) {
             lesson.presentation.storyboard.scenes.length,
         },
         async () => {
+          const storyboardScript = composeSceneNarration(
+            lesson.presentation!.storyboard.scenes,
+          );
           const script =
             lesson.language === input.language
-              ? lesson.presentation!.script.fullNarration
+              ? storyboardScript
               : await localizeNarrationText(
-                  lesson.presentation!.script.fullNarration,
+                  storyboardScript,
                   input.language,
                 );
           await assertKidSafeText(script, "answer");
@@ -81,10 +88,12 @@ export async function POST(request: Request) {
           telemetry.presentationNarrations.add(1, {
             language: input.language,
             provider: narration.provider,
+            style: NARRATION_RENDER_VERSION,
           });
           return {
             ...narration,
             language: input.language,
+            narrationStyle: NARRATION_RENDER_VERSION,
             durationSeconds:
               lesson.presentation!.storyboard.totalDurationSeconds,
           };

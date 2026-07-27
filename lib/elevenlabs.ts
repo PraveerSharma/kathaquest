@@ -1,6 +1,10 @@
 import "server-only";
 
 import { requireEnv } from "@/lib/env";
+import {
+  NARRATION_RENDER_VERSION,
+  prepareElevenLabsNarration,
+} from "@/lib/narration-style";
 import { telemetry, withSpan } from "@/lib/telemetry";
 
 export async function generateElevenLabsNarration(
@@ -13,6 +17,7 @@ export async function generateElevenLabsNarration(
     {
       "ai.provider": "elevenlabs",
       "ai.model": "eleven_multilingual_v2",
+      "ai.prompt_version": NARRATION_RENDER_VERSION,
       "ai.input_size": text.length,
       "tts.provider": "elevenlabs",
     },
@@ -23,7 +28,7 @@ export async function generateElevenLabsNarration(
       }
 
       const response = await fetch(
-        `https://api.elevenlabs.io/v1/text-to-speech/${requireEnv("ELEVENLABS_VOICE_ID")}`,
+        `https://api.elevenlabs.io/v1/text-to-speech/${requireEnv("ELEVENLABS_VOICE_ID")}?output_format=mp3_44100_128`,
         {
           method: "POST",
           headers: {
@@ -32,8 +37,15 @@ export async function generateElevenLabsNarration(
             accept: "audio/mpeg",
           },
           body: JSON.stringify({
-            text: text.slice(0, 5_000),
+            text: prepareElevenLabsNarration(text).slice(0, 9_500),
             model_id: "eleven_multilingual_v2",
+            voice_settings: {
+              stability: 0.52,
+              similarity_boost: 0.76,
+              style: 0,
+              use_speaker_boost: true,
+              speed: 0.92,
+            },
           }),
         },
       );

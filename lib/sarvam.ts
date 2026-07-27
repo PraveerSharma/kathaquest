@@ -3,6 +3,10 @@ import "server-only";
 import { requireEnv } from "@/lib/env";
 import { getLessonLanguage } from "@/lib/languages";
 import { logger } from "@/lib/logger";
+import {
+  NARRATION_RENDER_VERSION,
+  prepareSarvamNarration,
+} from "@/lib/narration-style";
 import { telemetry, withSpan } from "@/lib/telemetry";
 import type { LessonLanguage } from "@/lib/types";
 
@@ -12,15 +16,14 @@ type SarvamTtsResponse = {
 };
 
 function narrationChunks(text: string, maxCharacters = 2_300) {
-  const sentences = text
-    .trim()
-    .split(/(?<=[.!?।])\s+/u)
+  const paragraphs = prepareSarvamNarration(text)
+    .split(/\n{2,}/)
     .filter(Boolean);
   const chunks: string[] = [];
   let current = "";
 
   function pushPart(part: string) {
-    const candidate = current ? `${current} ${part}` : part;
+    const candidate = current ? `${current}\n\n${part}` : part;
     if (candidate.length <= maxCharacters) {
       current = candidate;
       return;
@@ -29,13 +32,13 @@ function narrationChunks(text: string, maxCharacters = 2_300) {
     current = part;
   }
 
-  for (const sentence of sentences) {
-    if (sentence.length <= maxCharacters) {
-      pushPart(sentence);
+  for (const paragraph of paragraphs) {
+    if (paragraph.length <= maxCharacters) {
+      pushPart(paragraph);
       continue;
     }
     let section = "";
-    for (const word of sentence.split(/\s+/)) {
+    for (const word of paragraph.split(/\s+/)) {
       const candidate = section ? `${section} ${word}` : word;
       if (candidate.length > maxCharacters && section) {
         pushPart(section);
@@ -60,6 +63,7 @@ export async function generateSarvamNarration(
     {
       "ai.provider": "sarvam",
       "ai.model": "bulbul:v3",
+      "ai.prompt_version": NARRATION_RENDER_VERSION,
       "ai.input_size": text.length,
       "lesson.language": language,
       "tts.provider": "sarvam",
@@ -84,9 +88,8 @@ export async function generateSarvamNarration(
             speaker: voice.speaker,
             output_audio_codec: "mp3",
             speech_sample_rate: 48_000,
-            pace: 0.92,
-            temperature: 0.6,
-            enable_preprocessing: true,
+            pace: 0.88,
+            temperature: 0.72,
           }),
         });
 
@@ -125,6 +128,7 @@ export async function generateSarvamNarration(
           provider: "sarvam",
           language,
           speaker: voice.speaker,
+          narrationStyle: NARRATION_RENDER_VERSION,
           durationMs: duration,
           chunkCount: chunks.length,
           requestIds,

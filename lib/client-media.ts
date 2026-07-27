@@ -9,7 +9,8 @@ export type PreparedMedia = {
   syncMode?: "videodb-timeline" | "browser";
 };
 
-const databaseName = "kathaquest-media-v1";
+export const narrationCacheVersion = "warm-storyteller-v2";
+const databaseName = "kathaquest-media-v2";
 const storeName = "prepared-media";
 const fallbackPrefix = "kathaquest.media.";
 const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
@@ -82,7 +83,7 @@ export function episodeMediaKey({
   lessonId: string;
   provider: string;
 }) {
-  return `episode:${lessonId}:${episodeId}:${language}:${provider}`;
+  return `episode:${narrationCacheVersion}:${lessonId}:${episodeId}:${language}:${provider}`;
 }
 
 export function filmMediaKey({
@@ -94,7 +95,7 @@ export function filmMediaKey({
   lessonId: string;
   provider: string;
 }) {
-  return `film:${lessonId}:${language}:${provider}`;
+  return `film:${narrationCacheVersion}:${lessonId}:${language}:${provider}`;
 }
 
 export async function readPreparedMedia(
