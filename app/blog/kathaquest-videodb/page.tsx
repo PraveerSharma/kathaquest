@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata = {
   title: "How KathaQuest Uses VideoDB to Turn Footage into Teaching Evidence",
   description:
-    "A practical account of building a child-safe educational retrieval and video composition pipeline with VideoDB.",
+    "An honest build story about using VideoDB retrieval, review, stitching, and timelines inside a multilingual AI lesson studio.",
 };
 
 export default function KathaQuestVideoDbBlog() {
@@ -16,23 +16,21 @@ export default function KathaQuestVideoDbBlog() {
       <article className="blog-article container">
         <header className="blog-hero">
           <p className="eyebrow">BUILD STORY | VIDEODB</p>
-          <h1>
-            I stopped asking VideoDB for a clip. I started asking it for
-            evidence.
-          </h1>
+          <h1>A related video is not always a useful lesson.</h1>
           <p className="blog-deck">
-            KathaQuest turns a school chapter into one narrated lesson. VideoDB
-            is the part that finds the real-world moments, preserves their
-            sources, and refuses to bluff when the archive has nothing useful.
+            KathaQuest turns a school chapter into a narrated, interactive
+            lesson. VideoDB finds the real-world evidence, keeps its source and
+            timestamp attached, and gives the presentation engine something
+            concrete to teach with.
           </p>
           <div className="blog-byline">
             <span>By Praveer Sharma</span>
-            <span>9 minute read</span>
+            <span>10 minute read</span>
           </div>
         </header>
 
         <Image
-          alt="KathaQuest home screen with the Water Cycle chapter selected"
+          alt="KathaQuest home screen with a prepared chapter ready to use"
           className="blog-cover"
           height={1000}
           priority
@@ -42,41 +40,88 @@ export default function KathaQuestVideoDbBlog() {
 
         <section>
           <p>
-            The first version of KathaQuest did something that looked good in a
-            quick demo. It read a chapter, extracted a few topics, searched for
-            related footage, and put the clips on a page.
+            The first KathaQuest prototype was easy to explain. Give it a
+            chapter, extract a few topics, search for matching footage, and
+            place the clips on a page. It worked in a demo. Then I tried to
+            learn from it.
           </p>
           <p>
-            Then I watched it as if I were eight years old. A dramatic shot of
-            lava is great at showing what an eruption looks like. It does not
-            explain why magma rises, what pressure changes, or how a vent
-            forms. The search result was related to the subject, but it was not
-            teaching the idea.
+            A dramatic lava shot can show what an eruption looks like. It
+            cannot, by itself, explain why magma rises or how pressure builds
+            below the surface. The result was related to the chapter, yet the
+            child still had to make the important connection alone.
           </p>
           <p>
-            That distinction changed the product. KathaQuest now plans the
-            lesson before it searches for media. It writes three learning
-            objectives, a complete explanation, and a nine-scene storyboard.
-            VideoDB receives a specific job for each objective: find a real
-            moment that can support this exact part of the explanation.
+            That test changed the job I gave VideoDB. KathaQuest no longer asks
+            it to decorate a topic. The lesson planner first decides what the
+            child should understand. VideoDB then searches for a moment that
+            can support one specific part of that explanation.
           </p>
         </section>
+
+        <section>
+          <h2>What happens after a chapter arrives</h2>
+          <p>
+            A learner can choose one of the prepared chapters or upload a
+            text-based PDF. KathaQuest extracts the source, checks it for
+            safety, and creates three learning objectives. Those objectives
+            become the script and storyboard for a complete session.
+          </p>
+          <pre>
+            <code>{`Chapter PDF
+  -> source extraction and safety check
+  -> lesson plan and three learning objectives
+  -> educational script
+  -> objective-specific VideoDB searches
+  -> evidence review and timestamp selection
+  -> nine-scene hybrid storyboard
+  -> Remotion lesson with narration
+  -> questions, quiz, and revision`}</code>
+          </pre>
+          <p>
+            The storyboard mixes several kinds of teaching material. Real
+            footage shows events that a camera can capture. Diagrams and
+            deterministic animation handle mechanisms that are hard to see,
+            such as sound waves, pressure, or the movement of magma below the
+            crust. Maya the Explorer guides the child through captions,
+            highlighted terms, and short checkpoints.
+          </p>
+          <p>
+            This split matters. Asking a stock clip to explain an invisible
+            process usually produces a pretty distraction. Asking footage to
+            show the real world, while a diagram explains the mechanism, gives
+            each medium a sensible job.
+          </p>
+        </section>
+
+        <figure className="blog-wide-figure">
+          <Image
+            alt="Architecture diagram showing chapter planning, VideoDB search, evidence review, composition, and interactive learning"
+            height={900}
+            src="/blog/videodb-architecture.svg"
+            unoptimized
+            width={1600}
+          />
+          <figcaption>
+            The chapter decides what to teach. VideoDB supplies reviewed
+            evidence for the parts that benefit from real footage.
+          </figcaption>
+        </figure>
 
         <section>
           <h2>The archive is small on purpose</h2>
           <p>
             The current collection contains 12 reviewed educational videos from
             NASA, NOAA, the US Geological Survey, and the US National Park
-            Service. These are actual archived media files. The seeding script
-            uploads each source URL to VideoDB and records its licence, source
-            page, age range, subject tags, and safety review.
+            Service. The seeding process uploads each source URL to VideoDB and
+            records its authority, licence, subject tags, age range, and safety
+            review.
           </p>
           <p>
-            I could have indexed a much larger pile of web video. That would
-            have improved the chance of a keyword match while making it harder
-            to answer two basic questions: Can a child watch this safely, and
-            are we allowed to use it? Every runtime candidate must map back to
-            the reviewed catalog before KathaQuest will show it.
+            A much larger collection would produce more keyword matches. It
+            would also make two basic questions harder to answer: Can a child
+            watch this, and can we trace where it came from? KathaQuest only
+            accepts a runtime result when it maps back to the reviewed catalog.
           </p>
           <pre>
             <code>{`const uploaded = await collection.uploadURL({
@@ -97,184 +142,215 @@ await uploaded.indexScenes({
 });`}</code>
           </pre>
           <p>
-            Spoken-word indexing finds explanations, definitions, and
-            cause-and-effect statements in narration. Scene indexing handles
-            the evidence that nobody says aloud: water boiling in a pan,
-            droplets forming, a lava fountain emerging from a fissure, or a
-            planet moving around the Sun. The scene prompt asks VideoDB to
-            describe what is visible across three frames and to avoid inferring
-            facts that are not on screen.
+            Spoken-word indexing finds definitions and cause-and-effect
+            explanations in narration. Scene indexing covers evidence that may
+            never be spoken aloud: droplets forming, lava emerging from a
+            fissure, or a planet moving around the Sun. The scene prompt
+            describes what is visible across several frames and avoids
+            guessing beyond the image.
           </p>
         </section>
 
-        <figure className="blog-wide-figure">
-          <Image
-            alt="Architecture diagram showing how KathaQuest plans a lesson, searches VideoDB, reviews evidence, and composes the final experience"
-            height={900}
-            src="/blog/videodb-architecture.svg"
-            unoptimized
-            width={1600}
-          />
-          <figcaption>
-            VideoDB is the evidence layer inside a wider lesson-planning and
-            presentation pipeline.
-          </figcaption>
-        </figure>
-
         <section>
-          <h2>One objective becomes several searches</h2>
+          <h2>Search twice, then review again</h2>
           <p>
-            A single broad query such as &quot;water cycle&quot; tends to return
-            introductions and attractive establishing shots. KathaQuest asks
-            OpenAI for up to three retrieval queries per learning objective,
-            then runs each query against both spoken and scene indexes.
+            Broad searches such as &quot;water cycle&quot; often return
+            introductions or attractive establishing shots. KathaQuest writes
+            up to three focused queries for each learning objective and sends
+            every query to the spoken-word and visual-scene indexes.
           </p>
           <p>
-            The results are pooled and overlapping timestamps are removed.
-            Topic tags add a small boost, but they cannot rescue a weak moment.
-            A structured reviewer reads the objective beside the transcript or
-            scene description and keeps only candidates with at least 0.55
-            confidence. It also writes the reason shown to the learner.
+            The results enter a shared candidate pool. The pipeline removes
+            overlapping moments, rejects anything outside the approved source
+            list, and adds only a small topic boost. A structured reviewer then
+            reads the learning objective beside each transcript or scene
+            description.
+          </p>
+          <p>
+            Lesson footage needs at least 0.62 review confidence and 0.57
+            combined confidence. A child&apos;s follow-up question uses stricter
+            gates: 0.68 review confidence and 0.61 combined confidence. A weak
+            semantic score cannot be rescued by a nice title.
           </p>
           <pre>
-            <code>{`chapter objective
-  -> 3 focused search queries
+            <code>{`learning objective
+  -> up to 3 focused queries
   -> spoken index + scene index
   -> reviewed-source allowlist
-  -> overlap removal and topic boost
-  -> LLM precision review
+  -> overlap removal
+  -> structured precision review
   -> timestamp context expansion
   -> VideoDB HLS compilation`}</code>
           </pre>
           <p>
-            Useful moments are expanded to include enough context, then up to
-            four complementary ranges are compiled into one HLS episode. A
-            generated evidence chapter must contain at least 50 seconds of
-            material. This rule is intentionally demanding. Five seconds of a
-            volcano is a reaction clip, not a lesson.
+            Accepted moments are expanded so the child sees enough context.
+            VideoDB then compiles as many as four complementary ranges into one
+            HLS evidence chapter. A full lesson episode needs at least 50
+            seconds of approved material. Five seconds of an eruption may be
+            memorable, but it is not enough to teach the concept.
           </p>
           <figure>
             <Image
-              alt="A real KathaQuest Water Cycle adventure with reviewed VideoDB evidence and timestamps"
+              alt="A KathaQuest Water Cycle adventure with reviewed VideoDB evidence and timestamps"
               height={1000}
               src="/blog/videodb-adventure.png"
               width={1440}
             />
             <figcaption>
-              The UI keeps the VideoDB source, exact timestamp, licence, and
-              review confidence next to the explanation.
+              Every accepted clip keeps its source, licence, timestamp,
+              retrieval type, and review reason.
             </figcaption>
           </figure>
         </section>
 
         <section>
-          <h2>Retrieval is only half of the VideoDB work</h2>
+          <h2>Sometimes the correct video is no video</h2>
           <p>
-            The selected evidence ranges remain programmable media. VideoDB
-            compiles them into a browser-playable stream for each deep-dive
-            chapter. When a learner changes language, KathaQuest asks Sarvam for
-            a new narration track, uploads that audio to VideoDB, lowers the
-            source audio, and lays both tracks onto an Editor Timeline. The
-            generated stream keeps the original sequence and receives the new
-            voice.
+            I tested the pipeline with <em>How Sound Travels</em>. The current
+            archive covers volcanoes, water, space, plants, and butterflies. It
+            does not contain a reviewed source that properly explains
+            vibration, pitch, and the ear.
           </p>
           <p>
-            The same retrieval path is reused after the lesson. A typed or
-            spoken question searches the archive for a direct answer. A missed
-            quiz concept can request a shorter revision reel. VideoDB is not a
-            one-time import step; it remains available while the child is
-            learning.
+            Lowering the relevance threshold would have filled the page. It
+            also would have told the child that a loosely related clip was
+            evidence. KathaQuest instead rewrites the search once. If nothing
+            strong survives, it keeps the chapter-grounded explanation and
+            routes that scene to SVG diagrams and Remotion animation.
           </p>
           <p>
-            The complete film uses Remotion to combine those evidence ranges
-            with diagrams, captions, highlighted terms, Maya the Explorer, and
-            a pause-and-predict scene. Real footage is strongest when it shows
-            the world. A diagram is stronger when the lesson needs to show an
-            invisible mechanism.
+            The interface states what happened. There is no dead player and no
+            unrelated replacement. The page may look less full in that case,
+            but the lesson is more honest.
+          </p>
+        </section>
+
+        <section>
+          <h2>VideoDB stays useful after retrieval</h2>
+          <p>
+            The approved ranges remain programmable media. VideoDB compiles
+            them into a browser-playable evidence stream. For localized
+            evidence reels, KathaQuest creates a new narration track, uploads
+            the audio to VideoDB, lowers the original audio, and combines both
+            tracks with Editor Timeline.
+          </p>
+          <p>
+            The complete session uses Remotion to place those timestamped
+            ranges beside diagrams, captions, transitions, and Maya. Children
+            can play the whole film or jump to a single scene. The evidence
+            chapters remain available as deeper source material rather than
+            disappearing inside the composition.
+          </p>
+          <p>
+            The learning-language control applies to the entire experience.
+            English and ten Indian regional languages are supported. Changing
+            it localizes the lesson text, questions, quiz, captions, and
+            narration while preserving the verified source facts.
           </p>
           <figure>
             <Image
-              alt="KathaQuest lesson studio composing VideoDB footage with diagrams and captions"
+              alt="KathaQuest Lesson Studio combining VideoDB footage with diagrams, captions, and navigation"
               height={1000}
               src="/blog/videodb-lesson-studio.png"
               width={1440}
             />
             <figcaption>
-              The Lesson Studio turns retrieved evidence into one continuous
-              teaching sequence instead of a playlist.
+              The Lesson Studio presents one teaching sequence instead of a
+              playlist of loosely connected clips.
             </figcaption>
           </figure>
         </section>
 
         <section>
-          <h2>The Sound chapter found nothing, and that was useful</h2>
+          <h2>A follow-up question now becomes a small lesson</h2>
           <p>
-            I tested the pipeline with a chapter called{" "}
-            <em>How Sound Travels</em>. The collection has videos about
-            volcanoes, water, space, plants, and butterflies. It does not yet
-            contain a reviewed source that explains vibration, pitch, or the
-            ear.
+            The &quot;Still curious?&quot; section began as a text box. It now
+            uses the same media pipeline on a smaller scale. The child types or
+            speaks a question and gets a short answer grounded in the full
+            chapter. KathaQuest then checks VideoDB for direct evidence and
+            builds a 40 to 70 second Curiosity Clip.
           </p>
           <p>
-            The old pipeline failed the whole lesson. The tempting fix was to
-            lower the relevance threshold until something appeared. I chose the
-            opposite. KathaQuest now tries a rewritten search and replans around
-            the archive up to three times. If no strong footage survives, the
-            concept becomes a chapter-grounded visual explainer with diagrams,
-            motion, captions, and narration. The interface says why.
+            Each clip has four scenes: Maya introduces the question, a diagram
+            models the mechanism, an evidence scene uses approved footage or an
+            animation, and a checkpoint asks the child to recall or predict.
+            Two narration acts keep the voice synchronized with the scene
+            timing. Prepared clips are cached in the browser, so returning to
+            the lesson does not start the work again.
           </p>
           <p>
-            A production run of that PDF completed in 105 seconds and returned
-            three visual explainers with zero substituted clips. This is not a
-            failure of VideoDB. It is the boundary that makes the VideoDB
-            results trustworthy. The product can stay useful without pretending
-            that a loosely related video is evidence.
+            During the production check for the magma question, the archive did
+            not return strong enough footage. The system used animation and
+            answered from the original chapter: magma often rises because it is
+            less dense than the surrounding rock, while heat and trapped gases
+            help push it through cracks. The resulting clip ran for 65 seconds
+            and passed the internal grounding check at 100.
+          </p>
+          <p>
+            That result is a better demonstration of the product than forcing
+            a volcano clip into the answer. VideoDB searched, the precision gate
+            said no, and the lesson still explained the science.
           </p>
         </section>
 
         <section>
-          <h2>What VideoDB changed for KathaQuest</h2>
+          <h2>The quiz can send the learner back to the evidence</h2>
+          <p>
+            After the session, the quiz is checked against answers stored only
+            inside the encrypted lesson token. If the learner misses a concept,
+            KathaQuest can run a shorter VideoDB search and compile a revision
+            reel for that idea. The same source rules and relevance review still
+            apply.
+          </p>
+          <p>
+            OpenTelemetry traces record the search, review, compilation,
+            localization, Curiosity Clip, narration, and revision steps.
+            SigNoz then shows where a slow or empty VideoDB search affected the
+            lesson. This has been useful because an empty result and a provider
+            failure need different fixes.
+          </p>
+        </section>
+
+        <section>
+          <h2>What VideoDB contributes today</h2>
           <div className="blog-fact-grid">
             <article>
               <span>Ingest</span>
-              <strong>12 real educational sources</strong>
-              <p>Every asset retains its authority, licence, and safety record.</p>
+              <strong>12 reviewed educational sources</strong>
+              <p>Each asset keeps its authority, licence, and safety record.</p>
             </article>
             <article>
               <span>Understand</span>
-              <strong>Two complementary indexes</strong>
-              <p>Spoken explanations and visual evidence are searched together.</p>
+              <strong>Spoken and visual indexes</strong>
+              <p>Explanations and visible events are searched together.</p>
             </article>
             <article>
-              <span>Act</span>
-              <strong>Playable edited outputs</strong>
-              <p>Selected timestamps become lesson, question, and revision reels.</p>
+              <span>Compose</span>
+              <strong>Timestamped HLS evidence reels</strong>
+              <p>Approved ranges become playable chapters and revisions.</p>
             </article>
             <article>
               <span>Localize</span>
-              <strong>New audio on the same evidence</strong>
-              <p>Editor Timeline keeps the footage while narration changes language.</p>
+              <strong>Narration on the same footage</strong>
+              <p>Editor Timeline keeps the evidence while the language changes.</p>
             </article>
           </div>
           <p>
-            The next archive work is clear. I want curriculum metadata, teacher
-            approved gold moments, and a coverage report that shows which
-            learning objectives still need footage. The current collection is
-            enough to prove the workflow. It is not yet broad enough to support
-            every science chapter, and the product now says so plainly.
+            The archive is still the limiting factor. It needs curriculum
+            metadata, more subjects, and teacher-approved reference moments.
+            Those are practical next steps, not reasons to relax the current
+            quality gate.
           </p>
           <p>
-            KathaQuest began as PDF-to-video. It is becoming an AI lesson studio
-            where the chapter decides what to teach, VideoDB supplies the
-            real-world evidence, and the presentation engine explains what the
-            camera cannot see.
+            KathaQuest started as PDF to video. The current product is closer to
+            an AI lesson studio: the chapter supplies the facts, VideoDB finds
+            trustworthy real-world moments, and the presentation engine
+            explains the parts that footage cannot show.
           </p>
           <div className="blog-cta">
             <div>
-              <h2>Try the evidence pipeline</h2>
-              <p>
-                Start with a prepared chapter or upload your own school PDF.
-              </p>
+              <h2>Try the current workflow</h2>
+              <p>Choose a prepared chapter or upload your own school PDF.</p>
             </div>
             <div className="blog-cta-actions">
               <a
