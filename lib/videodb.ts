@@ -249,6 +249,15 @@ export async function searchEducationalArchive(
         for (const selected of review.selected) {
           const candidate = candidateById.get(selected.id);
           if (!candidate) continue;
+          const combinedConfidence =
+            selected.confidence * 0.68 +
+            Math.max(0, Math.min(1, candidate.shot.searchScore ?? 0)) * 0.32;
+          if (
+            purpose === "lesson" &&
+            (selected.confidence < 0.62 || combinedConfidence < 0.57)
+          ) {
+            continue;
+          }
           const shot = expandShot(candidate.shot, purpose);
           if (
             expanded.some(

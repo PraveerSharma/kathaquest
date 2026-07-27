@@ -315,6 +315,12 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
                 <span><CheckIcon /> {visualEpisodeCount} chapter-grounded visual {visualEpisodeCount === 1 ? "chapter" : "chapters"}</span>
               ) : null}
               <span><CheckIcon /> No weak footage substituted</span>
+              {lesson.presentation?.quality ? (
+                <span>
+                  <CheckIcon /> Film quality{" "}
+                  {lesson.presentation.quality.overall}/100
+                </span>
+              ) : null}
               <span><CheckIcon /> Answers hidden securely</span>
             </div>
           </div>

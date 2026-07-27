@@ -11,6 +11,7 @@ import {
 import { getCuratedLesson } from "@/lib/curated-lessons";
 import { logger } from "@/lib/logger";
 import { createFallbackPresentation } from "@/lib/presentation-fallback";
+import { improvePresentationQuality } from "@/lib/presentation-quality";
 import { assertKidSafeText } from "@/lib/safety";
 import { enrichSelectiveVisuals } from "@/lib/selective-visuals";
 import { saveLesson } from "@/lib/storage";
@@ -87,6 +88,12 @@ export async function generateLesson({
           sourceKind,
         });
         if (curatedLesson) {
+          if (curatedLesson.presentation) {
+            curatedLesson.presentation = improvePresentationQuality({
+              episodes: curatedLesson.episodes,
+              presentation: curatedLesson.presentation,
+            });
+          }
           const duration = performance.now() - started;
           curatedLesson.generationTimeMs = Math.round(duration);
           const currentTraceId = span.spanContext().traceId;
@@ -100,6 +107,8 @@ export async function generateLesson({
             "video.relevance_score": curatedLesson.overallCoverage,
             "storyboard.scene_count":
               curatedLesson.presentation?.storyboard.scenes.length ?? 0,
+            "storyboard.quality_score":
+              curatedLesson.presentation?.quality?.overall ?? 0,
           });
           await withSpan(
             "lesson.persist",
@@ -114,6 +123,15 @@ export async function generateLesson({
             status: "ready",
             source: "curated",
           });
+          if (curatedLesson.presentation?.quality) {
+            telemetry.presentationQuality.record(
+              curatedLesson.presentation.quality.overall,
+              {
+                source: "curated",
+                tier: curatedLesson.presentation.quality.tier,
+              },
+            );
+          }
           logger.info(
             {
               event: "lesson.curated",
@@ -124,71 +142,23 @@ export async function generateLesson({
           );
           return curatedLesson;
         }
-        type ChapterPlan = Awaited<ReturnType<typeof extractConcepts>>;
         type EpisodeRetrieval = Awaited<
           ReturnType<typeof retrieveEpisodeEvidence>
         >;
-        let bestAttempt:
-          | {
-              chapter: ChapterPlan;
-              retrievals: Array<EpisodeRetrieval | undefined>;
-              matchedCount: number;
-            }
-          | undefined;
-        const excludedConcepts: string[] = [];
-
-        for (let attempt = 1; attempt <= 3; attempt += 1) {
-          const plan = await extractConcepts({
-            chapterText,
-            ageGroup,
-            language,
-            excludedConcepts,
-          });
-          const attemptedRetrievals = await Promise.allSettled(
-            plan.concepts.map((concept) => retrieveEpisodeEvidence(concept)),
-          );
-          const failedIndexes = attemptedRetrievals.flatMap((result, index) =>
-            result.status === "rejected" ? [index] : [],
-          );
-          const successfulRetrievals = attemptedRetrievals.map((result) =>
+        const chapter = await extractConcepts({
+          chapterText,
+          ageGroup,
+          language,
+        });
+        const attemptedRetrievals = await Promise.allSettled(
+          chapter.concepts.map((concept) =>
+            retrieveEpisodeEvidence(concept),
+          ),
+        );
+        const retrievals: Array<EpisodeRetrieval | undefined> =
+          attemptedRetrievals.map((result) =>
             result.status === "fulfilled" ? result.value : undefined,
           );
-          const matchedCount =
-            successfulRetrievals.filter(Boolean).length;
-          if (!bestAttempt || matchedCount > bestAttempt.matchedCount) {
-            bestAttempt = {
-              chapter: plan,
-              retrievals: successfulRetrievals,
-              matchedCount,
-            };
-          }
-          if (failedIndexes.length === 0) {
-            break;
-          }
-
-          excludedConcepts.push(
-            ...failedIndexes.map((index) => {
-              const concept = plan.concepts[index];
-              return `${concept.title}: ${concept.learningObjective}`;
-            }),
-          );
-          logger.warn(
-            {
-              event: "lesson.plan_retried",
-              attempt,
-              matchedConcepts: matchedCount,
-              rejectedConcepts: failedIndexes.map(
-                (index) => plan.concepts[index].title,
-              ),
-            },
-            "Replanning around concepts without direct archive evidence",
-          );
-        }
-
-        if (!bestAttempt) {
-          throw new Error("KathaQuest could not build a chapter lesson plan");
-        }
-        const { chapter, retrievals } = bestAttempt;
         const visualFallbackCount = retrievals.filter(
           (retrieval) => !retrieval,
         ).length;
@@ -309,13 +279,38 @@ export async function generateLesson({
             episodes,
           });
         }
+        presentation = improvePresentationQuality({
+          episodes,
+          presentation,
+        });
         presentation = await enrichSelectiveVisuals({
           lessonId,
+          presentation,
+        });
+        presentation = improvePresentationQuality({
+          episodes,
           presentation,
         });
         telemetry.presentationsGenerated.add(1, {
           prompt_version: presentation.promptVersion,
         });
+        if (presentation.quality) {
+          telemetry.presentationQuality.record(
+            presentation.quality.overall,
+            {
+              source: sourceKind,
+              tier: presentation.quality.tier,
+            },
+          );
+          span.setAttributes({
+            "storyboard.quality_score": presentation.quality.overall,
+            "storyboard.quality_tier": presentation.quality.tier,
+            "storyboard.grounding_score": presentation.quality.grounding,
+            "storyboard.pacing_score": presentation.quality.pacing,
+            "storyboard.visual_variety_score":
+              presentation.quality.visualVariety,
+          });
+        }
 
         const duration = performance.now() - started;
         const overallCoverage =

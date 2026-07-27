@@ -45,6 +45,10 @@ export const telemetry = {
   presentationNarrations: meter.createCounter(
     "kathaquest.presentation.narrations",
   ),
+  presentationQuality: meter.createHistogram(
+    "kathaquest.presentation.quality",
+    { unit: "score" },
+  ),
 };
 
 export async function withSpan<T>(

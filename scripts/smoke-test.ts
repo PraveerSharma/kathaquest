@@ -63,6 +63,12 @@ if (
 ) {
   throw new Error("Lesson did not include a complete presentation storyboard");
 }
+if (
+  !lesson.presentation.quality ||
+  lesson.presentation.quality.overall < 76
+) {
+  throw new Error("Presentation did not pass the film quality gate");
+}
 const presentationTypes = new Set(
   lesson.presentation.storyboard.scenes.map((scene) => scene.type),
 );

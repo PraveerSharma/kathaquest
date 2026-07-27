@@ -299,6 +299,12 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
             <span>
               ✓ {Math.round(presentation.storyboard.totalDurationSeconds / 60)} minute lesson
             </span>
+            {presentation.quality ? (
+              <span>
+                ✓ Film quality {presentation.quality.overall}/100 ·{" "}
+                {presentation.quality.tier.replace("-", " ")}
+              </span>
+            ) : null}
             {reviewedVideoCount > 0 ? (
               <span>✓ {reviewedVideoCount} reviewed video {reviewedVideoCount === 1 ? "chapter" : "chapters"}</span>
             ) : null}
@@ -513,6 +519,31 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
                 captions, transitions, Maya and multilingual narration.
               </p>
             </article>
+            {presentation.quality ? (
+              <article className="quality-blueprint-card">
+                <span>Quality gate</span>
+                <div className="quality-score-line">
+                  <strong>{presentation.quality.overall}</strong>
+                  <small>/ 100 · {presentation.quality.tier.replace("-", " ")}</small>
+                </div>
+                <div className="quality-dimensions">
+                  {[
+                    ["Grounding", presentation.quality.grounding],
+                    ["Pacing", presentation.quality.pacing],
+                    ["Visual rhythm", presentation.quality.visualVariety],
+                    ["Engagement", presentation.quality.engagement],
+                  ].map(([label, score]) => (
+                    <div key={String(label)}>
+                      <span>{label}</span>
+                      <b>{score}</b>
+                      <i>
+                        <span style={{ width: `${score}%` }} />
+                      </i>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ) : null}
           </div>
         </details>
       </section>

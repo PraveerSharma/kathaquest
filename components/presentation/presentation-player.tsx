@@ -27,7 +27,12 @@ export function PresentationPlayer({
     >
       <div className="presentation-frame-bar">
         <strong>{presentation.plan.title}</strong>
-        <span>{presentation.storyboard.scenes.length} scene learning film</span>
+        <span>
+          {presentation.storyboard.scenes.length} scene learning film
+          {presentation.quality
+            ? ` · quality ${presentation.quality.overall}/100`
+            : ""}
+        </span>
       </div>
       <Player
         acknowledgeRemotionLicense

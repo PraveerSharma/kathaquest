@@ -56,7 +56,8 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
 1. Select one of five original chapter stories or upload a text-based PDF.
 2. Choose an age group and one of 11 Indian languages.
 3. Generate three concepts, three deep VideoDB evidence chapters, a structured
-   lesson plan, complete script and executable storyboard.
+   lesson plan, complete script and executable storyboard. The planner keeps the
+   chapter's most important concepts even when the footage archive has no match.
 4. Open the Lesson Studio and play one 3–4 minute hybrid film containing Maya,
    diagrams, animations, real footage, captions, keywords and a checkpoint.
 5. Change the learning language once to update the lesson, captions, quiz and
@@ -71,7 +72,7 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
 flowchart LR
     A[Chapter PDF or demo text] --> B[Next.js lesson route]
     B --> C[OpenAI structured extraction]
-    C --> D[Three source-quoted learning objectives]
+    C --> D[Three chapter-first, source-quoted objectives]
     D --> E[VideoDB spoken + scene search]
     E --> F[LLM precision review + reranking]
     F --> G[Context expansion + VideoDB HLS stitching]
@@ -79,7 +80,8 @@ flowchart LR
     H --> P[Structured lesson plan + script]
     P --> Q[Nine-scene storyboard]
     Q --> R[Visual router: footage or SVG]
-    R --> S[Remotion continuous lesson film]
+    R --> V[Deterministic film quality gate]
+    V --> S[Remotion continuous lesson film]
     P --> I[Sarvam or ElevenLabs narration]
     I --> S
     H --> J[Question + quiz routes]
@@ -95,6 +97,23 @@ flowchart LR
 
 The executable presentation design and layer-by-layer implementation are in
 [`HYBRID_LESSON_ARCHITECTURE.md`](HYBRID_LESSON_ARCHITECTURE.md).
+
+### Film quality workflow
+
+KathaQuest treats generated JSON as a draft, not the finished lesson. A
+deterministic post-planning pass checks every film before playback:
+
+- Chapter-first planning preserves the foundation, mechanism and consequence
+  that a child needs to understand, whether or not matching footage exists.
+- VideoDB clips must pass both an LLM evidence review and a combined semantic
+  confidence threshold; weak clips become chapter-grounded visual explainers.
+- Narration timing targets a calm 90–110 words per minute, adds sentence pauses
+  and keeps scenes long enough for a child to read the captions.
+- Repeated footage, transitions and camera motions are rotated so the film has
+  a deliberate visual rhythm instead of a slideshow feel.
+- Grounding, pacing, visual variety, engagement and readability produce a
+  visible film-quality score. The same score is recorded in OpenTelemetry for
+  diagnosis in SigNoz.
 
 ## VideoDB depth
 

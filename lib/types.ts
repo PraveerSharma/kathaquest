@@ -134,6 +134,18 @@ export type LessonStoryboard = {
   scenes: StoryboardScene[];
 };
 
+export type PresentationQualityReport = {
+  checks: string[];
+  engagement: number;
+  grounding: number;
+  issues: string[];
+  overall: number;
+  pacing: number;
+  readability: number;
+  tier: "excellent" | "strong" | "needs-review";
+  visualVariety: number;
+};
+
 export type LessonPresentation = {
   schemaVersion: "presentation-v1";
   promptVersion: string;
@@ -144,6 +156,7 @@ export type LessonPresentation = {
   plan: EducationalLessonPlan;
   script: EducationalVideoScript;
   storyboard: LessonStoryboard;
+  quality?: PresentationQualityReport;
 };
 
 export type NarrationTrack = {

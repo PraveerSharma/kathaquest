@@ -10,6 +10,41 @@ function words(text: string, start: number, count: number) {
   return text.trim().split(/\s+/).slice(start, start + count).join(" ");
 }
 
+function lessonParts(text: string) {
+  const sourceSentences = text
+    .trim()
+    .split(/(?<=[.!?।॥])\s+/u)
+    .filter(Boolean);
+  const sentences: string[] = [];
+  let selectedWords = 0;
+  for (const sentence of sourceSentences) {
+    const sentenceWords = sentence.split(/\s+/u).length;
+    if (sentences.length > 0 && selectedWords + sentenceWords > 96) break;
+    sentences.push(sentence);
+    selectedWords += sentenceWords;
+  }
+  if (sentences.length < 2) {
+    return [words(text, 0, 58), words(text, 58, 52)] as const;
+  }
+  const target = Math.ceil(
+    sentences.reduce(
+      (total, sentence) => total + sentence.split(/\s+/u).length,
+      0,
+    ) / 2,
+  );
+  let count = 0;
+  let splitAt = 1;
+  for (let index = 0; index < sentences.length - 1; index += 1) {
+    count += sentences[index].split(/\s+/u).length;
+    splitAt = index + 1;
+    if (count >= target) break;
+  }
+  return [
+    sentences.slice(0, splitAt).join(" "),
+    sentences.slice(splitAt).join(" "),
+  ] as const;
+}
+
 function templateFor(value: string): StoryboardScene["visual"]["diagramTemplate"] {
   const normalized = value.toLocaleLowerCase();
   if (/cycle|stage|journey|metamorph/.test(normalized)) return "cycle";
@@ -66,12 +101,15 @@ export function createFallbackPresentation({
     const evidence = episode.evidence[0];
     const firstSceneNumber = index * 2 + 2;
     const labels = labelsFor(concept);
+    const [modelNarration, evidenceNarration] = lessonParts(
+      concept.explanation,
+    );
     scenes.push({
       id: `scene-${firstSceneNumber}`,
       type: index % 2 === 0 ? "diagram" : "animation",
       conceptId: concept.id,
       title: concept.title,
-      narration: words(concept.explanation, 0, 52),
+      narration: modelNarration,
       subtitle: concept.learningObjective,
       durationSeconds: 24,
       keywords: labels.slice(0, 3),
@@ -90,7 +128,7 @@ export function createFallbackPresentation({
       type: evidence?.mediaUrl ? "real_video" : "diagram",
       conceptId: concept.id,
       title: `See it: ${concept.title}`,
-      narration: words(concept.explanation, 52, 42),
+      narration: evidenceNarration,
       subtitle: episode.whyThisClip,
       durationSeconds: 22,
       keywords: labels.slice(0, 3),

@@ -2932,7 +2932,7 @@ textarea:focus-visible {
 .blueprint-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   padding-top: 16px;
 }
 
@@ -2961,6 +2961,60 @@ textarea:focus-visible {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.quality-score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 7px 0 12px;
+}
+
+.quality-score-line strong {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 38px;
+  line-height: 1;
+}
+
+.quality-score-line small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.quality-dimensions {
+  display: grid;
+  gap: 8px;
+}
+
+.quality-dimensions > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.quality-dimensions b {
+  color: var(--green);
+}
+
+.quality-dimensions i {
+  grid-column: 1 / -1;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(30, 94, 71, 0.12);
+}
+
+.quality-dimensions i span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--blue));
 }
 
 .studio-interactions {

@@ -114,6 +114,20 @@ function presentation(
       totalDurationSeconds: 180,
       scenes,
     },
+    quality: {
+      checks: [
+        "Every teaching scene is checked for source grounding.",
+        "Narration duration is balanced against scene time.",
+      ],
+      engagement: 100,
+      grounding: 100,
+      issues: [],
+      overall: 92,
+      pacing: 89,
+      readability: 100,
+      tier: "excellent" as const,
+      visualVariety: 92,
+    },
   };
 }
 
@@ -494,6 +508,7 @@ test("content navigation and the continuous lesson studio are usable", async ({
     page.getByRole("heading", { name: "Volcano Adventure" }),
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".presentation-player-shell")).toBeVisible();
+  await expect(page.getByText(/Film quality 92\/100/i).first()).toBeVisible();
   await expect(page.locator(".presentation-player-shell")).toHaveAttribute(
     "data-narration-mode",
     "scene-synced",

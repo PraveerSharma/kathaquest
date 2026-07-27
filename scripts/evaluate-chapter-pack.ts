@@ -37,6 +37,7 @@ type Evaluation = {
   hybridSceneTypes: string[];
   presentationGrounded: boolean;
   completeNarration: boolean;
+  presentationQualityScore: number;
   issues: string[];
 };
 
@@ -74,6 +75,7 @@ for (const chapter of selectedChapters) {
       hybridSceneTypes: [],
       presentationGrounded: false,
       completeNarration: false,
+      presentationQualityScore: 0,
       issues: ["error" in payload ? payload.error : `HTTP ${response.status}`],
     });
     continue;
@@ -172,6 +174,9 @@ for (const chapter of selectedChapters) {
       : "missing_hybrid_scene_type",
     presentationGrounded ? "" : "ungrounded_presentation",
     completeNarration ? "" : "incomplete_narration",
+    (presentation?.quality?.overall ?? 0) >= 76
+      ? ""
+      : "presentation_quality_below_gate",
   ].filter(Boolean);
 
   results.push({
@@ -193,6 +198,7 @@ for (const chapter of selectedChapters) {
     hybridSceneTypes,
     presentationGrounded,
     completeNarration,
+    presentationQualityScore: presentation?.quality?.overall ?? 0,
     issues,
   });
 }
