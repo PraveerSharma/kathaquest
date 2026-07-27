@@ -3,8 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 
 import { HlsPlayer } from "@/components/hls-player";
+import { EpisodeVisualPlayer } from "@/components/presentation/episode-visual-player";
+import {
+  episodeMediaKey,
+  readPreparedMedia,
+  savePreparedMedia,
+  type PreparedMedia,
+} from "@/lib/client-media";
 import { getLessonLanguage } from "@/lib/languages";
-import type { Episode, LessonLanguage } from "@/lib/types";
+import type {
+  Episode,
+  LessonLanguage,
+  LessonPresentation,
+} from "@/lib/types";
 
 export type VoiceProviderPreference = "auto" | "sarvam" | "elevenlabs";
 export type NarrationStatus = "loading" | "ready" | "error";
@@ -23,6 +34,7 @@ export function EpisodeCard({
   lessonId,
   lessonToken,
   onFallback,
+  presentation,
   providerPreference,
   onNarrationStatusChange,
 }: {
@@ -32,6 +44,7 @@ export function EpisodeCard({
   lessonId: string;
   lessonToken: string;
   onFallback: () => void;
+  presentation?: LessonPresentation;
   providerPreference: VoiceProviderPreference;
   onNarrationStatusChange?: (
     episodeId: string,
@@ -44,10 +57,10 @@ export function EpisodeCard({
   const [loading, setLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>();
   const [localizedStream, setLocalizedStream] = useState<string>();
-  const [showLocalized, setShowLocalized] = useState(false);
   const [syncMode, setSyncMode] = useState<"videodb-timeline" | "browser">();
   const [provider, setProvider] = useState<"sarvam" | "elevenlabs">();
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [error, setError] = useState<string>();
   const languageName = getLessonLanguage(language).label;
   const hasVideo =
@@ -59,41 +72,34 @@ export function EpisodeCard({
     if (videoRef.current) videoRef.current.muted = false;
     setAudioUrl(undefined);
     setLocalizedStream(undefined);
-    setShowLocalized(false);
     setSyncMode(undefined);
     setProvider(undefined);
     setFallbackUsed(false);
     setError(undefined);
   }
 
-  function hearOriginalAudio() {
-    audioRef.current?.pause();
-    if (videoRef.current) videoRef.current.muted = false;
-    setShowLocalized(false);
+  function applyPreparedMedia(media: PreparedMedia) {
+    setAudioUrl(media.audioUrl);
+    setProvider(media.provider);
+    setSyncMode(media.syncMode ?? "browser");
+    setLocalizedStream(media.streamUrl);
+    setFallbackUsed(media.fallbackUsed);
+    if (media.fallbackUsed) onFallback();
   }
 
   useEffect(() => {
     const video = videoRef.current;
     const audio = audioRef.current;
-    if (!video || !audio) return;
-    if (!showLocalized || !audioUrl || syncMode !== "browser") {
-      audio.pause();
-      video.muted = false;
-      return;
-    }
+    if (!video || !audio || !audioUrl || syncMode !== "browser") return;
 
     video.muted = true;
-
     const align = () => {
       if (!Number.isFinite(video.duration) || !Number.isFinite(audio.duration)) {
         return;
       }
       const ratio = audio.duration / video.duration;
       audio.playbackRate = Math.max(0.65, Math.min(1.35, ratio));
-      audio.currentTime = Math.min(
-        audio.duration,
-        video.currentTime * ratio,
-      );
+      audio.currentTime = Math.min(audio.duration, video.currentTime * ratio);
     };
     const maintainSync = () => {
       if (!Number.isFinite(video.duration) || !Number.isFinite(audio.duration)) {
@@ -116,7 +122,6 @@ export function EpisodeCard({
     video.addEventListener("timeupdate", maintainSync);
     video.addEventListener("ended", pause);
     audio.addEventListener("loadedmetadata", align);
-    if (!video.paused) play();
     return () => {
       video.removeEventListener("play", play);
       video.removeEventListener("pause", pause);
@@ -126,16 +131,9 @@ export function EpisodeCard({
       audio.removeEventListener("loadedmetadata", align);
       audio.pause();
     };
-  }, [audioUrl, showLocalized, syncMode]);
+  }, [audioUrl, syncMode]);
 
-  async function requestLocalizedVideo(
-    targetLanguage: LessonLanguage,
-    targetProvider: VoiceProviderPreference,
-  ) {
-    if (!hasVideo) {
-      onNarrationStatusChange?.(episode.id, "ready");
-      return;
-    }
+  async function requestLocalizedMedia(requestKey: string) {
     setError(undefined);
     setLoading(true);
     onNarrationStatusChange?.(episode.id, "loading");
@@ -147,8 +145,8 @@ export function EpisodeCard({
           lessonId,
           lessonToken,
           episodeId: episode.id,
-          language: targetLanguage,
-          provider: targetProvider,
+          language,
+          provider: providerPreference,
         }),
       });
       const result = (await response.json()) as {
@@ -162,73 +160,66 @@ export function EpisodeCard({
       if (!response.ok || !result.audioUrl || !result.provider) {
         throw new Error(result.error ?? "Narration failed");
       }
-      setAudioUrl(result.audioUrl);
-      setProvider(result.provider);
-      setSyncMode(result.syncMode ?? "browser");
-      setShowLocalized(true);
-      if (result.streamUrl) {
-        setLocalizedStream(result.streamUrl);
-        if (videoRef.current) videoRef.current.muted = false;
-      }
-      setFallbackUsed(Boolean(result.fallbackUsed));
-      if (result.fallbackUsed) onFallback();
-      if (!result.streamUrl) {
-        window.setTimeout(() => {
-          const video = videoRef.current;
-          const audio = audioRef.current;
-          if (!video || !audio) return;
-          video.muted = true;
-          audio.currentTime = video.currentTime;
-          void Promise.allSettled([video.play(), audio.play()]);
-        }, 0);
-      }
+      const media: Omit<PreparedMedia, "savedAt"> = {
+        audioUrl: result.audioUrl,
+        provider: result.provider,
+        fallbackUsed: Boolean(result.fallbackUsed),
+        streamUrl: result.streamUrl,
+        syncMode: result.syncMode ?? "browser",
+      };
+      await savePreparedMedia(requestKey, media);
+      if (preparedRequestRef.current !== requestKey) return;
+      applyPreparedMedia({ ...media, savedAt: Date.now() });
       onNarrationStatusChange?.(episode.id, "ready");
     } catch (caught) {
+      if (preparedRequestRef.current !== requestKey) return;
       setError(caught instanceof Error ? caught.message : "Narration failed");
       onNarrationStatusChange?.(episode.id, "error");
     } finally {
-      setLoading(false);
+      if (preparedRequestRef.current === requestKey) setLoading(false);
     }
   }
 
   useEffect(() => {
-    const requestKey = `${lessonId}:${episode.id}:${language}:${providerPreference}`;
-    if (preparedRequestRef.current === requestKey) return;
+    let active = true;
+    const requestKey = episodeMediaKey({
+      lessonId,
+      episodeId: episode.id,
+      language,
+      provider: providerPreference,
+    });
+    preparedRequestRef.current = requestKey;
     const timer = window.setTimeout(() => {
-      if (preparedRequestRef.current === requestKey) return;
-      preparedRequestRef.current = requestKey;
+      if (!active) return;
       resetLocalizedMedia();
-      if (!hasVideo) {
-        onNarrationStatusChange?.(episode.id, "ready");
-        return;
-      }
-      void requestLocalizedVideo(language, providerPreference);
+      setLoading(true);
+      onNarrationStatusChange?.(episode.id, "loading");
+      void readPreparedMedia(requestKey).then((cached) => {
+        if (!active || preparedRequestRef.current !== requestKey) return;
+        if (cached) {
+          applyPreparedMedia(cached);
+          setLoading(false);
+          onNarrationStatusChange?.(episode.id, "ready");
+          return;
+        }
+        void requestLocalizedMedia(requestKey);
+      });
     }, 0);
-    return () => window.clearTimeout(timer);
-    // This request is intentionally keyed to the lesson-wide controls.
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+    // The request is deliberately keyed to all lesson-wide media controls.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [episode.id, hasVideo, language, lessonId, providerPreference]);
+  }, [
+    episode.id,
+    language,
+    lessonId,
+    providerPreference,
+    retryKey,
+  ]);
 
-  async function prepareLocalizedVideo() {
-    setError(undefined);
-    if (localizedStream) {
-      if (videoRef.current) videoRef.current.muted = false;
-      setShowLocalized(true);
-      return;
-    }
-    if (audioUrl && syncMode === "browser") {
-      setShowLocalized(true);
-      const video = videoRef.current;
-      const audio = audioRef.current;
-      if (video && audio) {
-        video.muted = true;
-        await Promise.allSettled([video.play(), audio.play()]);
-      }
-      return;
-    }
-    await requestLocalizedVideo(language, providerPreference);
-  }
-
+  const mediaReady = Boolean(audioUrl);
   return (
     <article aria-busy={loading} className="episode-card">
       <div className="episode-layout">
@@ -239,48 +230,58 @@ export function EpisodeCard({
               fallbackSrc={episode.evidence[0]?.mediaUrl}
               fallbackStartSeconds={episode.evidence[0]?.startSeconds}
               onSourceFallback={() => {
-                if (!showLocalized || !audioUrl) return;
+                if (!audioUrl) return;
                 setLocalizedStream(undefined);
-                setShowLocalized(true);
                 setSyncMode("browser");
               }}
               ref={videoRef}
-              src={
-                showLocalized && localizedStream
-                  ? localizedStream
-                  : episode.streamUrl
-              }
+              src={localizedStream ?? episode.streamUrl}
             />
           ) : (
-            <div
-              aria-label={`Visual explainer preview for ${episode.title}`}
-              className="visual-explainer-preview"
-            >
-              <span className="visual-preview-badge">
-                Chapter-grounded visual
-              </span>
-              <strong>{episode.title}</strong>
-              <div aria-hidden="true" className="visual-preview-flow">
-                <span>Source</span>
-                <i />
-                <span>Diagram</span>
-                <i />
-                <span>Idea</span>
-              </div>
-              <small>
-                The complete lesson animates this idea with labels, captions,
-                Maya, and narration.
-              </small>
-            </div>
+            <EpisodeVisualPlayer
+              audioUrl={audioUrl}
+              episode={episode}
+              presentation={presentation}
+            />
           )}
+          {!mediaReady ? (
+            <div
+              aria-live="polite"
+              className="media-preparation-gate"
+              role={error ? "alert" : "status"}
+            >
+              {loading ? (
+                <span className="loading-spinner" aria-hidden="true" />
+              ) : null}
+              <strong>
+                {error
+                  ? `${languageName} audio needs another try`
+                  : `Finishing ${languageName} audio`}
+              </strong>
+              <span>
+                {error
+                  ? "The player stays paused so the lesson never starts silently."
+                  : "Playback will unlock when the narration and visuals are ready together."}
+              </span>
+              {error ? (
+                <button
+                  className="gate-retry-button"
+                  onClick={() => setRetryKey((current) => current + 1)}
+                  type="button"
+                >
+                  Try audio again
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           <div className="video-frame-caption">
-            {!hasVideo
-              ? `${languageName} narrated diagram in the complete film`
-              : showLocalized
-              ? `${languageName} narrated video`
-              : loading
-                ? `Preparing ${languageName} narration`
-                : "Reviewed VideoDB lesson reel"}
+            {loading
+              ? `Preparing ${languageName} narration`
+              : error
+                ? "Playback paused until audio is ready"
+                : hasVideo
+                  ? `${languageName} narrated VideoDB reel`
+                  : `${languageName} narrated visual explainer`}
           </div>
         </div>
         <div className="episode-content">
@@ -295,60 +296,20 @@ export function EpisodeCard({
           <h3>{episode.title}</h3>
           <p className="episode-explanation">{episode.explanation}</p>
           <blockquote className="source-quote">
-            <span>From your chapter{episode.sourcePage ? ` · page ${episode.sourcePage}` : ""}</span>
+            <span>
+              From your chapter
+              {episode.sourcePage ? ` · page ${episode.sourcePage}` : ""}
+            </span>
             “{episode.sourceQuote}”
           </blockquote>
-          {hasVideo ? (
-            <div className="video-language-actions">
-              <button
-                className="listen-button"
-                disabled={loading}
-                onClick={prepareLocalizedVideo}
-                aria-busy={loading}
-                type="button"
-              >
-                {loading
-                  ? `Preparing ${languageName} voice...`
-                  : audioUrl
-                    ? `Replay in ${languageName}`
-                    : `Try ${languageName} voice again`}
-              </button>
-              {showLocalized ? (
-                <button
-                  className="text-button"
-                  onClick={hearOriginalAudio}
-                  type="button"
-                >
-                  Hear original audio
-                </button>
-              ) : null}
-            </div>
-          ) : (
-            <a className="listen-button visual-lesson-link" href={`/lesson/${lessonId}`}>
-              Watch the narrated visual
-            </a>
-          )}
           <audio ref={audioRef} src={audioUrl} />
-          {loading ? (
-            <div
-              aria-live="assertive"
-              className="language-change-status"
-              role="status"
-            >
-              <span className="loading-spinner" aria-hidden="true" />
-              <span>
-                <strong>Creating {languageName} voice audio...</strong>
-                Translating, speaking and syncing it with this video.
-              </span>
-            </div>
-          ) : null}
-          {provider ? (
+          {provider && mediaReady ? (
             <div className="provider-message" role="status">
               {fallbackUsed
-                ? "Primary voice provider recovered with a backup voice."
-                : syncMode === "videodb-timeline"
-                  ? `Friendly ${languageName} narration synchronized with the stitched video.`
-                  : `Friendly ${languageName} narration synchronized in your browser.`}
+                ? "The backup voice kept this episode ready."
+                : hasVideo && syncMode === "videodb-timeline"
+                  ? `The ${languageName} narration is synchronized with the VideoDB reel.`
+                  : `The ${languageName} narration and visuals are ready to play together.`}
             </div>
           ) : null}
           {error ? <div className="form-error">{error}</div> : null}
@@ -361,48 +322,49 @@ export function EpisodeCard({
           {episode.evidence.length > 0 ? (
             <div className="evidence-list">
               {episode.evidence.map((evidence) => (
-              <div
-                className="evidence-row"
-                key={`${evidence.videoId}-${evidence.startSeconds}`}
-              >
-                <span className="score-pill">
-                  {Math.round(
-                    (evidence.reviewConfidence ??
-                      evidence.relevanceScore ??
-                      0) * 100,
-                  )}% reviewed
-                </span>
-                <span>
-                  {Math.round(evidence.startSeconds)}s to{" "}
-                  {Math.round(evidence.endSeconds)}s
-                </span>
-                {evidence.sourceUrl ? (
-                  <a
-                    href={evidence.sourceUrl}
-                    rel="noreferrer"
-                    target="_blank"
-                    title={evidence.videoTitle}
-                  >
-                    {evidence.videoTitle}
-                  </a>
-                ) : (
-                  <span>{evidence.videoTitle}</span>
-                )}
-                <span>| {evidence.licence ?? "Licence documented"}</span>
-                {evidence.selectionReason ? (
-                  <small className="evidence-reason">
-                    {evidence.selectionReason}
-                  </small>
-                ) : null}
-              </div>
+                <div
+                  className="evidence-row"
+                  key={`${evidence.videoId}-${evidence.startSeconds}`}
+                >
+                  <span className="score-pill">
+                    {Math.round(
+                      (evidence.reviewConfidence ??
+                        evidence.relevanceScore ??
+                        0) * 100,
+                    )}
+                    % reviewed
+                  </span>
+                  <span>
+                    {Math.round(evidence.startSeconds)}s to{" "}
+                    {Math.round(evidence.endSeconds)}s
+                  </span>
+                  {evidence.sourceUrl ? (
+                    <a
+                      href={evidence.sourceUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                      title={evidence.videoTitle}
+                    >
+                      {evidence.videoTitle}
+                    </a>
+                  ) : (
+                    <span>{evidence.videoTitle}</span>
+                  )}
+                  <span>| {evidence.licence ?? "Licence documented"}</span>
+                  {evidence.selectionReason ? (
+                    <small className="evidence-reason">
+                      {evidence.selectionReason}
+                    </small>
+                  ) : null}
+                </div>
               ))}
             </div>
           ) : (
             <div className="coverage-fallback-note">
               <strong>No unrelated footage was substituted.</strong>
               <span>
-                The lesson stays useful with source-grounded visuals while the
-                VideoDB library grows.
+                This inline narrated visual teaches the chapter idea while the
+                reviewed VideoDB library grows.
               </span>
             </div>
           )}

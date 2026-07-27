@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "Mission Control | KathaQuest",
+  title: "SigNoz live dashboard | KathaQuest",
   description:
     "Live SigNoz observability for KathaQuest lesson quality, latency, dependencies, and activity.",
 };

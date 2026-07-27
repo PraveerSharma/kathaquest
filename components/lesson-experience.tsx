@@ -14,6 +14,11 @@ import {
   type SavedLessonSession,
 } from "@/lib/client-lesson";
 import {
+  filmMediaKey,
+  readPreparedMedia,
+  savePreparedMedia,
+} from "@/lib/client-media";
+import {
   getLessonLanguage,
   lessonLanguages,
 } from "@/lib/languages";
@@ -136,6 +141,24 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
     setNarrating(true);
     setError(undefined);
     try {
+      const cacheKey = filmMediaKey({
+        lessonId: targetSession.lesson.id,
+        language: targetLanguage,
+        provider: targetProvider,
+      });
+      const cached = await readPreparedMedia(cacheKey);
+      if (cached) {
+        setNarrationUrl(cached.audioUrl);
+        setActualProvider(cached.provider);
+        setVoiceFallbackUsed(cached.fallbackUsed);
+        if (playWhenReady) {
+          window.setTimeout(() => {
+            playerRef.current?.seekTo(0);
+            playerRef.current?.play();
+          }, 0);
+        }
+        return;
+      }
       const response = await fetch("/api/presentations/narrate", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -158,9 +181,16 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
       setNarrationUrl(result.audioUrl);
       setActualProvider(result.provider);
       setVoiceFallbackUsed(Boolean(result.fallbackUsed));
+      await savePreparedMedia(cacheKey, {
+        audioUrl: result.audioUrl,
+        provider: result.provider,
+        fallbackUsed: Boolean(result.fallbackUsed),
+      });
       if (playWhenReady) {
-        playerRef.current?.seekTo(0);
-        playerRef.current?.play();
+        window.setTimeout(() => {
+          playerRef.current?.seekTo(0);
+          playerRef.current?.play();
+        }, 0);
       }
     } catch (caught) {
       setError(
@@ -280,7 +310,7 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
             <label>
               <span>Learning language</span>
               <select
-                disabled={localizing}
+                disabled={localizing || narrating}
                 onChange={(event) =>
                   changeContentLanguage(
                     event.target.value as LessonLanguage,
@@ -304,7 +334,7 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
               <span>Voice engine</span>
               <select
                 aria-label="Voice engine for the complete lesson"
-                disabled={narrating}
+                disabled={localizing || narrating}
                 onChange={(event) => {
                   void changeFilmVoiceEngine(
                     event.target.value as
@@ -326,11 +356,42 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
 
       <section className="container studio-layout">
         <div className="studio-main">
-          <PresentationPlayer
-            narrationUrl={narrationUrl}
-            playerRef={playerRef}
-            presentation={presentation}
-          />
+          <div className="studio-player-stage">
+            <PresentationPlayer
+              narrationUrl={narrationUrl}
+              playerRef={playerRef}
+              presentation={presentation}
+            />
+            {!narrationUrl ? (
+              <div
+                aria-live="polite"
+                className="media-preparation-gate"
+                role={error ? "alert" : "status"}
+              >
+                {narrating ? (
+                  <span className="loading-spinner" aria-hidden="true" />
+                ) : null}
+                <strong>
+                  {narrating
+                    ? `Finishing ${getLessonLanguage(lesson.language).label} lesson audio`
+                    : "Lesson audio needs another try"}
+                </strong>
+                <span>
+                  The film stays paused until its narration and scenes are ready
+                  together.
+                </span>
+                {!narrating ? (
+                  <button
+                    className="gate-retry-button"
+                    onClick={() => void createNarratedFilm()}
+                    type="button"
+                  >
+                    Try audio again
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
           <div className="film-controls">
             <button
               className="listen-button"

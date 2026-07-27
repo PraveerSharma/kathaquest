@@ -41,6 +41,10 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
   const [narrationStatuses, setNarrationStatuses] = useState<
     Record<string, NarrationStatus>
   >({});
+  const [preparationReason, setPreparationReason] = useState<
+    "language" | "voice"
+  >();
+  const [completionNotice, setCompletionNotice] = useState<string>();
   const [shareState, setShareState] = useState<"idle" | "copied">("idle");
   const [error, setError] = useState<string>();
 
@@ -79,6 +83,43 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
     };
   }, [lessonId]);
 
+  useEffect(() => {
+    if (!session || !preparationReason || localizing) return;
+    const statuses = session.lesson.episodes.map(
+      (episode) => narrationStatuses[episode.id],
+    );
+    if (statuses.some((status) => !status || status === "loading")) return;
+    const timer = window.setTimeout(() => {
+      if (statuses.every((status) => status === "ready")) {
+        const languageName = getLessonLanguage(
+          session.lesson.language,
+        ).englishName;
+        setCompletionNotice(
+          preparationReason === "language"
+            ? `${languageName} is ready across the complete lesson and all ${session.lesson.episodes.length} episodes.`
+            : `The selected voice engine is ready across all ${session.lesson.episodes.length} episodes.`,
+        );
+      } else {
+        setError(
+          "Most of the lesson is ready, but one episode still needs its audio retried.",
+        );
+      }
+      setPreparationReason(undefined);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [
+    localizing,
+    narrationStatuses,
+    preparationReason,
+    session,
+  ]);
+
+  useEffect(() => {
+    if (!completionNotice) return;
+    const timer = window.setTimeout(() => setCompletionNotice(undefined), 7_000);
+    return () => window.clearTimeout(timer);
+  }, [completionNotice]);
+
   async function changeLessonLanguage(nextLanguage: LessonLanguage) {
     if (
       !session ||
@@ -87,6 +128,7 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
     ) {
       return;
     }
+    setPreparationReason("language");
     setLocalizing(true);
     setNarrationStatuses({});
     setError(undefined);
@@ -115,6 +157,7 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
       setSession(nextSession);
       saveLessonSession(nextSession);
     } catch (caught) {
+      setPreparationReason(undefined);
       setError(
         caught instanceof Error
           ? caught.message
@@ -212,7 +255,11 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
       episode.evidence.length > 0,
   ).length;
   const visualEpisodeCount = lesson.episodes.length - videoEpisodeCount;
-  const busy = localizing || narrationPreparing;
+  const readyNarrationCount = lesson.episodes.filter(
+    (episode) => narrationStatuses[episode.id] === "ready",
+  ).length;
+  const busy =
+    localizing || narrationPreparing || Boolean(preparationReason);
   return (
     <main
       aria-busy={busy}
@@ -234,13 +281,26 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
             </strong>
             {localizing
               ? "Captions, explanations, questions and quiz are being translated."
-              : "Every visual and video is receiving the same kid-friendly learning language."}
+              : `${readyNarrationCount} of ${lesson.episodes.length} episode audio tracks are ready. Playback unlocks one episode at a time.`}
+          </span>
+        </div>
+      ) : null}
+      {completionNotice ? (
+        <div
+          aria-live="polite"
+          className="language-ready-banner"
+          role="status"
+        >
+          <span className="language-ready-check"><CheckIcon /></span>
+          <span>
+            <strong>Everything is ready to play.</strong>
+            {completionNotice}
           </span>
         </div>
       ) : null}
       <div className="container">
-        <div className="lesson-heading">
-          <div>
+        <section className="lesson-command-deck">
+          <div className="lesson-heading-copy">
             <span className="eyebrow">Your video adventure is ready</span>
             <h1>{lesson.title}</h1>
             <p>
@@ -258,65 +318,87 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
               <span><CheckIcon /> Answers hidden securely</span>
             </div>
           </div>
-          <div className="lesson-heading-actions">
-            <a className="primary-button" href={`/lesson/${lesson.id}`}>
-              Watch complete lesson film
-            </a>
-            <button
-              className="secondary-button"
-              onClick={() => void shareLesson()}
-              type="button"
-            >
-              {shareState === "copied" ? "Lesson link copied" : "Share this lesson"}
-            </button>
-            <label className="lesson-language-control" htmlFor="lesson-language">
-              <span>Learning language</span>
-              <select
-                disabled={localizing}
-                id="lesson-language"
-                onChange={(event) =>
-                  changeLessonLanguage(
-                    event.target.value as LessonLanguage,
-                  )
-                }
-                value={lesson.language}
-              >
-                {lessonLanguages.map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {item.label} · {item.englishName}
-                  </option>
-                ))}
-              </select>
-              <small aria-live="polite">
-                {localizing
-                  ? "Translating the lesson..."
-                  : `Sets all content and video voices to ${getLessonLanguage(lesson.language).englishName}`}
-              </small>
-            </label>
-            <label className="lesson-language-control" htmlFor="lesson-voice">
-              <span>Voice engine for all videos</span>
-              <select
-                disabled={localizing}
-                id="lesson-voice"
-                onChange={(event) => {
-                  setNarrationStatuses({});
-                  setProviderPreference(
-                    event.target.value as VoiceProviderPreference,
-                  );
+          <aside className="lesson-control-card" aria-label="Lesson controls">
+            <div className="lesson-control-heading">
+              <div>
+                <strong>Play it your way</strong>
+                <small>One language and voice choice updates every episode.</small>
+              </div>
+              <span className={busy ? "control-status is-busy" : "control-status"}>
+                {busy ? "Preparing" : "Ready"}
+              </span>
+            </div>
+            <div className="lesson-control-grid">
+              <label className="lesson-language-control" htmlFor="lesson-language">
+                <span>Learning language</span>
+                <select
+                  disabled={busy}
+                  id="lesson-language"
+                  onChange={(event) =>
+                    changeLessonLanguage(
+                      event.target.value as LessonLanguage,
+                    )
+                  }
+                  value={lesson.language}
+                >
+                  {lessonLanguages.map((item) => (
+                    <option key={item.code} value={item.code}>
+                      {item.label} · {item.englishName}
+                    </option>
+                  ))}
+                </select>
+                <small aria-live="polite">
+                  {localizing
+                    ? "Translating all lesson content..."
+                    : "Updates content, captions, quiz, and episode audio."}
+                </small>
+              </label>
+              <label className="lesson-language-control" htmlFor="lesson-voice">
+                <span>Voice engine</span>
+                <select
+                  disabled={busy}
+                  id="lesson-voice"
+                  onChange={(event) => {
+                    setNarrationStatuses({});
+                    setPreparationReason("voice");
+                    setProviderPreference(
+                      event.target.value as VoiceProviderPreference,
+                    );
+                  }}
+                  value={providerPreference}
+                >
+                  <option value="auto">Auto, best available</option>
+                  <option value="sarvam">Sarvam AI</option>
+                  <option value="elevenlabs">ElevenLabs</option>
+                </select>
+                <small>Applies the same voice provider to all episodes.</small>
+              </label>
+            </div>
+            <div className="lesson-primary-actions">
+              <Link
+                aria-disabled={busy}
+                className={`primary-button ${busy ? "is-disabled" : ""}`}
+                href={`/lesson/${lesson.id}`}
+                onClick={(event) => {
+                  if (busy) event.preventDefault();
                 }}
-                value={providerPreference}
               >
-                <option value="auto">Auto, best available</option>
-                <option value="sarvam">Sarvam AI</option>
-                <option value="elevenlabs">ElevenLabs</option>
-              </select>
-              <small>One voice choice applies to every lesson reel.</small>
-            </label>
-            <button className="ghost-button" onClick={resetQuest} type="button">
-              Make another quest
+                Watch complete lesson
+              </Link>
+              <button
+                className="secondary-button"
+                disabled={busy}
+                onClick={() => void shareLesson()}
+                type="button"
+              >
+                {shareState === "copied" ? "Link copied" : "Share lesson"}
+              </button>
+            </div>
+            <button className="text-button make-another-link" onClick={resetQuest} type="button">
+              Start a different chapter
             </button>
-          </div>
-        </div>
+          </aside>
+        </section>
         {error ? (
           <div className="form-error lesson-error" role="alert">{error}</div>
         ) : null}
@@ -337,6 +419,7 @@ export function AdventureExperience({ lessonId }: { lessonId?: string }) {
                   [episodeId]: status,
                 }))
               }
+              presentation={lesson.presentation}
               providerPreference={providerPreference}
             />
           ))}

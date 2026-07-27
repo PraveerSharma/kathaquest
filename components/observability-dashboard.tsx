@@ -139,8 +139,8 @@ export function ObservabilityDashboard() {
           <p className="eyebrow">KATHAQUEST × SIGNOZ</p>
           <h1>See each lesson being built.</h1>
           <p>
-            Mission Control turns OpenTelemetry traces into a readable view of
-            lesson quality, speed, AI dependencies, and recent activity.
+            The SigNoz live dashboard turns OpenTelemetry traces into a readable
+            view of lesson quality, speed, AI dependencies, and recent activity.
           </p>
         </div>
         <div className="telemetry-live-card" aria-live="polite">

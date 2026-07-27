@@ -53,6 +53,19 @@ export async function createLocalizedEpisodeVideo({
         forceFailure,
         preferredProvider,
       });
+      if (episode.evidence.length === 0) {
+        span.setAttributes({
+          "video.stream_generated": false,
+          "video.sync_mode": "visual-player",
+          "tts.provider": narration.provider,
+          "tts.fallback_used": narration.fallbackUsed,
+        });
+        return {
+          ...narration,
+          durationSeconds: episode.durationSeconds,
+          syncMode: "browser" as const,
+        };
+      }
       const tempPath = path.join(
         tmpdir(),
         `kathaquest-${episode.id}-${randomUUID()}.mp3`,

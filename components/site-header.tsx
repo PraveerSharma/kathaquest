@@ -47,15 +47,15 @@ export function SiteHeader({
           </span>
         </Link>
         <Link
-          aria-label="Mission control"
+          aria-label="SigNoz live dashboard"
           aria-current={active === "observability" ? "page" : undefined}
           href="/observability"
         >
           <span aria-hidden="true" className="nav-long">
-            Mission control
+            SigNoz live dashboard
           </span>
           <span aria-hidden="true" className="nav-short">
-            Dashboard
+            SigNoz live
           </span>
         </Link>
         <Link
@@ -83,9 +83,6 @@ export function SiteHeader({
           </span>
         </Link>
       </nav>
-      <span className="trust-pill">
-        <span className="dot" /> Reviewed all-ages sources
-      </span>
     </header>
   );
 }

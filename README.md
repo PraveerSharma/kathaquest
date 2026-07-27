@@ -115,6 +115,20 @@ The executable presentation design and layer-by-layer implementation are in
 
 Source and licence records live in [`data/demo-videos.json`](data/demo-videos.json). Runtime VideoDB IDs are cached locally by the seeding script and intentionally ignored by Git. The evaluated VideoDB capabilities, implementation decisions and provider limitations are recorded in [`VIDEODB_RESEARCH.md`](VIDEODB_RESEARCH.md).
 
+### VideoDB primitives used
+
+| VideoDB primitive | KathaQuest use | Implementation |
+| --- | --- | --- |
+| `connect` and `getCollection` | Open the reviewed educational archive | [`scripts/seed-videodb.ts`](scripts/seed-videodb.ts), [`lib/videodb.ts`](lib/videodb.ts) |
+| `collection.uploadURL` | Ingest real NASA, NOAA, USGS and NPS source videos | [`scripts/seed-videodb.ts`](scripts/seed-videodb.ts) |
+| `video.indexSpokenWords` | Search what educators say in each recording | [`scripts/seed-videodb.ts`](scripts/seed-videodb.ts) |
+| `video.indexScenes` | Search objects, actions, diagrams and visible processes | [`scripts/seed-videodb.ts`](scripts/seed-videodb.ts) |
+| `collection.search` | Run objective-specific spoken-word and scene searches | [`lib/videodb.ts`](lib/videodb.ts) |
+| `SearchResult.compile` | Stitch reviewed timestamp ranges into an HLS lesson reel | [`lib/videodb.ts`](lib/videodb.ts) |
+| `collection.uploadFile` | Upload generated regional-language narration audio | [`lib/video-localization.ts`](lib/video-localization.ts) |
+| `EditorTimeline`, `Track` and `Clip` | Synchronize localized narration with selected VideoDB ranges | [`lib/video-localization.ts`](lib/video-localization.ts) |
+| `EditorTimeline.generateStream` | Produce the localized playable timeline | [`lib/video-localization.ts`](lib/video-localization.ts) |
+
 ## Language and voice support
 
 English, Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Punjabi and Odia are supported. Changing the learning language localizes the title, objectives, explanations and quiz into the language’s native script while preserving the original verified chapter quote internally.
@@ -182,6 +196,65 @@ Open [http://localhost:3000](http://localhost:3000).
 
 The seed script is resumable. It reuses cached VideoDB IDs and does not upload a source twice. Set `SEED_LIMIT=1 npm run seed` to prove one vertical slice first.
 
+## Judge testing guide
+
+### Fast production test
+
+1. Open [kathaquest.vercel.app](https://kathaquest.vercel.app).
+2. Under **Start with a ready PDF**, choose **How Bees Help Plants Grow**.
+   Confirm that the upload area changes to a green PDF-ready state.
+3. Choose the learner age and language, then select **Create my video
+   adventure**. The URL should change to `/adventure/<lesson-id>`.
+4. Wait for the lesson status to report that every episode audio track is
+   ready. Video controls remain locked until narration is available, so an
+   episode cannot start silently.
+5. Play a reviewed VideoDB reel directly inside its episode card. Check the
+   source, licence, timestamps and review score beside it.
+6. Return Home and choose **How Sound Travels**. This deliberately exercises
+   limited archive coverage. Its chapter-grounded narrated visual should play
+   inside the same episode card without opening another page.
+7. Change **Learning language** to Hindi or another Indian language. Wait for
+   the completion message confirming that content and every episode voice are
+   ready.
+8. Open **SigNoz live dashboard**, then return through **My adventure**.
+   Prepared audio should be restored from the browser media cache instead of
+   being generated again.
+9. Open the **VideoDB story** to inspect the retrieval architecture and design
+   decisions.
+
+### Local deterministic checks
+
+```bash
+npm ci
+npx playwright install
+npm run lint
+npm run typecheck
+npm run build
+npm run test:e2e
+```
+
+To run one fast browser target:
+
+```bash
+npx playwright test tests/e2e/kathaquest.spec.ts --project=chromium
+```
+
+### Live provider checks
+
+After configuring `.env.local`, verify credentials and the complete paid
+provider path:
+
+```bash
+npm run verify-services
+npm run seed
+npm run smoke-test
+RUN_LIVE_E2E=1 npx playwright test tests/e2e/live-services.spec.ts --project=chromium
+```
+
+The live checks call OpenAI, VideoDB and the configured voice provider. They
+may consume API quota and take several minutes because they generate and
+localize real lessons.
+
 ## Environment variables
 
 | Variable | Purpose |
@@ -245,10 +318,10 @@ npm run smoke-test
 npm run evals
 ```
 
-The browser suite runs 24 deterministic tests across Chromium, Firefox, WebKit
-and Pixel 7, plus four opt-in paid live-service tests. It covers
-including real PDF extraction, navigation, the continuous lesson studio, nine
-storyboard scenes, independent film narration, every language option,
+The browser suite runs deterministic tests across Chromium, Firefox, WebKit
+and Pixel 7, plus opt-in paid live-service tests. It covers real PDF
+extraction, navigation, inline VideoDB and visual playback, the continuous
+lesson studio, nine storyboard scenes, cached narration, every language option,
 localization, questions, quiz, reset, error recovery and microphone feedback.
 Set `RUN_LIVE_E2E=1` to exercise the paid OpenAI, VideoDB and voice path in
 Chromium.
@@ -263,7 +336,9 @@ The catalog uses reviewed educational media from USGS, NASA, NOAA and NPS. Every
 
 - Lesson interactions are stateless and serverless-safe through encrypted,
   expiring tokens. The browser stores the current lesson for navigation;
-  persistent multi-device history still needs a database and authentication.
+  IndexedDB also retains prepared narration when the learner visits another
+  page and comes back. Persistent multi-device history still needs a database
+  and authentication.
 - Rate limiting is best-effort per runtime instance. A distributed limiter should replace it before large public traffic.
 - Uploaded PDFs are text-based and capped at 10 MB; OCR is not included.
 - Retrieval is safe by construction but limited to the reviewed 12-video

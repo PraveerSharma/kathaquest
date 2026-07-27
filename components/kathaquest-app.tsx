@@ -58,6 +58,11 @@ function CheckIcon() {
   );
 }
 
+function formatFileSize(bytes: number) {
+  if (bytes < 1_000_000) return `${Math.max(1, Math.round(bytes / 1_000))} KB`;
+  return `${(bytes / 1_000_000).toFixed(1)} MB`;
+}
+
 export function KathaQuestApp({
   chapters,
   initialChapterId,
@@ -85,6 +90,11 @@ export function KathaQuestApp({
   const [extractingPdf, setExtractingPdf] = useState(false);
   const [sampleLoading, setSampleLoading] = useState<string>();
   const [dragActive, setDragActive] = useState(false);
+  const [uploadedPdf, setUploadedPdf] = useState<{
+    name: string;
+    pages: number;
+    size: number;
+  }>();
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -96,6 +106,7 @@ export function KathaQuestApp({
     setChapterText(chapter.text);
     setSourceLabel(`${chapter.title} • ${chapter.pages} pages`);
     setSourceKind("chapter-pack");
+    setUploadedPdf(undefined);
     setError(undefined);
     if (window.innerWidth <= 700) {
       window.setTimeout(
@@ -131,6 +142,11 @@ export function KathaQuestApp({
       setChapterText(result.text);
       setSourceLabel(`${file.name} • ${result.totalPages} pages`);
       setSourceKind("uploaded-pdf");
+      setUploadedPdf({
+        name: file.name,
+        pages: result.totalPages ?? 1,
+        size: file.size,
+      });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not read PDF");
     } finally {
@@ -239,7 +255,10 @@ export function KathaQuestApp({
               <div>
                 <span className="eyebrow">Step 1 · Choose</span>
                 <h2 id="builder-title">Where should we explore?</h2>
-                <p>Five original chapter stories are ready, or upload any text-based PDF.</p>
+                <p>
+                  Pick a built-in story, use one of the two ready PDFs, or add
+                  your own text-based chapter.
+                </p>
               </div>
               <span className="safety-note">
                 <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="m7 11 3 3 7-7m4 5c0 5-3.4 8.5-9 10-5.6-1.5-9-5-9-10V5l9-3 9 3v7Z" /></svg>
@@ -275,10 +294,14 @@ export function KathaQuestApp({
               <div className="upload-workbench">
                 <div className="sample-heading">
                   <div>
-                    <span className="eyebrow">Quick judge test</span>
-                    <h3>Try a ready PDF</h3>
+                    <h3>Start with a ready PDF</h3>
+                    <p className="sample-heading-intro">
+                      Fastest way to test the complete chapter-to-lesson flow.
+                    </p>
                   </div>
-                  <p>Use one now, or download it and test drag and drop below.</p>
+                  <p>
+                    Use it instantly, or download it and practise drag and drop.
+                  </p>
                 </div>
                 <div className="sample-pdf-list">
                   {sampleChapters.map((sample) => {
@@ -315,9 +338,12 @@ export function KathaQuestApp({
                     );
                   })}
                 </div>
+                <div className="upload-choice-divider" aria-hidden="true">
+                  <span>or add your own chapter</span>
+                </div>
                 <label
                   aria-busy={extractingPdf}
-                  className={`upload-zone ${dragActive ? "drag-active" : ""}`}
+                  className={`upload-zone ${dragActive ? "drag-active" : ""} ${extractingPdf ? "is-reading" : ""} ${uploadedPdf ? "is-uploaded" : ""}`}
                   onDragEnter={(event) => {
                     event.preventDefault();
                     setDragActive(true);
@@ -351,17 +377,27 @@ export function KathaQuestApp({
                     type="file"
                   />
                   <span className="upload-icon" aria-hidden="true">
-                    <svg fill="none" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
+                    {uploadedPdf && !extractingPdf ? (
+                      <CheckIcon />
+                    ) : (
+                      <svg fill="none" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
+                    )}
                   </span>
-                  <span>
+                  <span aria-live="polite" className="upload-zone-copy">
                     <strong>
                       {extractingPdf
-                        ? "Reading your PDF..."
+                        ? "Reading and checking your PDF..."
                         : dragActive
                           ? "Drop it here"
-                          : "Drop your chapter PDF here"}
+                          : uploadedPdf
+                            ? `${uploadedPdf.name} is ready`
+                            : "Drop your own chapter PDF here"}
                     </strong>
-                    <small>Or choose from your device | text-based | up to 10 MB</small>
+                    <small>
+                      {uploadedPdf && !extractingPdf
+                        ? `${uploadedPdf.pages} pages • ${formatFileSize(uploadedPdf.size)} • Choose or drop another PDF to replace it`
+                        : "Or choose from your device • text-based • up to 10 MB"}
+                    </small>
                   </span>
                 </label>
               </div>

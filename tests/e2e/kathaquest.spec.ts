@@ -257,7 +257,9 @@ test("chapter selection, all languages, and real PDF extraction are usable", asy
     "/sample-chapters/how-bees-help-plants-grow.pdf",
   );
   await page.getByRole("button", { name: "Use this PDF" }).nth(1).click();
-  await expect(page.getByText(/How_Sound_Travels\.pdf/)).toBeVisible({
+  await expect(
+    page.getByText("How_Sound_Travels.pdf is ready", { exact: true }),
+  ).toBeVisible({
     timeout: 20_000,
   });
 
@@ -265,9 +267,12 @@ test("chapter selection, all languages, and real PDF extraction are usable", asy
   await fileInput.setInputFiles(
     path.resolve("Chapter_Pack/02_the_water_cycle.pdf"),
   );
-  await expect(page.getByText(/02_the_water_cycle\.pdf/)).toBeVisible({
+  await expect(
+    page.getByText(/02_the_water_cycle\.pdf is ready/),
+  ).toBeVisible({
     timeout: 20_000,
   });
+  await expect(page.locator(".upload-zone")).toHaveClass(/is-uploaded/);
   await expect(
     page.getByRole("button", { name: /Create my video adventure/i }),
   ).toBeEnabled();
@@ -307,14 +312,15 @@ test("missing VideoDB coverage becomes an honest visual lesson instead of a dead
   await expect(page).toHaveURL(new RegExp(`/adventure/${lessonId}$`), {
     timeout: 15_000,
   });
-  await expect(page.locator(".visual-explainer-preview")).toHaveCount(1);
+  await expect(page.locator(".episode-visual-player")).toHaveCount(1);
   await expect(
     page.getByText("No unrelated footage was substituted.").first(),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Watch the narrated visual" }),
-  ).toHaveAttribute("href", `/lesson/${lessonId}`);
-  await expect.poll(() => narrationRequests).toBe(2);
+  ).toHaveCount(0);
+  await expect.poll(() => narrationRequests).toBe(3);
+  await expect(page.locator(".media-preparation-gate")).toHaveCount(0);
 });
 
 test("complete lesson workflow stays clear through language, video, Q&A, quiz, and reset", async ({
@@ -375,12 +381,9 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
 
   await page.getByLabel("Learning language").selectOption("bn-IN");
   await expect(page.getByRole("heading", { name: "আগ্নেয়গিরির অভিযান" })).toBeVisible();
+  await expect(page.getByText("Everything is ready to play.")).toBeVisible();
   await expect(
-    page
-      .getByText(
-        /Friendly বাংলা narration synchronized (with the stitched video|in your browser)/i,
-      )
-      .first(),
+    page.getByText(/Bengali is ready across the complete lesson and all 3 episodes/i),
   ).toBeVisible();
 
   await page.getByLabel("Your question").fill("Why does this happen?");
@@ -397,7 +400,7 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
   await page.getByRole("button", { name: /Check my answers/i }).click();
   await expect(page.getByText(/scored 3 out of 3/i)).toBeVisible();
 
-  await page.getByRole("button", { name: /Make another quest/i }).click();
+  await page.getByRole("button", { name: /Start a different chapter/i }).click();
   await expect(
     page.getByRole("heading", { name: /Where should we explore/i }),
   ).toBeVisible();
@@ -459,7 +462,7 @@ test("content navigation and the continuous lesson studio are usable", async ({
     timeout: 15_000,
   });
   const lessonLink = page.getByRole("link", {
-    name: /Watch complete lesson film/i,
+    name: /Watch complete lesson/i,
   });
   await expect(lessonLink).toHaveAttribute("href", `/lesson/${lessonId}`);
   await lessonLink.click();
@@ -495,6 +498,7 @@ test("content navigation and the continuous lesson studio are usable", async ({
 test("a durable lesson URL can restore a session in a fresh browser", async ({
   page,
 }) => {
+  let narrationRequests = 0;
   await page.route(`**/api/lessons/${lessonId}`, async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -505,6 +509,7 @@ test("a durable lesson URL can restore a session in a fresh browser", async ({
     });
   });
   await page.route("**/api/narration", async (route) => {
+    narrationRequests += 1;
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -521,7 +526,16 @@ test("a durable lesson URL can restore a session in a fresh browser", async ({
     page.getByRole("heading", { name: "Volcano Adventure" }),
   ).toBeVisible();
   await expect(page.locator(".episode-card")).toHaveCount(3);
-  await expect(page.getByRole("button", { name: /Share this lesson/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Share lesson/i })).toBeVisible();
+  await expect.poll(() => narrationRequests).toBe(3);
+  await expect(page.locator(".media-preparation-gate")).toHaveCount(0);
+
+  await page.goto("/content");
+  await page.goto(`/adventure/${lessonId}`);
+  await expect(page.locator(".episode-card")).toHaveCount(3);
+  await expect(page.locator(".media-preparation-gate")).toHaveCount(0);
+  await expect.poll(() => narrationRequests).toBe(3);
+
   const savedId = await page.evaluate(() => {
     const raw = window.localStorage.getItem("kathaquest.lesson.v1");
     return raw ? JSON.parse(raw).lesson.id : null;
@@ -659,8 +673,10 @@ test("Mission Control makes live SigNoz signals understandable", async ({
   });
 
   await page.goto("/");
-  const missionControl = page.getByRole("link", { name: "Mission control" });
-  await expect(missionControl).toHaveAttribute("href", "/observability");
+  const signozDashboard = page.getByRole("link", {
+    name: "SigNoz live dashboard",
+  });
+  await expect(signozDashboard).toHaveAttribute("href", "/observability");
   await page.goto("/observability");
 
   await expect(page).toHaveURL(/\/observability$/);
