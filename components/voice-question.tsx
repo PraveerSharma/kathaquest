@@ -1,21 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { HlsPlayer } from "@/components/hls-player";
-import type { PublicLesson } from "@/lib/types";
-
-type Answer = {
-  transcript?: string;
-  answer: string;
-  streamUrl?: string;
-  evidence?: Array<{
-    mediaUrl?: string;
-    startSeconds: number;
-    endSeconds: number;
-  }>;
-  videoUnavailable?: boolean;
-};
+import { PresentationPlayer } from "@/components/presentation/presentation-player";
+import {
+  readCuriosityAnswer,
+  readLatestCuriosityAnswer,
+  saveCuriosityAnswer,
+  type CuriosityAnswer,
+} from "@/lib/client-curiosity";
+import {
+  curiosityMediaKey,
+  readPreparedMedia,
+  savePreparedMedia,
+} from "@/lib/client-media";
+import type {
+  NarrationTrack,
+  PublicLesson,
+} from "@/lib/types";
 
 export function VoiceQuestion({
   lesson,
@@ -29,24 +31,196 @@ export function VoiceQuestion({
   const [question, setQuestion] = useState("");
   const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [answer, setAnswer] = useState<Answer>();
+  const [answer, setAnswer] = useState<CuriosityAnswer>();
+  const [clipPlanning, setClipPlanning] = useState(false);
+  const [clipLoading, setClipLoading] = useState(false);
+  const [clipError, setClipError] = useState<string>();
+  const [narrationTracks, setNarrationTracks] =
+    useState<NarrationTrack[]>();
+  const [narrationProvider, setNarrationProvider] =
+    useState<"sarvam" | "elevenlabs">();
+  const [restored, setRestored] = useState(false);
   const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const cached = readLatestCuriosityAnswer(
+        lesson.id,
+        lesson.language,
+      );
+      setAnswer(cached);
+      setRestored(Boolean(cached));
+      setNarrationTracks(undefined);
+      setNarrationProvider(undefined);
+      setClipError(undefined);
+      if (cached) void prepareClip(cached);
+    }, 0);
+    return () => window.clearTimeout(timer);
+    // prepareClip intentionally follows the current lesson session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id, lesson.language]);
+
+  async function buildClip(
+    result: CuriosityAnswer,
+    askedQuestion: string,
+  ) {
+    if (result.curiosityClip && result.clipToken) {
+      void prepareClip(result);
+      return;
+    }
+    if (!result.questionToken) {
+      setClipError("The visual-answer plan was not returned.");
+      return;
+    }
+    setClipPlanning(true);
+    setClipError(undefined);
+    try {
+      const response = await fetch("/api/questions/clip", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          lessonToken,
+          questionToken: result.questionToken,
+        }),
+      });
+      const generated = (await response.json()) as CuriosityAnswer & {
+        error?: string;
+      };
+      if (
+        !response.ok ||
+        !generated.curiosityClip ||
+        !generated.clipToken
+      ) {
+        throw new Error(
+          generated.error ?? "Could not build the visual answer",
+        );
+      }
+      const completed = { ...result, ...generated };
+      setAnswer(completed);
+      saveCuriosityAnswer(
+        lesson.id,
+        lesson.language,
+        askedQuestion,
+        completed,
+      );
+      void prepareClip(completed);
+    } catch (caught) {
+      setClipError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not build the visual answer",
+      );
+    } finally {
+      setClipPlanning(false);
+    }
+  }
+
+  async function prepareClip(result: CuriosityAnswer) {
+    if (!result.curiosityClip || !result.clipToken) return;
+    setClipLoading(true);
+    setClipError(undefined);
+    try {
+      const cacheKey = curiosityMediaKey({
+        clipId: result.curiosityClip.id,
+        language: lesson.language,
+        lessonId: lesson.id,
+        provider: "auto",
+      });
+      const cached = await readPreparedMedia(cacheKey);
+      if (cached?.narrationTracks?.length) {
+        setNarrationTracks(cached.narrationTracks);
+        setNarrationProvider(cached.provider);
+        return;
+      }
+      const response = await fetch("/api/questions/narrate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          lessonToken,
+          clipToken: result.clipToken,
+          provider: "auto",
+        }),
+      });
+      const narration = (await response.json()) as {
+        audioUrl?: string;
+        error?: string;
+        fallbackUsed?: boolean;
+        narrationTracks?: NarrationTrack[];
+        provider?: "sarvam" | "elevenlabs";
+      };
+      if (
+        !response.ok ||
+        !narration.audioUrl ||
+        !narration.provider ||
+        !narration.narrationTracks?.length
+      ) {
+        throw new Error(
+          narration.error ?? "Could not narrate this visual answer",
+        );
+      }
+      setNarrationTracks(narration.narrationTracks);
+      setNarrationProvider(narration.provider);
+      await savePreparedMedia(cacheKey, {
+        audioUrl: narration.audioUrl,
+        fallbackUsed: Boolean(narration.fallbackUsed),
+        narrationTracks: narration.narrationTracks,
+        provider: narration.provider,
+      });
+    } catch (caught) {
+      setClipError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not narrate this visual answer",
+      );
+    } finally {
+      setClipLoading(false);
+    }
+  }
 
   async function send(
     body: FormData | { lessonId: string; lessonToken: string; question: string },
   ) {
     setLoading(true);
     setError(undefined);
+    setClipError(undefined);
+    setClipPlanning(false);
+    setRestored(false);
     try {
       const multipart = body instanceof FormData;
+      if (!multipart) {
+        const cached = readCuriosityAnswer(
+          lesson.id,
+          lesson.language,
+          body.question,
+        );
+        if (cached) {
+          setAnswer(cached);
+          setRestored(true);
+          setNarrationTracks(undefined);
+          setNarrationProvider(undefined);
+          void prepareClip(cached);
+          return;
+        }
+      }
       const response = await fetch("/api/questions/ask", {
         method: "POST",
         headers: multipart ? undefined : { "content-type": "application/json" },
         body: multipart ? body : JSON.stringify(body),
       });
-      const result = (await response.json()) as Answer & { error?: string };
+      const result = (await response.json()) as CuriosityAnswer & {
+        error?: string;
+      };
       if (!response.ok) throw new Error(result.error ?? "Question failed");
       setAnswer(result);
+      setNarrationTracks(undefined);
+      setNarrationProvider(undefined);
+      const answeredQuestion =
+        result.curiosityClip?.question ??
+        result.transcript ??
+        (multipart ? "" : body.question);
+      if (answeredQuestion) void buildClip(result, answeredQuestion);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Question failed");
     } finally {
@@ -101,8 +275,8 @@ export function VoiceQuestion({
       <span className="eyebrow">Ask with your voice</span>
       <h2>Still curious?</h2>
       <p>
-        Type or record a question in your learning language. A matching video
-        appears only when the archive has strong direct evidence.
+        Type or record a question in your learning language. Maya answers from
+        this chapter, then builds a short narrated visual explanation.
       </p>
       <form className="question-form" onSubmit={askTyped}>
         <input
@@ -114,6 +288,7 @@ export function VoiceQuestion({
         <button
           aria-label={recording ? "Stop recording" : "Record a question"}
           className={`icon-button ${recording ? "recording" : ""}`}
+          disabled={loading || clipPlanning || clipLoading}
           onClick={toggleRecording}
           type="button"
         >
@@ -128,8 +303,12 @@ export function VoiceQuestion({
             )}
           </svg>
         </button>
-        <button className="secondary-button" disabled={loading} type="submit">
-          {loading ? "Searching..." : "Ask"}
+        <button
+          className="secondary-button"
+          disabled={loading || clipPlanning || clipLoading}
+          type="submit"
+        >
+          {loading ? "Finding the answer..." : "Ask"}
         </button>
       </form>
       {error ? (
@@ -138,24 +317,131 @@ export function VoiceQuestion({
         </div>
       ) : null}
       {answer ? (
-        <div className="answer-box">
+        <div className="answer-box curiosity-answer">
+          <div className="curiosity-answer-heading">
+            <div>
+              <span className="eyebrow">Grounded answer</span>
+              <strong>
+                {answer.curiosityClip?.presentation.plan.title ??
+                  "Here is what the chapter shows"}
+              </strong>
+            </div>
+            {restored ? <span className="cached-answer-chip">Saved</span> : null}
+          </div>
           {answer.transcript ? (
             <p className="transcript">I heard: “{answer.transcript}”</p>
           ) : null}
-          <p>{answer.answer}</p>
-          {answer.streamUrl ? (
-            <div className="answer-video">
-              <HlsPlayer
-                fallbackEndSeconds={answer.evidence?.[0]?.endSeconds}
-                fallbackSrc={answer.evidence?.[0]?.mediaUrl}
-                fallbackStartSeconds={answer.evidence?.[0]?.startSeconds}
-                src={answer.streamUrl}
-              />
+          <p className="curiosity-direct-answer">{answer.answer}</p>
+          {answer.curiosityClip ? (
+            <div className="curiosity-clip-area">
+              {clipLoading ? (
+                <div
+                  aria-live="polite"
+                  className="curiosity-build-state"
+                  role="status"
+                >
+                  <span className="loading-orbit" />
+                  <div>
+                    <strong>Maya is narrating your visual answer…</strong>
+                    <p>
+                      The text is ready. We’re synchronizing the voice with four
+                      grounded Remotion scenes.
+                    </p>
+                    <div className="curiosity-build-steps">
+                      <span className="done">Answer checked</span>
+                      <span className="done">Storyboard ready</span>
+                      <span>Voice syncing</span>
+                    </div>
+                  </div>
+                </div>
+              ) : narrationTracks?.length ? (
+                <>
+                  <div aria-live="polite" className="curiosity-ready-line">
+                    <span>✓ Curiosity Clip ready</span>
+                    <span>
+                      {answer.curiosityClip.presentation.storyboard.scenes.length}{" "}
+                      scenes ·{" "}
+                      {Math.round(
+                        answer.curiosityClip.presentation.storyboard
+                          .totalDurationSeconds,
+                      )}
+                      s · {narrationProvider}
+                    </span>
+                  </div>
+                  <div className="answer-video curiosity-player">
+                    <PresentationPlayer
+                      narrationTracks={narrationTracks}
+                      presentation={answer.curiosityClip.presentation}
+                    />
+                  </div>
+                  <div className="curiosity-source-line">
+                    <span>Grounded in this chapter</span>
+                    <span>
+                      {answer.curiosityClip.videoEvidenceUsed
+                        ? `Reviewed VideoDB evidence · ${answer.curiosityClip.evidence[0]?.videoTitle ?? "trusted source"}`
+                        : "Chapter-grounded animated explanation"}
+                    </span>
+                  </div>
+                </>
+              ) : clipError ? (
+                <div className="curiosity-clip-error" role="alert">
+                  <div>
+                    <strong>The visual answer is ready, but its voice paused.</strong>
+                    <p>{clipError}</p>
+                  </div>
+                  <button
+                    className="secondary-button"
+                    onClick={() => void prepareClip(answer)}
+                    type="button"
+                  >
+                    Try narration again
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : clipPlanning ? (
+            <div
+              aria-live="polite"
+              className="curiosity-build-state"
+              role="status"
+            >
+              <span className="loading-orbit" />
+              <div>
+                <strong>Maya is building your visual answer…</strong>
+                <p>
+                  Your grounded answer is ready. We’re checking VideoDB and
+                  planning four child-friendly scenes.
+                </p>
+                <div className="curiosity-build-steps">
+                  <span className="done">Answer checked</span>
+                  <span>Evidence review</span>
+                  <span>Storyboard planning</span>
+                </div>
+              </div>
+            </div>
+          ) : clipError ? (
+            <div className="curiosity-clip-error" role="alert">
+              <div>
+                <strong>Your text answer is safe and ready.</strong>
+                <p>{clipError}</p>
+              </div>
+              <button
+                className="secondary-button"
+                onClick={() =>
+                  void buildClip(
+                    answer,
+                    answer.transcript ?? question,
+                  )
+                }
+                type="button"
+              >
+                Try visual again
+              </button>
             </div>
           ) : (
             <p className="answer-note">
-              I could answer from your chapter, but I left out the video
-              because the archive did not have a strong enough match.
+              The grounded answer is ready, but a visual explanation could not
+              be created this time.
             </p>
           )}
         </div>

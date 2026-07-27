@@ -252,9 +252,13 @@ export async function searchEducationalArchive(
           const combinedConfidence =
             selected.confidence * 0.68 +
             Math.max(0, Math.min(1, candidate.shot.searchScore ?? 0)) * 0.32;
+          const minimumReviewConfidence =
+            purpose === "answer" ? 0.68 : purpose === "lesson" ? 0.62 : 0.55;
+          const minimumCombinedConfidence =
+            purpose === "answer" ? 0.61 : purpose === "lesson" ? 0.57 : 0.52;
           if (
-            purpose === "lesson" &&
-            (selected.confidence < 0.62 || combinedConfidence < 0.57)
+            selected.confidence < minimumReviewConfidence ||
+            combinedConfidence < minimumCombinedConfidence
           ) {
             continue;
           }

@@ -1,6 +1,6 @@
 # Hybrid lesson presentation architecture
 
-Last reviewed: 2026-07-26
+Last reviewed: 2026-07-27
 
 ## Product decision
 
@@ -56,6 +56,8 @@ flowchart TD
     P[Sarvam or ElevenLabs narration] --> N
     N --> Q[Continuous interactive lesson]
     Q --> R[Grounded Q&A + quiz + revision]
+    R --> S[Four-scene Curiosity Clip]
+    S --> T[Inline Remotion micro-lesson]
 ```
 
 The Remotion Player is used inside Next.js with runtime input props. Each
@@ -81,6 +83,26 @@ Relevant primary documentation:
 | 6. Missing animation | Deterministic diagram templates replace unsupported or unavailable footage |
 | 7. Image-to-motion | `pan_zoom`, reveal, flow, pulse and orbit treatments; no expensive full-video generation |
 | 8. Character teacher | Maya the Explorer appears consistently in opening and recap scenes |
+
+## Curiosity Clips
+
+The “Still curious?” path uses the same presentation contract instead of
+returning a disconnected chat response. The text answer is returned first;
+narration is prepared in a second request so voice latency never hides the
+answer.
+
+Each clip contains exactly four scenes:
+
+1. Maya reframes the child’s question as a curiosity hook.
+2. A labelled diagram builds the core mental model.
+3. Strictly reviewed VideoDB footage shows direct evidence, or a deterministic
+   animation explains the mechanism when no relevant footage exists.
+4. A checkpoint recalls the answer and asks the child to predict or explain.
+
+The encrypted clip token prevents the narration endpoint from speaking
+client-supplied text. Clips and their two scene-synchronized narration acts are
+cached by lesson, language, question and provider, so repeat questions and page
+navigation do not repeat paid generation.
 
 Manim and generative image/video models remain optional specialist renderers,
 not dependencies of the serverless interaction path. A future visual router can

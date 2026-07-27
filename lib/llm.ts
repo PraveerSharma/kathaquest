@@ -1,5 +1,7 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
@@ -7,6 +9,10 @@ import { z } from "zod";
 import { env, requireEnv } from "@/lib/env";
 import { getLessonLanguage } from "@/lib/languages";
 import { logger } from "@/lib/logger";
+import {
+  CURIOSITY_CLIP_PROMPT_VERSION,
+  CURIOSITY_CLIP_SYSTEM_PROMPT,
+} from "@/lib/prompts/curiosity-clip-v1";
 import {
   LESSON_PRESENTATION_PROMPT_VERSION,
   LESSON_PRESENTATION_SYSTEM_PROMPT,
@@ -50,6 +56,44 @@ const queryRewriteSchema = z.object({
 
 const answerSchema = z.object({
   answer: z.string().min(5).max(600),
+});
+
+const curiosityClipDraftSchema = z.object({
+  title: z.string().min(2).max(90),
+  hook: z.string().min(8).max(180),
+  closingLine: z.string().min(8).max(180),
+  scenes: z
+    .array(
+      z.object({
+        id: z.string().regex(/^curiosity-scene-[1-4]$/),
+        type: z.enum([
+          "guide",
+          "real_video",
+          "diagram",
+          "animation",
+          "checkpoint",
+        ]),
+        conceptId: z.string().nullable(),
+        title: z.string().min(2).max(90),
+        narration: z.string().min(20).max(360),
+        subtitle: z.string().min(4).max(160),
+        keywords: z.array(z.string().min(1).max(40)).min(1).max(4),
+        transition: z.enum(["fade", "slide", "zoom", "wipe"]),
+        diagramTemplate: z.enum([
+          "cycle",
+          "process",
+          "comparison",
+          "layers",
+          "orbit",
+          "cause_effect",
+          "concept_map",
+        ]),
+        labels: z.array(z.string().min(1).max(50)).min(2).max(5),
+        motion: z.enum(["reveal", "flow", "orbit", "pulse", "pan_zoom"]),
+        interactionPrompt: z.string().min(5).max(180).nullable(),
+      }),
+    )
+    .length(4),
 });
 
 const videoSelectionSchema = z.object({
@@ -893,6 +937,241 @@ export async function createQuestionSearchQuery({
   return response.output_parsed.query;
 }
 
+export async function createCuriosityClip({
+  ageGroup,
+  answer,
+  concepts,
+  evidence,
+  language,
+  lessonTitle,
+  question,
+}: {
+  ageGroup: string;
+  answer: string;
+  concepts: LearningConcept[];
+  evidence: VideoEvidence[];
+  language: LessonLanguage;
+  lessonTitle: string;
+  question: string;
+}): Promise<LessonPresentation> {
+  return withSpan(
+    "llm.create_curiosity_clip",
+    {
+      "ai.provider": "openai",
+      "ai.model": env.OPENAI_MODEL,
+      "ai.input_size": question.length,
+      "curiosity.evidence_count": evidence.length,
+      "lesson.language": language,
+    },
+    async (span) => {
+      const response = await openai().responses.parse({
+        model: env.OPENAI_MODEL,
+        reasoning: { effort: "low" },
+        input: [
+          {
+            role: "system",
+            content: CURIOSITY_CLIP_SYSTEM_PROMPT,
+          },
+          {
+            role: "user",
+            content: [
+              `Lesson: ${lessonTitle}`,
+              `Audience: ${ageGroup}`,
+              `Language: ${getLessonLanguage(language).englishName}`,
+              "",
+              "<approved_direct_answer>",
+              answer,
+              "</approved_direct_answer>",
+              "",
+              "<verified_chapter_notes>",
+              ...concepts.map(
+                (concept) =>
+                  `[${concept.id}] ${concept.title}\nExact chapter quote: ${concept.sourceQuote}\nGrounded lesson explanation: ${concept.explanation.slice(0, 700)}`,
+              ),
+              "</verified_chapter_notes>",
+              "",
+              "<reviewed_video_evidence>",
+              ...(evidence.length > 0
+                ? evidence.map(
+                    (item) =>
+                      `${item.videoTitle} (${item.startSeconds.toFixed(1)}-${item.endSeconds.toFixed(1)}s): ${item.text || item.selectionReason || "Reviewed visual evidence"}`,
+                  )
+                : ["No directly relevant reviewed footage was found."]),
+              "</reviewed_video_evidence>",
+              "",
+              `<child_question>${question}</child_question>`,
+            ].join("\n"),
+          },
+        ],
+        text: {
+          format: zodTextFormat(
+            curiosityClipDraftSchema,
+            "curiosity_clip",
+          ),
+        },
+      });
+      const parsed = response.output_parsed;
+      if (!parsed) {
+        throw new Error("OpenAI returned no Curiosity Clip storyboard");
+      }
+
+      const conceptById = new Map(
+        concepts.map((concept) => [concept.id, concept]),
+      );
+      const fallbackConcept = concepts[0];
+      const footage = evidence.find((item) => Boolean(item.mediaUrl));
+      const scenes = parsed.scenes.map((scene, index) => {
+        const requestedConcept = scene.conceptId
+          ? conceptById.get(scene.conceptId)
+          : undefined;
+        const concept = requestedConcept ?? concepts[index % concepts.length] ??
+          fallbackConcept;
+        const canUseFootage = index === 2 && Boolean(footage?.mediaUrl);
+        const type =
+          index === 0
+            ? ("guide" as const)
+            : index === 1
+              ? ("diagram" as const)
+              : index === 2
+                ? canUseFootage
+                  ? ("real_video" as const)
+                  : ("animation" as const)
+                : ("checkpoint" as const);
+        return {
+          id: scene.id,
+          type,
+          conceptId: concept?.id,
+          title: scene.title,
+          narration: scene.narration,
+          subtitle: scene.subtitle,
+          durationSeconds: 12,
+          keywords: scene.keywords,
+          transition: scene.transition,
+          visual: {
+            diagramTemplate: scene.diagramTemplate,
+            labels: scene.labels,
+            motion: canUseFootage ? ("pan_zoom" as const) : scene.motion,
+            footageEpisodeId: undefined,
+            footageMediaUrl: canUseFootage ? footage?.mediaUrl : undefined,
+            footageStartSeconds: canUseFootage
+              ? footage?.startSeconds
+              : undefined,
+            footageEndSeconds: canUseFootage
+              ? footage?.endSeconds
+              : undefined,
+          },
+          evidenceRefs:
+            canUseFootage && footage
+              ? [
+                  `${footage.videoId}:${footage.startSeconds.toFixed(1)}-${footage.endSeconds.toFixed(1)}`,
+                ]
+              : concept
+                ? [`chapter:${concept.id}`]
+                : [],
+          interactionPrompt:
+            index === 3
+              ? scene.interactionPrompt ?? question
+              : scene.interactionPrompt ?? undefined,
+        };
+      });
+      const fullNarration = scenes
+        .map((scene) => scene.narration.trim())
+        .join("\n\n");
+      const narrationWordCount = fullNarration
+        .split(/\s+/u)
+        .filter(Boolean).length;
+      if (narrationWordCount < 55 || narrationWordCount > 120) {
+        throw new Error(
+          `Curiosity Clip narration length ${narrationWordCount} words is outside the usable range`,
+        );
+      }
+      const relevantConceptIds = [
+        ...new Set(scenes.map((scene) => scene.conceptId).filter(Boolean)),
+      ];
+      const presentation = improvePresentationQuality({
+        episodes: evidence.length > 0
+          ? [
+              {
+                id: randomUUID(),
+                conceptId: fallbackConcept?.id ?? randomUUID(),
+                mediaMode: "videodb",
+                title: parsed.title,
+                explanation: answer,
+                sourceQuote: fallbackConcept?.sourceQuote ?? answer,
+                whyThisClip: evidence[0]?.selectionReason ?? answer,
+                streamUrl: "",
+                durationSeconds: evidence.reduce(
+                  (total, item) =>
+                    total + item.endSeconds - item.startSeconds,
+                  0,
+                ),
+                evidence,
+                coverageScore:
+                  evidence.reduce(
+                    (total, item) =>
+                      total + (item.reviewConfidence ?? 0),
+                    0,
+                  ) / evidence.length,
+                kidSafe: true,
+              },
+            ]
+          : [],
+        format: "curiosity",
+        presentation: {
+          schemaVersion: "presentation-v1",
+          promptVersion: CURIOSITY_CLIP_PROMPT_VERSION,
+          guide: { name: "Maya", role: "curious explorer" },
+          plan: {
+            version: "lesson-plan-v1",
+            title: parsed.title,
+            bigQuestion: question,
+            audience: ageGroup,
+            targetDurationSeconds: 48,
+            learningObjectives: relevantConceptIds.flatMap((conceptId) => {
+              const concept = conceptById.get(conceptId!);
+              return concept
+                ? [
+                    {
+                      conceptId: concept.id,
+                      objective: concept.learningObjective,
+                      sourceQuote: concept.sourceQuote,
+                    },
+                  ]
+                : [];
+            }),
+            teachingArc: scenes.map((scene) => scene.title),
+          },
+          script: {
+            version: "video-script-v1",
+            hook: parsed.hook,
+            fullNarration,
+            narrationWordCount,
+            closingLine: parsed.closingLine,
+          },
+          storyboard: {
+            version: "storyboard-v1",
+            fps: 30,
+            width: 1280,
+            height: 720,
+            totalDurationSeconds: 48,
+            scenes,
+          },
+        },
+      });
+      span.setAttributes({
+        "ai.output_size": response.output_text.length,
+        "curiosity.duration_seconds":
+          presentation.storyboard.totalDurationSeconds,
+        "curiosity.quality_score": presentation.quality?.overall ?? 0,
+        "curiosity.video_used": presentation.storyboard.scenes.some(
+          (scene) => scene.type === "real_video",
+        ),
+      });
+      return presentation;
+    },
+  );
+}
+
 export async function answerQuestion({
   question,
   lessonTitle,
@@ -926,7 +1205,7 @@ export async function answerQuestion({
           },
           {
             role: "user",
-            content: `Lesson: ${lessonTitle}\nLanguage: ${language}\nVerified facts:\n${concepts.map((item) => `- ${item.sourceQuote}`).join("\n")}\nVideo evidence:\n${evidence.map((item) => `- ${item.text || item.videoTitle}`).join("\n")}\nChild question: ${question}`,
+            content: `Lesson: ${lessonTitle}\nLanguage: ${language}\nVerified chapter knowledge:\n${concepts.map((item) => `- Exact quote: ${item.sourceQuote}\n  Grounded explanation: ${item.explanation}`).join("\n")}\nVideo evidence:\n${evidence.map((item) => `- ${item.text || item.videoTitle}`).join("\n")}\nChild question: ${question}`,
           },
         ],
         text: { format: zodTextFormat(answerSchema, "child_question_answer") },

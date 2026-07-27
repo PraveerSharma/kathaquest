@@ -39,6 +39,9 @@ All panels filter on `service.name = 'kathaquest'` when that resource attribute 
 | Provider failures | `kathaquest.tts.failures` | Sum, group by `provider` |
 | Fallbacks over time | `kathaquest.tts.fallbacks` | Sum over time |
 | Questions asked | `kathaquest.questions.asked` | Sum, group by `language` |
+| Curiosity Clips generated | `kathaquest.curiosity.clips.generated` | Sum, group by `video_evidence` and `fallback` |
+| Curiosity Clip narrations | `kathaquest.curiosity.narrations.generated` | Sum, group by `language` and `provider` |
+| Presentation quality | `kathaquest.presentation.quality` | Average, group by `source` and `tier` |
 | Slowest pipeline stage | Trace duration | P95, group by `name` |
 | Video results per search | `kathaquest.videodb.search.results` | Average |
 | Revision reels generated | `kathaquest.revision.generated` | Sum |
@@ -68,10 +71,13 @@ Add label `demo=kathaquest` to each alert.
 2. Generate a volcano lesson and confirm `kathaquest.lesson.generated` increments.
 3. Open Traces and filter `service.name = 'kathaquest'`.
 4. Inspect `lesson.generate` and its VideoDB/OpenAI child spans.
-5. Arm **Simulate ElevenLabs failure**, request English narration, and confirm:
+5. Ask a question in **Still curious?** and inspect the separate
+   `curiosity.answer`, `curiosity.generate`, `llm.create_curiosity_clip`, and
+   `curiosity.generate_narration` spans.
+6. Arm **Simulate ElevenLabs failure**, request English narration, and confirm:
    - `tts.generate` has error status.
    - `tts.fallback` succeeds.
    - `kathaquest.tts.failures` increments.
    - `kathaquest.tts.fallbacks` increments.
    - The TTS alert enters firing state.
-6. Save screenshots of both dashboards and the failed/recovered trace under `public/demo/`.
+7. Save screenshots of both dashboards and the failed/recovered trace under `public/demo/`.

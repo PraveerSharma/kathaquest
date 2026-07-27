@@ -13,6 +13,7 @@
     "build:chapters": "node --import tsx scripts/build-chapter-pack.ts",
     "build:curated": "node --import tsx scripts/build-curated-lessons.ts",
     "verify-services": "node --env-file=.env.local --import tsx scripts/verify-services.ts",
+    "verify-curiosity": "node --env-file=.env.local --import tsx scripts/verify-curiosity-clip.ts",
     "smoke-test": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
     "evals": "node --env-file=.env.local --import tsx scripts/evaluate-chapter-pack.ts",
     "signoz:configure": "node --import tsx scripts/configure-signoz.ts",

@@ -40,10 +40,14 @@ type Summary = {
 };
 
 const operationLabels: Record<string, string> = {
+  "curiosity.answer": "Answer child question",
+  "curiosity.generate": "Build Curiosity Clip",
+  "curiosity.generate_narration": "Narrate Curiosity Clip",
   "lesson.generate": "Complete lesson",
   "lesson.persist": "Save lesson",
   "llm.extract_concepts": "Plan learning goals",
   "llm.create_lesson_presentation": "Build storyboard",
+  "llm.create_curiosity_clip": "Plan visual answer",
   "quiz.evaluate": "Check quiz answer",
   "tts.generate": "Create narration",
   "videodb.compile_episode": "Assemble footage",

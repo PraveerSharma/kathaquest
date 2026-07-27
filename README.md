@@ -7,8 +7,9 @@ source-grounded lesson plan, writes an educational script, builds a nine-scene
 storyboard, and renders one continuous Remotion film from real footage,
 animated diagrams, highlighted keywords, subtitles and Maya the Explorer.
 Children can change the complete lesson and audio among 11 Indian languages,
-ask a typed or spoken question, and get a grounded answer with video only when
-the archive contains direct evidence.
+ask a typed or spoken question, and receive a grounded 40–70 second Curiosity
+Clip that combines a direct answer, Remotion diagrams, narration and reviewed
+footage only when the archive contains direct evidence.
 
 The reviewed archive contains 12 all-ages videos from USGS, NASA, NOAA and the U.S. National Park Service. VideoDB—not a mock—provides ingestion, spoken-word indexing, scene understanding, semantic retrieval, timestamp evidence, HLS compilation and narration/video composition.
 
@@ -62,8 +63,9 @@ KathaQuest uses the chapter as a learning roadmap and retrieves evidence from tr
    diagrams, animations, real footage, captions, keywords and a checkpoint.
 5. Change the learning language once to update the lesson, captions, quiz and
    film narration together.
-6. Ask a typed or spoken question and complete the quiz; missed concepts create
-   a VideoDB revision reel.
+6. Ask a typed or spoken question. Read the grounded answer immediately while
+   Maya prepares a four-scene narrated Curiosity Clip in the background.
+   Complete the quiz; missed concepts create a VideoDB revision reel.
 7. Inspect the matching trace, metrics and structured logs in SigNoz.
 
 ## Architecture
@@ -86,6 +88,8 @@ flowchart LR
     I --> S
     H --> J[Question + quiz routes]
     J --> E
+    J --> U[Four-scene Curiosity Clip]
+    U --> S
     B --> M[OpenAI moderation]
     H --> N[Encrypted lesson token]
     B -. spans, metrics, logs .-> K[OpenTelemetry]
@@ -170,6 +174,10 @@ The root `lesson.generate` trace includes:
 - `videodb.compile_episode`
 - `sarvam.speech_to_text`
 - `llm.answer_question`
+- `llm.create_curiosity_clip`
+- `curiosity.answer`
+- `curiosity.generate`
+- `curiosity.generate_narration`
 - `tts.generate`
 - `tts.fallback`
 - `presentation.generate_narration`
@@ -177,7 +185,7 @@ The root `lesson.generate` trace includes:
 - `revision.compile`
 - `lesson.persist`
 
-Custom counters and histograms cover lesson success/failure/duration, VideoDB latency/results/empty searches, TTS latency/failures/fallbacks, questions and revision reels. Pino logs include trace ID, span ID, lesson ID, event and provider fields.
+Custom counters and histograms cover lesson success/failure/duration, VideoDB latency/results/empty searches, TTS latency/failures/fallbacks, questions, Curiosity Clip generation/narration and revision reels. Pino logs include trace ID, span ID, lesson ID, event and provider fields.
 
 The controlled failure is intentionally visible: `tts.generate` fails, `kathaquest.tts.failures` increases, and the UI explains the error without losing the generated lesson.
 
@@ -235,10 +243,14 @@ The seed script is resumable. It reuses cached VideoDB IDs and does not upload a
 7. Change **Learning language** to Hindi or another Indian language. Wait for
    the completion message confirming that content and every episode voice are
    ready.
-8. Open **SigNoz live dashboard**, then return through **My adventure**.
+8. In **Still curious?**, ask a chapter question. Confirm that the grounded
+   text appears first, followed by an inline four-scene narrated Curiosity
+   Clip. Ask the same question again or revisit the page to verify the saved
+   clip and prepared narration are reused.
+9. Open **SigNoz live dashboard**, then return through **My adventure**.
    Prepared audio should be restored from the browser media cache instead of
    being generated again.
-9. Open the **VideoDB story** to inspect the retrieval architecture and design
+10. Open the **VideoDB story** to inspect the retrieval architecture and design
    decisions.
 
 ### Local deterministic checks
@@ -333,6 +345,7 @@ npm run typecheck
 npm run build
 npm run test:e2e
 # With npm run dev active:
+npm run verify-curiosity
 npm run smoke-test
 npm run evals
 ```
@@ -341,11 +354,12 @@ The browser suite runs deterministic tests across Chromium, Firefox, WebKit
 and Pixel 7, plus opt-in paid live-service tests. It covers real PDF
 extraction, navigation, inline VideoDB and visual playback, the continuous
 lesson studio, nine storyboard scenes, cached narration, every language option,
-localization, questions, quiz, reset, error recovery and microphone feedback.
+localization, four-scene Curiosity Clips, cached question narration, quiz,
+reset, error recovery and microphone feedback.
 Set `RUN_LIVE_E2E=1` to exercise the paid OpenAI, VideoDB and voice path in
 Chromium.
 
-The smoke test performs real lesson generation and verifies exactly three concepts and episodes, 50-second-or-longer playable streams, Bengali localization and synchronized narration, evidence, Q&A, quiz scoring, an encrypted lesson token, and no readable answer leak. The evaluation suite runs all five bundled chapters against grounding, child safety, coverage, duration and evidence-review contracts. Use `EVAL_CHAPTERS=water-cycle,photosynthesis npm run evals` for a targeted run.
+The smoke test performs real lesson generation and verifies exactly three concepts and episodes, 50-second-or-longer playable streams, Bengali localization and synchronized narration, evidence, a grounded Curiosity Clip with two synchronized narration acts, quiz scoring, encrypted lesson tokens, and no readable answer leak. The evaluation suite runs all five bundled chapters against grounding, child safety, coverage, duration and evidence-review contracts. Use `EVAL_CHAPTERS=water-cycle,photosynthesis npm run evals` for a targeted run.
 
 ## Public media and licences
 

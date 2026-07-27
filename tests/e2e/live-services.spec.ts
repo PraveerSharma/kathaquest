@@ -58,6 +58,12 @@ test("real child journey generates, plays, localizes, narrates, asks, and quizze
   await page.getByLabel("Your question").fill("मैग्मा और लावा में क्या अंतर है?");
   await page.getByRole("button", { name: "Ask", exact: true }).click();
   await expect(page.locator(".answer-box")).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText("✓ Curiosity Clip ready")).toBeVisible({
+    timeout: 120_000,
+  });
+  await expect(
+    page.locator(".curiosity-player .presentation-player-shell"),
+  ).toBeVisible();
 
   for (const question of await page.locator(".quiz-list > div").all()) {
     await question.locator(".option-button").first().click();

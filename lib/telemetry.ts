@@ -35,6 +35,12 @@ export const telemetry = {
   ttsFailures: meter.createCounter("kathaquest.tts.failures"),
   ttsFallbacks: meter.createCounter("kathaquest.tts.fallbacks"),
   questionsAsked: meter.createCounter("kathaquest.questions.asked"),
+  curiosityClipsGenerated: meter.createCounter(
+    "kathaquest.curiosity.clips.generated",
+  ),
+  curiosityClipNarrations: meter.createCounter(
+    "kathaquest.curiosity.narrations.generated",
+  ),
   revisionsGenerated: meter.createCounter("kathaquest.revision.generated"),
   presentationsGenerated: meter.createCounter(
     "kathaquest.presentation.generated",

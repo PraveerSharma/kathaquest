@@ -5,9 +5,35 @@ import type {
   StoryboardScene,
 } from "@/lib/types";
 
-const minimumFilmSeconds = 165;
-const maximumFilmSeconds = 240;
 const wordsPerSecond = 1.75;
+
+type PresentationFormat = "lesson" | "curiosity";
+
+const timingProfiles = {
+  lesson: {
+    maximumFilmSeconds: 240,
+    maximumSceneSeconds: 32,
+    minimumFilmSeconds: 165,
+    minimumSceneSeconds: 16,
+    narrationBreathingRoom: 34,
+  },
+  curiosity: {
+    maximumFilmSeconds: 70,
+    maximumSceneSeconds: 18,
+    minimumFilmSeconds: 40,
+    minimumSceneSeconds: 8,
+    narrationBreathingRoom: 10,
+  },
+} satisfies Record<
+  PresentationFormat,
+  {
+    maximumFilmSeconds: number;
+    maximumSceneSeconds: number;
+    minimumFilmSeconds: number;
+    minimumSceneSeconds: number;
+    narrationBreathingRoom: number;
+  }
+>;
 
 function clamp(value: number, minimum = 0, maximum = 100) {
   return Math.min(maximum, Math.max(minimum, value));
@@ -46,16 +72,43 @@ function preferredMotion(scene: StoryboardScene, index: number) {
   return index % 2 === 0 ? ("reveal" as const) : ("pulse" as const);
 }
 
-function normalizedDuration(scene: StoryboardScene) {
+function normalizedDuration(
+  scene: StoryboardScene,
+  format: PresentationFormat,
+) {
+  const profile = timingProfiles[format];
   const spoken = estimatedSpeechSeconds(scene.narration);
   const visualHold =
-    scene.type === "checkpoint" ? 7 : scene.type === "real_video" ? 4 : 3;
+    format === "curiosity"
+      ? scene.type === "checkpoint"
+        ? 3
+        : scene.type === "real_video"
+          ? 3
+          : 2
+      : scene.type === "checkpoint"
+        ? 7
+        : scene.type === "real_video"
+          ? 4
+          : 3;
   const minimum =
-    scene.type === "checkpoint" || scene.type === "recap" ? 20 : 16;
-  return Math.round(clamp(Math.ceil(spoken + visualHold), minimum, 32));
+    scene.type === "checkpoint" || scene.type === "recap"
+      ? profile.minimumSceneSeconds + (format === "lesson" ? 4 : 2)
+      : profile.minimumSceneSeconds;
+  return Math.round(
+    clamp(
+      Math.ceil(spoken + visualHold),
+      minimum,
+      profile.maximumSceneSeconds,
+    ),
+  );
 }
 
-function normalizeScenes(scenes: StoryboardScene[]) {
+function normalizeScenes(
+  scenes: StoryboardScene[],
+  format: PresentationFormat,
+) {
+  const profile = timingProfiles[format];
+  if (scenes.length === 0) return [];
   const transitions: StoryboardScene["transition"][] = [
     "zoom",
     "slide",
@@ -86,7 +139,7 @@ function normalizeScenes(scenes: StoryboardScene[]) {
     const keywords = [...new Set(scene.keywords.map((item) => item.trim()))]
       .filter(Boolean)
       .slice(0, 4);
-    const durationSeconds = normalizedDuration(scene);
+    const durationSeconds = normalizedDuration(scene, format);
     return {
       ...scene,
       durationSeconds,
@@ -117,12 +170,16 @@ function normalizeScenes(scenes: StoryboardScene[]) {
     0,
   );
   const target = Math.round(
-    clamp(narrationSeconds + 34, minimumFilmSeconds, maximumFilmSeconds),
+    clamp(
+      narrationSeconds + profile.narrationBreathingRoom,
+      profile.minimumFilmSeconds,
+      profile.maximumFilmSeconds,
+    ),
   );
   let cursor = 0;
   while (total < target) {
     const index = cursor % normalized.length;
-    if (normalized[index].durationSeconds < 32) {
+    if (normalized[index].durationSeconds < profile.maximumSceneSeconds) {
       normalized[index] = {
         ...normalized[index],
         durationSeconds: normalized[index].durationSeconds + 1,
@@ -137,9 +194,11 @@ function normalizeScenes(scenes: StoryboardScene[]) {
 
 function scorePresentation({
   episodes,
+  format,
   scenes,
 }: {
   episodes: Episode[];
+  format: PresentationFormat;
   scenes: StoryboardScene[];
 }): PresentationQualityReport {
   const teachingScenes = scenes.filter(
@@ -150,14 +209,20 @@ function scorePresentation({
       scene.evidenceRefs.length > 0 &&
       (scene.type !== "real_video" || Boolean(scene.visual.footageMediaUrl)),
   ).length;
-  const grounding = Math.round((grounded / teachingScenes.length) * 100);
+  const grounding =
+    teachingScenes.length > 0
+      ? Math.round((grounded / teachingScenes.length) * 100)
+      : 0;
 
   const pacedScenes = scenes.filter((scene) => {
     const speech = estimatedSpeechSeconds(scene.narration);
     const ratio = speech / Math.max(1, scene.durationSeconds);
     return ratio >= 0.42 && ratio <= 0.92;
   }).length;
-  const pacing = Math.round((pacedScenes / scenes.length) * 100);
+  const pacing =
+    scenes.length > 0
+      ? Math.round((pacedScenes / scenes.length) * 100)
+      : 0;
 
   const uniqueTypes = new Set(scenes.map((scene) => scene.type)).size;
   const uniqueTemplates = new Set(
@@ -204,7 +269,10 @@ function scorePresentation({
       scene.visual.labels.length >= 2 &&
       scene.visual.labels.length <= 5,
   ).length;
-  const readability = Math.round((readableScenes / scenes.length) * 100);
+  const readability =
+    scenes.length > 0
+      ? Math.round((readableScenes / scenes.length) * 100)
+      : 0;
   const overall = Math.round(
     clamp(
       grounding * 0.3 +
@@ -235,7 +303,9 @@ function scorePresentation({
       "Every teaching scene is checked for source grounding.",
       "Narration duration is balanced against scene time.",
       "Visual types, motion and transitions are checked for repetition.",
-      "A curiosity hook, prediction pause and retrieval recap are required.",
+      format === "curiosity"
+        ? "A question hook, visual model and retrieval checkpoint are required."
+        : "A curiosity hook, prediction pause and retrieval recap are required.",
     ],
     engagement,
     grounding,
@@ -255,12 +325,14 @@ function scorePresentation({
 
 export function improvePresentationQuality({
   episodes,
+  format = "lesson",
   presentation,
 }: {
   episodes: Episode[];
+  format?: PresentationFormat;
   presentation: LessonPresentation;
 }): LessonPresentation {
-  const scenes = normalizeScenes(presentation.storyboard.scenes);
+  const scenes = normalizeScenes(presentation.storyboard.scenes, format);
   const totalDurationSeconds = scenes.reduce(
     (sum, scene) => sum + scene.durationSeconds,
     0,
@@ -275,7 +347,7 @@ export function improvePresentationQuality({
       ...presentation.plan,
       targetDurationSeconds: totalDurationSeconds,
     },
-    quality: scorePresentation({ episodes, scenes }),
+    quality: scorePresentation({ episodes, format, scenes }),
     script: {
       ...presentation.script,
       fullNarration,

@@ -159,6 +159,25 @@ export type LessonPresentation = {
   quality?: PresentationQualityReport;
 };
 
+export type CuriosityClip = {
+  id: string;
+  question: string;
+  answer: string;
+  language: LessonLanguage;
+  presentation: LessonPresentation;
+  evidence: VideoEvidence[];
+  videoEvidenceUsed: boolean;
+  createdAt: string;
+};
+
+export type CuriosityRequest = {
+  id: string;
+  question: string;
+  answer: string;
+  language: LessonLanguage;
+  createdAt: string;
+};
+
 export type NarrationTrack = {
   audioUrl: string;
   durationInFrames: number;

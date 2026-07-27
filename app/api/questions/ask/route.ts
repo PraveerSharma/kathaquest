@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 
+import { curiosityClipId } from "@/lib/curiosity-clip";
+import { answerQuestion } from "@/lib/llm";
 import {
-  answerQuestion,
-  createQuestionSearchQuery,
-} from "@/lib/llm";
-import { openLesson } from "@/lib/lesson-session";
+  openLesson,
+  sealCuriosityRequest,
+} from "@/lib/lesson-session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { assertKidSafeText } from "@/lib/safety";
 import { transcribeWithSarvam } from "@/lib/sarvam";
-import { telemetry } from "@/lib/telemetry";
-import { searchEducationalArchive } from "@/lib/videodb";
+import { telemetry, withSpan } from "@/lib/telemetry";
+import type { CuriosityRequest } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -72,33 +73,51 @@ export async function POST(request: Request) {
     }
 
     await assertKidSafeText(question, "question");
-    telemetry.questionsAsked.add(1, { language: lesson.language });
-    const searchQuery = await createQuestionSearchQuery({
-      question,
-      lessonTitle: lesson.title,
-      concepts: lesson.concepts,
-    });
-    const support = await searchEducationalArchive(searchQuery, {
-      conceptTitle: question,
-      learningObjective: `Answer the child's question with direct visual or spoken evidence from ${lesson.title}.`,
-      purpose: "answer",
-    });
-    const answer = await answerQuestion({
-      question,
-      lessonTitle: lesson.title,
-      concepts: lesson.concepts,
-      evidence: support?.evidence ?? [],
-      language: lesson.language,
-    });
-    await assertKidSafeText(answer, "answer");
-
-    return NextResponse.json({
-      transcript,
-      answer,
-      streamUrl: support?.streamUrl,
-      evidence: support?.evidence ?? [],
-      videoUnavailable: !support,
-    });
+    return NextResponse.json(
+      await withSpan(
+        "curiosity.answer",
+        {
+          "lesson.id": lesson.id,
+          "lesson.language": lesson.language,
+          "curiosity.question_length": question.length,
+        },
+        async (span) => {
+          telemetry.questionsAsked.add(1, { language: lesson.language });
+          const answer = await answerQuestion({
+            question,
+            lessonTitle: lesson.title,
+            concepts: lesson.concepts,
+            evidence: [],
+            language: lesson.language,
+          });
+          await assertKidSafeText(answer, "answer");
+          const curiosityRequest: CuriosityRequest = {
+            id: curiosityClipId({
+              language: lesson.language,
+              lessonId: lesson.id,
+              question,
+            }),
+            question,
+            answer,
+            language: lesson.language,
+            createdAt: new Date().toISOString(),
+          };
+          const questionToken = sealCuriosityRequest({
+            request: curiosityRequest,
+            lessonId: lesson.id,
+          });
+          span.setAttributes({
+            "curiosity.request_id": curiosityRequest.id,
+          });
+          return {
+            transcript,
+            answer,
+            questionId: curiosityRequest.id,
+            questionToken,
+          };
+        },
+      ),
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Question answering failed";

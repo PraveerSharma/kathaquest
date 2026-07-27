@@ -101,6 +101,20 @@ export function filmMediaKey({
   return `film:${narrationCacheVersion}:${lessonId}:${language}:${provider}`;
 }
 
+export function curiosityMediaKey({
+  clipId,
+  language,
+  lessonId,
+  provider,
+}: {
+  clipId: string;
+  language: string;
+  lessonId: string;
+  provider: string;
+}) {
+  return `curiosity:${narrationCacheVersion}:${lessonId}:${clipId}:${language}:${provider}`;
+}
+
 export async function readPreparedMedia(
   key: string,
 ): Promise<PreparedMedia | undefined> {

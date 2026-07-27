@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 import type {
+  CuriosityClip,
   PublicLesson,
   StoryboardSceneType,
 } from "../lib/types";
@@ -94,8 +95,44 @@ const questionResult = await request("/api/questions/ask", {
     question: "Why does magma rise toward the surface?",
   }),
 });
-if (!questionResult.answer) {
-  throw new Error("Question answer lacked a grounded explanation");
+const curiosityQuestionToken = questionResult.questionToken as string;
+const curiosityResult = await request("/api/questions/clip", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    lessonId: lesson.id,
+    lessonToken,
+    questionToken: curiosityQuestionToken,
+  }),
+});
+const curiosityClip = curiosityResult.curiosityClip as CuriosityClip;
+const curiosityClipToken = curiosityResult.clipToken as string;
+if (
+  !questionResult.answer ||
+  !curiosityQuestionToken ||
+  !curiosityClipToken ||
+  curiosityClip.presentation.storyboard.scenes.length !== 4 ||
+  curiosityClip.presentation.storyboard.totalDurationSeconds < 40 ||
+  (curiosityClip.presentation.quality?.overall ?? 0) < 70
+) {
+  throw new Error("Question answer lacked a grounded Curiosity Clip");
+}
+const curiosityNarration = await request("/api/questions/narrate", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    lessonId: lesson.id,
+    lessonToken,
+    clipToken: curiosityClipToken,
+    provider: "auto",
+  }),
+});
+if (
+  !curiosityNarration.audioUrl ||
+  !Array.isArray(curiosityNarration.narrationTracks) ||
+  curiosityNarration.narrationTracks.length !== 2
+) {
+  throw new Error("Curiosity Clip narration was not scene-synchronized");
 }
 
 const localizedResult = await request("/api/lessons/localize", {
@@ -183,6 +220,12 @@ console.log(
         ...lesson.episodes.map((episode) => episode.durationSeconds),
       ),
       questionAnswered: true,
+      curiosityClipDurationSeconds:
+        curiosityClip.presentation.storyboard.totalDurationSeconds,
+      curiosityClipQuality:
+        curiosityClip.presentation.quality?.overall,
+      curiosityClipNarrationTracks:
+        curiosityNarration.narrationTracks.length,
       regionalLanguageSwitch: localizedLesson.language,
       narrationSyncMode: narrationResult.syncMode,
       localizedVideoCreated: Boolean(narrationResult.streamUrl),

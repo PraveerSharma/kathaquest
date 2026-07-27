@@ -3,6 +3,7 @@ import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 import type {
+  CuriosityClip,
   Episode,
   LessonLanguage,
   PublicLearningConcept,
@@ -229,6 +230,67 @@ function lessonWithVisualFallback() {
   return result;
 }
 
+function curiosityClip(
+  language: LessonLanguage = "bn-IN",
+): CuriosityClip {
+  const sourceLesson = lesson(language, language === "bn-IN");
+  const sourcePresentation = sourceLesson.presentation!;
+  const scenes = sourcePresentation.storyboard.scenes
+    .slice(0, 4)
+    .map((scene, index) => ({
+      ...scene,
+      id: `curiosity-scene-${index + 1}`,
+      type:
+        index === 0
+          ? ("guide" as const)
+          : index === 1
+            ? ("diagram" as const)
+            : index === 2
+              ? ("real_video" as const)
+              : ("checkpoint" as const),
+      durationSeconds: 12,
+      interactionPrompt:
+        index === 3 ? "What would you predict now?" : undefined,
+    }));
+  const presentationResult = {
+    ...sourcePresentation,
+    promptVersion: "curiosity-clip-v1.0.0",
+    plan: {
+      ...sourcePresentation.plan,
+      title:
+        language === "bn-IN"
+          ? "লাভা কোথা থেকে আসে?"
+          : "Where does lava come from?",
+      bigQuestion: "Why does this happen?",
+      targetDurationSeconds: 48,
+      teachingArc: scenes.map((scene) => scene.title),
+    },
+    script: {
+      ...sourcePresentation.script,
+      fullNarration: scenes.map((scene) => scene.narration).join("\n\n"),
+    },
+    storyboard: {
+      ...sourcePresentation.storyboard,
+      totalDurationSeconds: 48,
+      scenes,
+    },
+    quality: {
+      ...sourcePresentation.quality!,
+      overall: 90,
+    },
+  };
+  return {
+    id: "curiosity-test-clip",
+    question: "Why does this happen?",
+    answer: "The chapter explains this safely and clearly.",
+    language,
+    presentation: presentationResult,
+    evidence: sourceLesson.episodes[0].evidence,
+    videoEvidenceUsed: true,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 async function mockGeneratedLesson(page: Page) {
   await page.route("**/api/lessons/generate", async (route) => {
     await route.fulfill({
@@ -340,6 +402,9 @@ test("missing VideoDB coverage becomes an honest visual lesson instead of a dead
 test("complete lesson workflow stays clear through language, video, Q&A, quiz, and reset", async ({
   page,
 }) => {
+  let curiosityRequests = 0;
+  let curiosityClipRequests = 0;
+  let curiosityNarrationRequests = 0;
   await mockGeneratedLesson(page);
   await page.route("**/api/lessons/localize", async (route) => {
     await route.fulfill({
@@ -363,12 +428,53 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
     });
   });
   await page.route("**/api/questions/ask", async (route) => {
+    curiosityRequests += 1;
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         answer: "The chapter explains this safely and clearly.",
-        evidence: [],
-        videoUnavailable: true,
+        questionId: "curiosity-test-clip",
+        questionToken:
+          "kqq1.mock-secure-curiosity-question-token-that-is-long-enough",
+      }),
+    });
+  });
+  await page.route("**/api/questions/clip", async (route) => {
+    curiosityClipRequests += 1;
+    const clip = curiosityClip();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        curiosityClip: clip,
+        clipToken: "kqc1.mock-secure-curiosity-token-that-is-long-enough",
+        evidence: clip.evidence,
+        videoUnavailable: false,
+      }),
+    });
+  });
+  await page.route("**/api/questions/narrate", async (route) => {
+    curiosityNarrationRequests += 1;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        audioUrl: "data:audio/mpeg;base64,SUQz",
+        provider: "sarvam",
+        fallbackUsed: false,
+        narrationTracks: [
+          {
+            audioUrl: "data:audio/mpeg;base64,SUQz",
+            durationInFrames: 720,
+            fromFrame: 0,
+            sceneIds: ["curiosity-scene-1", "curiosity-scene-2"],
+          },
+          {
+            audioUrl: "data:audio/mpeg;base64,SUQz",
+            durationInFrames: 720,
+            fromFrame: 720,
+            sceneIds: ["curiosity-scene-3", "curiosity-scene-4"],
+          },
+        ],
       }),
     });
   });
@@ -402,8 +508,30 @@ test("complete lesson workflow stays clear through language, video, Q&A, quiz, a
 
   await page.getByLabel("Your question").fill("Why does this happen?");
   await page.getByRole("button", { name: "Ask", exact: true }).click();
-  await expect(page.getByText(/left out the video/i)).toBeVisible();
-
+  await expect(
+    page.getByText("The chapter explains this safely and clearly."),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Maya is building your visual answer…"),
+  ).toBeVisible();
+  await expect(page.getByText("✓ Curiosity Clip ready")).toBeVisible();
+  await expect(
+    page.locator(".curiosity-player .presentation-player-shell"),
+  ).toBeVisible();
+  await expect(page.getByText(/4 scenes · 48s · sarvam/i)).toBeVisible();
+  await page.getByRole("button", { name: "Ask", exact: true }).click();
+  await expect(page.getByText("Saved")).toBeVisible();
+  await expect
+    .poll(() => ({
+      curiosityNarrationRequests,
+      curiosityClipRequests,
+      curiosityRequests,
+    }))
+    .toEqual({
+      curiosityClipRequests: 1,
+      curiosityNarrationRequests: 1,
+      curiosityRequests: 1,
+    });
   for (const [index, concept] of lesson("bn-IN", true).concepts.entries()) {
     await page
       .locator(".quiz-list")
