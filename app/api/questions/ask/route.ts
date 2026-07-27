@@ -89,6 +89,7 @@ export async function POST(request: Request) {
             concepts: lesson.concepts,
             evidence: [],
             language: lesson.language,
+            sourceContext: lesson.sourceContext,
           });
           await assertKidSafeText(answer, "answer");
           const curiosityRequest: CuriosityRequest = {

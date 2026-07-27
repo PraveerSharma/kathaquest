@@ -42,9 +42,11 @@ function decode(value: string): Buffer {
 }
 
 export function toPublicLesson(lesson: Lesson): PublicLesson {
+  const { sourceContext, concepts, ...publicLesson } = lesson;
+  void sourceContext;
   return {
-    ...lesson,
-    concepts: lesson.concepts.map(({ quiz, ...concept }) => ({
+    ...publicLesson,
+    concepts: concepts.map(({ quiz, ...concept }) => ({
       ...concept,
       quiz: {
         question: quiz.question,

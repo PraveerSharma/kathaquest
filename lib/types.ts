@@ -210,6 +210,11 @@ export type Lesson = {
   ageGroup: string;
   language: LessonLanguage;
   status: LessonStatus;
+  /**
+   * Original chapter text retained only inside server storage and the
+   * encrypted lesson token. It is intentionally removed from PublicLesson.
+   */
+  sourceContext?: string;
   concepts: LearningConcept[];
   episodes: Episode[];
   presentation?: LessonPresentation;
@@ -225,7 +230,7 @@ export type PublicLearningConcept = Omit<LearningConcept, "quiz"> & {
   quiz: Omit<LearningConcept["quiz"], "correctAnswer">;
 };
 
-export type PublicLesson = Omit<Lesson, "concepts"> & {
+export type PublicLesson = Omit<Lesson, "concepts" | "sourceContext"> & {
   concepts: PublicLearningConcept[];
 };
 

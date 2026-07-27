@@ -88,6 +88,9 @@ export async function generateLesson({
           sourceKind,
         });
         if (curatedLesson) {
+          // Keep the full chapter available to server-side follow-up answers.
+          // toPublicLesson strips this before sending the lesson to the browser.
+          curatedLesson.sourceContext = chapterText.slice(0, 50_000);
           if (curatedLesson.presentation) {
             curatedLesson.presentation = improvePresentationQuality({
               episodes: curatedLesson.episodes,
@@ -322,6 +325,7 @@ export async function generateLesson({
           ageGroup,
           language,
           status: "ready",
+          sourceContext: chapterText.slice(0, 50_000),
           concepts,
           episodes,
           presentation,

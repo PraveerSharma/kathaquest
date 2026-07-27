@@ -945,6 +945,7 @@ export async function createCuriosityClip({
   language,
   lessonTitle,
   question,
+  sourceContext,
 }: {
   ageGroup: string;
   answer: string;
@@ -953,6 +954,7 @@ export async function createCuriosityClip({
   language: LessonLanguage;
   lessonTitle: string;
   question: string;
+  sourceContext?: string;
 }): Promise<LessonPresentation> {
   return withSpan(
     "llm.create_curiosity_clip",
@@ -989,6 +991,11 @@ export async function createCuriosityClip({
                   `[${concept.id}] ${concept.title}\nExact chapter quote: ${concept.sourceQuote}\nGrounded lesson explanation: ${concept.explanation.slice(0, 700)}`,
               ),
               "</verified_chapter_notes>",
+              "",
+              "<original_chapter_source>",
+              sourceContext?.slice(0, 30_000) ??
+                "The original chapter source is unavailable; use only the verified chapter notes.",
+              "</original_chapter_source>",
               "",
               "<reviewed_video_evidence>",
               ...(evidence.length > 0
@@ -1065,9 +1072,10 @@ export async function createCuriosityClip({
               ? [
                   `${footage.videoId}:${footage.startSeconds.toFixed(1)}-${footage.endSeconds.toFixed(1)}`,
                 ]
-              : concept
-                ? [`chapter:${concept.id}`]
-                : [],
+              : [
+                  ...(sourceContext ? ["chapter:source"] : []),
+                  ...(concept ? [`chapter:${concept.id}`] : []),
+                ],
           interactionPrompt:
             index === 3
               ? scene.interactionPrompt ?? question
@@ -1178,12 +1186,14 @@ export async function answerQuestion({
   concepts,
   evidence,
   language,
+  sourceContext,
 }: {
   question: string;
   lessonTitle: string;
   concepts: LearningConcept[];
   evidence: VideoEvidence[];
   language: LessonLanguage;
+  sourceContext?: string;
 }): Promise<string> {
   return withSpan(
     "llm.answer_question",
@@ -1205,7 +1215,7 @@ export async function answerQuestion({
           },
           {
             role: "user",
-            content: `Lesson: ${lessonTitle}\nLanguage: ${language}\nVerified chapter knowledge:\n${concepts.map((item) => `- Exact quote: ${item.sourceQuote}\n  Grounded explanation: ${item.explanation}`).join("\n")}\nVideo evidence:\n${evidence.map((item) => `- ${item.text || item.videoTitle}`).join("\n")}\nChild question: ${question}`,
+            content: `Lesson: ${lessonTitle}\nLanguage: ${language}\nOriginal chapter source:\n<chapter_source>\n${sourceContext?.slice(0, 30_000) ?? "Unavailable. Use only the verified chapter knowledge below."}\n</chapter_source>\nVerified chapter knowledge:\n${concepts.map((item) => `- Exact quote: ${item.sourceQuote}\n  Grounded explanation: ${item.explanation}`).join("\n")}\nVideo evidence:\n${evidence.map((item) => `- ${item.text || item.videoTitle}`).join("\n")}\nChild question: ${question}`,
           },
         ],
         text: { format: zodTextFormat(answerSchema, "child_question_answer") },

@@ -29,9 +29,10 @@ const generated = existingLessonId
     }>(`/api/lessons/${encodeURIComponent(existingLessonId)}`)
   : await (async () => {
       const chapterText = await readFile(
-        new URL("../data/sample-volcano-chapter.txt", import.meta.url),
+        new URL("../data/chapter-pack.json", import.meta.url),
         "utf8",
       );
+      const chapterPack = JSON.parse(chapterText) as Array<{ text: string }>;
       return request<{
         lesson: PublicLesson;
         lessonToken: string;
@@ -40,12 +41,16 @@ const generated = existingLessonId
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ageGroup: "8-10",
-          chapterText,
+          chapterText: chapterPack[0].text,
           language: "en-IN",
+          sourceKind: "chapter-pack",
         }),
       });
     })();
 const question = "Why does magma rise toward Earth's surface?";
+if ("sourceContext" in generated.lesson) {
+  throw new Error("Original chapter context leaked through the public lesson");
+}
 const answered = await request<{
   answer: string;
   questionToken: string;

@@ -108,6 +108,7 @@ export async function POST(request: Request) {
               language: lesson.language,
               lessonTitle: lesson.title,
               question: sealed.request.question,
+              sourceContext: lesson.sourceContext,
             });
           } catch (clipError) {
             fallbackUsed = true;

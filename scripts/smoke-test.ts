@@ -39,6 +39,7 @@ if (lesson.concepts.length !== 3 || lesson.episodes.length !== 3) {
 }
 if (
   !lessonToken ||
+  "sourceContext" in lesson ||
   lesson.concepts.some(
     (concept) => "correctAnswer" in concept.quiz,
   )
