@@ -24,6 +24,7 @@ import {
 } from "@/lib/languages";
 import type {
   LessonLanguage,
+  NarrationTrack,
   PublicLesson,
 } from "@/lib/types";
 
@@ -32,6 +33,8 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
   const [session, setSession] = useState<SavedLessonSession>();
   const [ready, setReady] = useState(false);
   const [narrationUrl, setNarrationUrl] = useState<string>();
+  const [narrationTracks, setNarrationTracks] =
+    useState<NarrationTrack[]>();
   const [providerPreference, setProviderPreference] =
     useState<"auto" | "sarvam" | "elevenlabs">("auto");
   const [actualProvider, setActualProvider] =
@@ -82,6 +85,7 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
 
   function resetVoice() {
     setNarrationUrl(undefined);
+    setNarrationTracks(undefined);
     setActualProvider(undefined);
     setVoiceFallbackUsed(false);
     setError(undefined);
@@ -149,6 +153,7 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
       const cached = await readPreparedMedia(cacheKey);
       if (cached) {
         setNarrationUrl(cached.audioUrl);
+        setNarrationTracks(cached.narrationTracks);
         setActualProvider(cached.provider);
         setVoiceFallbackUsed(cached.fallbackUsed);
         if (playWhenReady) {
@@ -173,18 +178,21 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
         audioUrl?: string;
         provider?: "sarvam" | "elevenlabs";
         fallbackUsed?: boolean;
+        narrationTracks?: NarrationTrack[];
         error?: string;
       };
       if (!response.ok || !result.audioUrl || !result.provider) {
         throw new Error(result.error ?? "Could not create lesson narration");
       }
       setNarrationUrl(result.audioUrl);
+      setNarrationTracks(result.narrationTracks);
       setActualProvider(result.provider);
       setVoiceFallbackUsed(Boolean(result.fallbackUsed));
       await savePreparedMedia(cacheKey, {
         audioUrl: result.audioUrl,
         provider: result.provider,
         fallbackUsed: Boolean(result.fallbackUsed),
+        narrationTracks: result.narrationTracks,
       });
       if (playWhenReady) {
         window.setTimeout(() => {
@@ -358,6 +366,7 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
         <div className="studio-main">
           <div className="studio-player-stage">
             <PresentationPlayer
+              narrationTracks={narrationTracks}
               narrationUrl={narrationUrl}
               playerRef={playerRef}
               presentation={presentation}
@@ -377,8 +386,8 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
                     : "Lesson audio needs another try"}
                 </strong>
                 <span>
-                  The film stays paused until its narration and scenes are ready
-                  together.
+                  The film stays paused until its three narrated acts and scenes
+                  are ready together.
                 </span>
                 {!narrating ? (
                   <button
@@ -423,7 +432,8 @@ export function LessonExperience({ lessonId }: { lessonId?: string }) {
                 <strong>
                   Creating {getLessonLanguage(lesson.language).label} film audio...
                 </strong>
-                Translating the script and preparing a child-friendly voice.
+                Preparing three synchronized story acts with a child-friendly
+                voice.
               </span>
             </div>
           ) : null}

@@ -1,16 +1,19 @@
 "use client";
 
+import type { NarrationTrack } from "@/lib/types";
+
 export type PreparedMedia = {
   audioUrl: string;
   fallbackUsed: boolean;
+  narrationTracks?: NarrationTrack[];
   provider: "sarvam" | "elevenlabs";
   savedAt: number;
   streamUrl?: string;
   syncMode?: "videodb-timeline" | "browser";
 };
 
-export const narrationCacheVersion = "warm-storyteller-v2";
-const databaseName = "kathaquest-media-v2";
+export const narrationCacheVersion = "scene-synced-storyteller-v3";
+const databaseName = "kathaquest-media-v3";
 const storeName = "prepared-media";
 const fallbackPrefix = "kathaquest.media.";
 const maxAgeMs = 7 * 24 * 60 * 60 * 1000;

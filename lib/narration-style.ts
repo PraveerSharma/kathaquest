@@ -1,4 +1,4 @@
-export const NARRATION_RENDER_VERSION = "warm-storyteller-v2";
+export const NARRATION_RENDER_VERSION = "scene-synced-storyteller-v3";
 
 const sentenceBoundary = /(?<=[.!?।॥])\s+/u;
 

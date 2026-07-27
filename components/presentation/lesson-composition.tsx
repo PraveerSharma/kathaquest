@@ -12,7 +12,11 @@ import {
 
 import { DynamicDiagram } from "@/components/presentation/dynamic-diagram";
 import { MayaGuide } from "@/components/presentation/maya-guide";
-import type { LessonPresentation, StoryboardScene } from "@/lib/types";
+import type {
+  LessonPresentation,
+  NarrationTrack,
+  StoryboardScene,
+} from "@/lib/types";
 
 const palettes = [
   { background: "#FFF8EE", glow: "#FFB34F", accent: "#FF775F" },
@@ -607,9 +611,11 @@ function LessonScene({
 
 export function LessonComposition({
   presentation,
+  narrationTracks,
   narrationUrl,
 }: {
   presentation: LessonPresentation;
+  narrationTracks?: NarrationTrack[];
   narrationUrl?: string;
 }) {
   const fps = presentation.storyboard.fps;
@@ -636,7 +642,38 @@ export function LessonComposition({
           </Sequence>
         );
       })}
-      {narrationUrl ? <Html5Audio src={narrationUrl} volume={0.96} /> : null}
+      {narrationTracks?.length
+        ? narrationTracks.map((track, index) => (
+            <Sequence
+              durationInFrames={track.durationInFrames}
+              from={track.fromFrame}
+              key={`${track.sceneIds.join("-")}-${index}`}
+              name={`Narration act ${index + 1}`}
+            >
+              <Html5Audio
+                src={track.audioUrl}
+                volume={(frame) =>
+                  interpolate(
+                    frame,
+                    [
+                      0,
+                      Math.min(10, track.durationInFrames / 4),
+                      Math.max(10, track.durationInFrames - 12),
+                      track.durationInFrames,
+                    ],
+                    [0, 0.96, 0.96, 0],
+                    {
+                      extrapolateLeft: "clamp",
+                      extrapolateRight: "clamp",
+                    },
+                  )
+                }
+              />
+            </Sequence>
+          ))
+        : narrationUrl
+          ? <Html5Audio src={narrationUrl} volume={0.96} />
+          : null}
     </AbsoluteFill>
   );
 }

@@ -13,6 +13,7 @@ import { generateNarration } from "@/lib/narration-router";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { assertKidSafeText } from "@/lib/safety";
 import { telemetry, withSpan } from "@/lib/telemetry";
+import type { NarrationTrack, StoryboardScene } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -24,6 +25,26 @@ const requestSchema = z.object({
   provider: z.enum(["auto", "sarvam", "elevenlabs"]).default("auto"),
   forceFailure: z.boolean().optional(),
 });
+
+function lessonActs(scenes: StoryboardScene[], fps: number) {
+  const acts: Array<{
+    durationInFrames: number;
+    fromFrame: number;
+    scenes: StoryboardScene[];
+  }> = [];
+  let fromFrame = 0;
+  for (let index = 0; index < scenes.length; index += 3) {
+    const actScenes = scenes.slice(index, index + 3);
+    const durationInFrames = actScenes.reduce(
+      (total, scene) =>
+        total + Math.round(scene.durationSeconds * fps),
+      0,
+    );
+    acts.push({ scenes: actScenes, fromFrame, durationInFrames });
+    fromFrame += durationInFrames;
+  }
+  return acts;
+}
 
 export async function POST(request: Request) {
   const rateLimit = checkRateLimit(
@@ -66,36 +87,65 @@ export async function POST(request: Request) {
             lesson.presentation.storyboard.scenes.length,
         },
         async () => {
-          const storyboardScript = composeSceneNarration(
-            lesson.presentation!.storyboard.scenes,
+          const presentation = lesson.presentation!;
+          const acts = lessonActs(
+            presentation.storyboard.scenes,
+            presentation.storyboard.fps,
           );
-          const script =
-            lesson.language === input.language
-              ? storyboardScript
-              : await localizeNarrationText(
-                  storyboardScript,
-                  input.language,
-                );
-          await assertKidSafeText(script, "answer");
+          const scripts = await Promise.all(
+            acts.map(async (act) => {
+              const actScript = composeSceneNarration(act.scenes);
+              return lesson.language === input.language
+                ? actScript
+                : localizeNarrationText(actScript, input.language);
+            }),
+          );
+          await Promise.all(
+            scripts.map((script) => assertKidSafeText(script, "answer")),
+          );
           const forced =
             input.forceFailure === true || consumeElevenLabsFailure();
-          const narration = await generateNarration({
-              text: script,
-              language: input.language,
-              preferredProvider: input.provider,
-              forceFailure: forced,
-            });
+          const firstNarration = await generateNarration({
+            text: scripts[0],
+            language: input.language,
+            preferredProvider: input.provider,
+            forceFailure: forced,
+          });
+          const remainingNarrations = await Promise.all(
+            scripts.slice(1).map((script) =>
+              generateNarration({
+                text: script,
+                language: input.language,
+                preferredProvider: firstNarration.provider,
+              }),
+            ),
+          );
+          const narrations = [firstNarration, ...remainingNarrations];
+          const narrationTracks: NarrationTrack[] = acts.map((act, index) => ({
+            audioUrl: narrations[index].audioUrl,
+            durationInFrames: act.durationInFrames,
+            fromFrame: act.fromFrame,
+            sceneIds: act.scenes.map((scene) => scene.id),
+          }));
+          const fallbackUsed = narrations.some(
+            (narration) => narration.fallbackUsed,
+          );
           telemetry.presentationNarrations.add(1, {
             language: input.language,
-            provider: narration.provider,
+            provider: firstNarration.provider,
             style: NARRATION_RENDER_VERSION,
+            mode: "scene-synced-acts",
           });
           return {
-            ...narration,
+            audioUrl: narrationTracks[0].audioUrl,
+            fallbackUsed,
             language: input.language,
+            narrationTracks,
+            provider: firstNarration.provider,
             narrationStyle: NARRATION_RENDER_VERSION,
+            syncMode: "scene-synced-acts",
             durationSeconds:
-              lesson.presentation!.storyboard.totalDurationSeconds,
+              presentation.storyboard.totalDurationSeconds,
           };
         },
       ),

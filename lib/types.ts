@@ -146,6 +146,13 @@ export type LessonPresentation = {
   storyboard: LessonStoryboard;
 };
 
+export type NarrationTrack = {
+  audioUrl: string;
+  durationInFrames: number;
+  fromFrame: number;
+  sceneIds: string[];
+};
+
 export type Episode = {
   id: string;
   conceptId: string;

@@ -428,6 +428,26 @@ test("content navigation and the continuous lesson studio are usable", async ({
         provider: "sarvam",
         fallbackUsed: true,
         language: "mr-IN",
+        narrationTracks: [
+          {
+            audioUrl: "data:audio/mpeg;base64,SUQz",
+            durationInFrames: 1800,
+            fromFrame: 0,
+            sceneIds: ["scene-1", "scene-2", "scene-3"],
+          },
+          {
+            audioUrl: "data:audio/mpeg;base64,SUQz",
+            durationInFrames: 1800,
+            fromFrame: 1800,
+            sceneIds: ["scene-4", "scene-5", "scene-6"],
+          },
+          {
+            audioUrl: "data:audio/mpeg;base64,SUQz",
+            durationInFrames: 1800,
+            fromFrame: 3600,
+            sceneIds: ["scene-7", "scene-8", "scene-9"],
+          },
+        ],
         durationSeconds: 180,
       }),
     });
@@ -474,6 +494,10 @@ test("content navigation and the continuous lesson studio are usable", async ({
     page.getByRole("heading", { name: "Volcano Adventure" }),
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".presentation-player-shell")).toBeVisible();
+  await expect(page.locator(".presentation-player-shell")).toHaveAttribute(
+    "data-narration-mode",
+    "scene-synced",
+  );
   await expect(page.locator(".scene-rail button")).toHaveCount(9);
   await expect(page.getByText(/Layer 1/)).toBeHidden();
   const studioDimensions = await page.evaluate(() => ({
