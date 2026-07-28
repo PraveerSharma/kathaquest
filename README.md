@@ -301,15 +301,26 @@ localize real lessons.
 | `OTEL_*` | Service name, OTLP HTTP endpoints and optional headers |
 | `SIGNOZ_INGESTION_KEY` | SigNoz Cloud ingestion key when used |
 | `NEXT_PUBLIC_SIGNOZ_URL` | Optional production dashboard link |
-| `SIGNOZ_URL` | Local SigNoz UI |
-| `SIGNOZ_MCP_URL` | Local SigNoz MCP endpoint |
-| `SIGNOZ_API_KEY` | Local SigNoz API automation key |
+| `SIGNOZ_URL` | SigNoz Cloud workspace or local UI |
+| `SIGNOZ_MCP_URL` | SigNoz Cloud or local MCP endpoint |
+| `SIGNOZ_API_KEY` | Server-side SigNoz service-account key |
 | `KATHAQUEST_ALERT_WEBHOOK_URL` | Authenticated production alert receiver |
 | `SIGNOZ_WEBHOOK_USERNAME` | Alert webhook basic-auth username |
 | `SIGNOZ_WEBHOOK_PASSWORD` | Alert webhook basic-auth password |
 | `DEMO_MODE` | Enables the controlled failure route |
 
 ## SigNoz with Foundry
+
+Production exports OTLP/HTTP traces to SigNoz Cloud and reads the in-app
+observability summary through the authenticated SigNoz MCP server. The
+Cloud workspace contains:
+
+- `KathaQuest AI lesson pipeline`
+- `KathaQuest AI provider reliability`
+- alerts for lesson latency, VideoDB relevance, and pipeline errors
+
+The Foundry setup below remains available as a reproducible local fallback; it
+is not required to keep the production application or dashboard running.
 
 ```bash
 curl -fsSL https://signoz.io/foundry.sh | bash

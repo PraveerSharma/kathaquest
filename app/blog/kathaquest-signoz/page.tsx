@@ -68,7 +68,8 @@ export default function KathaQuestSigNozBlog() {
         <section>
           <h2>I traced the work a learner actually waits for</h2>
           <p>
-            KathaQuest uses OpenTelemetry and a self-hosted SigNoz stack
+            KathaQuest exports OpenTelemetry traces from Vercel to SigNoz
+            Cloud. The repository also keeps a reproducible self-hosted stack
             installed with Foundry. The root span is{" "}
             <code>lesson.generate</code>. Its children use product language:
             <code>llm.extract_concepts</code>,{" "}
@@ -123,7 +124,8 @@ await withSpan("lesson.generate", {
               width={1600}
             />
             <figcaption>
-              Real KathaQuest traces in the self-hosted SigNoz instance.
+              Real KathaQuest traces captured while validating the
+              reproducible self-hosted deployment.
             </figcaption>
           </figure>
         </section>
@@ -220,9 +222,12 @@ await withSpan("lesson.generate", {
         <section>
           <h2>The setup is reproducible</h2>
           <p>
-            The repository includes <code>casting.yaml</code> and{" "}
-            <code>casting.yaml.lock</code>. Foundry can recreate the Docker
-            deployment and its SigNoz MCP server:
+            Production telemetry now goes directly from Vercel to SigNoz
+            Cloud, where two KathaQuest dashboards and three alert rules track
+            the lesson pipeline. The repository also includes{" "}
+            <code>casting.yaml</code> and <code>casting.yaml.lock</code>, so
+            Foundry can recreate the Docker deployment and its SigNoz MCP
+            server:
           </p>
           <pre>
             <code>{`foundryctl cast -f casting.yaml

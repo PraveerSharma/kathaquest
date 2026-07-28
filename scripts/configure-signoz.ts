@@ -25,6 +25,9 @@ async function mcpCall(name: string, args: JsonObject = {}) {
       accept: "application/json, text/event-stream",
       "content-type": "application/json",
       "signoz-api-key": signozApiKey,
+      ...(process.env.SIGNOZ_URL
+        ? { "x-signoz-url": process.env.SIGNOZ_URL }
+        : {}),
     },
     body: JSON.stringify({
       jsonrpc: "2.0",
@@ -114,35 +117,6 @@ const traceQuery = ({
   limit,
 });
 
-const metricQuery = ({
-  name,
-  temporality,
-  timeAggregation,
-  spaceAggregation,
-  reduceTo,
-}: {
-  name: string;
-  temporality: "cumulative" | "delta" | "unspecified";
-  timeAggregation: string;
-  spaceAggregation: string;
-  reduceTo?: string;
-}) => ({
-  signal: "metrics",
-  name: "A",
-  aggregations: [
-    {
-      metricName: name,
-      temporality,
-      timeAggregation,
-      spaceAggregation,
-      ...(reduceTo ? { reduceTo } : {}),
-    },
-  ],
-  filter: { expression: "service.name = 'kathaquest'" },
-  order: [{ key: { name: "__result" }, direction: "desc" }],
-  limit: 100,
-});
-
 function panel({
   title,
   description,
@@ -184,12 +158,9 @@ const dashboardPanels = {
     description: "Completed KathaQuest lessons in the selected time range",
     panelKind: "signoz/NumberPanel",
     requestKind: "scalar",
-    query: metricQuery({
-      name: "kathaquest.lesson.generated",
-      temporality: "cumulative",
-      timeAggregation: "increase",
-      spaceAggregation: "sum",
-      reduceTo: "sum",
+    query: traceQuery({
+      aggregations: [{ expression: "count()" }],
+      filter: "service.name = 'kathaquest' AND name = 'lesson.generate'",
     }),
   }),
   "lesson-p95": panel({
@@ -266,18 +237,17 @@ const dashboardPanels = {
     panelKind: "signoz/TimeSeriesPanel",
     requestKind: "time_series",
     query: {
-      ...metricQuery({
-        name: "kathaquest.videodb.search.duration.bucket",
-        temporality: "cumulative",
-        timeAggregation: "",
-        spaceAggregation: "p95",
+      ...traceQuery({
+        aggregations: [{ expression: "p95(duration_nano)" }],
+        filter:
+          "service.name = 'kathaquest' AND name = 'videodb.search_concept'",
       }),
       stepInterval: 60,
       legend: "VideoDB p95",
     },
     pluginSpec: {
       legend: { position: "bottom" },
-      formatting: { unit: "ms" },
+      formatting: { unit: "ns" },
     },
   }),
   "provider-usage": panel({
@@ -562,7 +532,7 @@ async function ensureDashboard(
   const existingResult = await mcpCall("signoz_list_dashboards", {
     limit: 50,
     offset: 0,
-    filter: name,
+    filter: `name CONTAINS '${name.replaceAll("'", "''")}'`,
   });
   const existing = parsedData(existingResult) as {
     data?: { dashboards?: Array<{ id?: string }> };

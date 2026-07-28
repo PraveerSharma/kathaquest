@@ -36,6 +36,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_SIGNOZ_URL: z.string().url().optional(),
   SIGNOZ_URL: z.string().url().default("http://localhost:8080"),
   SIGNOZ_MCP_URL: z.string().url().default("http://localhost:8000/mcp"),
+  SIGNOZ_API_KEY: z.string().min(1).optional(),
   SIGNOZ_WEBHOOK_USERNAME: z.string().min(1).optional(),
   SIGNOZ_WEBHOOK_PASSWORD: z.string().min(16).optional(),
   DEMO_FORCE_ELEVENLABS_FAILURE: z.string().default("false"),
